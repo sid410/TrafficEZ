@@ -9,7 +9,7 @@ Affiliation: USTP-RSPOT IIoT Lab
 ## MVP: to-do for release/v1.0.0
 
 - [ ] main.cpp
-  - [ ] print opencv version.
+  - [x] print opencv and project version.
   - [ ] add argument parser.
     - [ ] number of car ROIs.
     - [ ] number of pedestrian ROIs.
