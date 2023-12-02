@@ -1,5 +1,11 @@
 # TrafficEZ
 
+Checklist in the project progress below are automatically updated in the [Public Repository](https://github.com/sid410/TrafficEZ-Updates) (everytime there is a push on dev/\* branch).
+
+**Warning:** Do not clone the public repo as it will periodically rebase and force push.
+
+---
+
 Early development version.
 
 Author: Isidro Butaslac
@@ -9,19 +15,24 @@ Affiliation: USTP-RSPOT IIoT Lab
 ## MVP: to-do for release/v1.0.0
 
 - [ ] main.cpp
-  - [ ] print opencv version.
-  - [ ] add argument parser.
-    - [ ] number of car ROIs.
-    - [ ] number of pedestrian ROIs.
+
+  - [x] print opencv and project version.
+  - [x] add argument parser.
+    - [x] number of car ROIs.
+    - [x] number of pedestrian ROIs.
+    - [x] debug toggle and view help.
     - [ ] check if total ROI <= number of cores.
+  - [ ] create TrafficManager object.
 
 - [ ] VideoCaptureModule
+
   - [ ] read from mp4 files (for debugging).
   - [ ] read from RTSP stream (for production) by loading environment variables from rtsp_links config file.
   - [ ] trim and warp frame based on the dictionary from lane_calib config file.
   - [ ] return warped frame.
 
 - [ ] CalibrationModule (Only run once during calibration phase, assuming installed cameras don't move)
+
   - [ ] same with VideoCaptureModule, read from stream.
   - [ ] show frame that can also be accessed remotely (SSH).
   - [ ] click four points (resettable if unhappy) to define the image transformation matrix for warping the perspective to bird's eye view.
@@ -30,9 +41,11 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [ ] (optional) add a line guide calculated from Hough line transform to snap to.
 
 - [ ] HullRecognitionModule
+
   - [ ] switch between debug mode (with imshow) and release mode (no imshow).
 
   - [ ] create HullDetector
+
     - [ ] read cv_params config file to load constants of CV pipeline.
     - [ ] pre-process frame with grayscale and gaussian blur.
     - [ ] apply MOG2 background subtraction.
@@ -41,6 +54,7 @@ Affiliation: USTP-RSPOT IIoT Lab
     - [ ] find contours and store their moments.
 
   - [ ] create HullTracker
+
     - [ ] get reference of moments of contours from HullDetector.
     - [ ] match existing tracked hulls by comparing current and previous hulls info [centroid, area] that is calculated from contour moments.
     - [ ] add new tracked hulls with unique ID, but reset count every start of green light change.
@@ -60,7 +74,7 @@ Affiliation: USTP-RSPOT IIoT Lab
     - [ ] RedGet: return density of current red light.
   - [ ] calculate density of previous green light:
     - [ ] get the accumulated total hull area that crossed finish line (define this line later, maybe 80% of the length?).
-    - [ ] get the start and end time of green light, then divide by the  accumulated total hull area to get average traffic flow.
+    - [ ] get the start and end time of green light, then divide by the accumulated total hull area to get average traffic flow.
     - [ ] get the average speed parallel to lane by calculating a moving average, for each frame, delta centroid divided by delta frame_time. Make sure to get the vector projection parallel to lane.
     - [ ] divide average traffic flow by average speed and width of lane, and return this value as density of previous green light.
   - [ ] calculate density of current red light:
@@ -68,12 +82,14 @@ Affiliation: USTP-RSPOT IIoT Lab
     - [ ] divide the number of cars by the length and width of lane to get density of current red light.
 
 - [ ] StationaryDetectorModule
+
   - [ ] have not decided yet what to use to detect stationary cars during red light.
     - [ ] the classic Haar Cascade classifiers.
     - [ ] YOLOv8 for edge model.
   - [ ] This module should also be used for pedestrian detection/counting.
 
 - [ ] TrafficManager
+
   - [ ] contructor to be initialized in main (should be initialized with number of ROIs for car and for pedestrian inputted as arguments).
   - [ ] load truth_table config file mapping the logic of green/red lights to lanes.
   - [ ] spawn processes (parallelized) based on the number of car + pedestrian ROIs.
@@ -89,6 +105,7 @@ Affiliation: USTP-RSPOT IIoT Lab
 - [ ] Setup branch protection for `release/`
 
 - [ ] Setup workflows
+
   - [ ] [Setup OpenCV action](https://github.com/Dovyski/setup-opencv-action).
   - [ ] Build and test CMake project on multiple platforms.
 
@@ -137,11 +154,23 @@ Affiliation: USTP-RSPOT IIoT Lab
 
 ## Naming conventions
 
-- Source files: Pascal Case except `main.cpp`
-- Header files: Pascal Case
+- Classes/Structs: PascalCase
+- variables/functions: camelCase
+- constants: ALL_CAPS
+- namespace: lowercase, no underscores
+- Class member prefixes: no need
+
+dir names:
+
+- Source files: PascalCase except `main.cpp`
+- Header files: PascalCase
 - Include Guard in Header files: ALL_CAPS separated with underscores
 - Config files: snake_case
 - Text files: snake_case except `CMakeLists.txt`
 - Test files: start with `test_` then snake_case
 - Resource files: snake_case
 - Release builds: TrafficEZ-M.m.p-Linux64 or TrafficEZ-M.m.p-Win64.exe
+
+## Styling/Formatting conventions
+
+Please use clang formatter and load the .clang-format settings in root.
