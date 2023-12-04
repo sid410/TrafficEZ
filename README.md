@@ -137,11 +137,23 @@ Affiliation: USTP-RSPOT IIoT Lab
 
 ## Naming conventions
 
-- Source files: Pascal Case except `main.cpp`
-- Header files: Pascal Case
+- Classes/Structs: PascalCase
+- variables/functions: camelCase
+- constants: ALL_CAPS
+- namespace: lowercase, no underscores
+- Class member prefixes: no need
+
+dir names:
+
+- Source files: PascalCase except `main.cpp`
+- Header files: PascalCase
 - Include Guard in Header files: ALL_CAPS separated with underscores
 - Config files: snake_case
 - Text files: snake_case except `CMakeLists.txt`
 - Test files: start with `test_` then snake_case
 - Resource files: snake_case
 - Release builds: TrafficEZ-M.m.p-Linux64 or TrafficEZ-M.m.p-Win64.exe
+
+## Styling/Formatting conventions
+
+Please use clang formatter and load the .clang-format settings in root.

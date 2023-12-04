@@ -1,6 +1,6 @@
-#include <opencv2/opencv.hpp>
-#include <iostream>
 #include "version_config.h"
+#include <iostream>
+#include <opencv2/opencv.hpp>
 
 int main()
 {
