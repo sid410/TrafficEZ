@@ -1,6 +1,10 @@
 # TrafficEZ
 
-`Checklist in the project progress below are automatically updated everytime there is a push on dev/* branch.`
+Checklist in the project progress below are automatically updated in the [Public Repository](https://github.com/sid410/TrafficEZ-Updates) (everytime there is a push on dev/\* branch).
+
+**Warning:** Do not clone the public repo as it will periodically rebase and force push.
+
+---
 
 Early development version.
 
