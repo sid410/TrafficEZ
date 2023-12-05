@@ -17,10 +17,12 @@ Affiliation: USTP-RSPOT IIoT Lab
 - [ ] main.cpp
 
   - [x] print opencv and project version.
-  - [ ] add argument parser.
-    - [ ] number of car ROIs.
-    - [ ] number of pedestrian ROIs.
+  - [x] add argument parser.
+    - [x] number of car ROIs.
+    - [x] number of pedestrian ROIs.
+    - [x] debug toggle and view help.
     - [ ] check if total ROI <= number of cores.
+  - [ ] create TrafficManager object.
 
 - [ ] VideoCaptureModule
 
