@@ -1,0 +1,18 @@
+name: Dispatch progress event
+
+on:
+  push:
+    branches:
+      - "dev/*"
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dispatch progress event
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          repository: sid410/TrafficEZ-Updates
+          event-type: dispatch-progress-event
