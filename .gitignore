@@ -5,6 +5,10 @@
 /[Bb]uild/
 /[Bb]uilds/
 
+# resources folder (binaries like test vids)
+/[Rr]esource/
+/[Rr]esources/
+
 ### C++ related ignores ###
 # Prerequisites
 *.d

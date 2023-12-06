@@ -1,3 +1,4 @@
+#include "TrafficManager.h"
 #include "cxxopts.hpp"
 #include "version_config.h"
 #include <iostream>
@@ -15,11 +16,15 @@ int main(int argc, char* argv[])
 {
     cxxopts::Options options(PROJECT_NAME_VER, "----------");
 
-    options.add_options()(
-        "d,debug", "Enable debugging", cxxopts::value<bool>()->default_value("false"))(
-        "c,car", "Number of car ROIs", cxxopts::value<int>()->default_value("3"))(
-        "p,pedestrian", "Number of pedestrian ROIs", cxxopts::value<int>()->default_value("2"))(
-        "h,help", "Print usage");
+    options.add_options()("d,debug",
+                          "Enable debugging",
+                          cxxopts::value<bool>()->default_value("false"))(
+        "c,car",
+        "Number of car ROIs",
+        cxxopts::value<int>()->default_value("3"))(
+        "p,pedestrian",
+        "Number of pedestrian ROIs",
+        cxxopts::value<int>()->default_value("2"))("h,help", "Print usage");
 
     auto result = options.parse(argc, argv);
 
@@ -37,14 +42,13 @@ int main(int argc, char* argv[])
     {
         std::cout << "Project version: " << PROJECT_NAME_VER << std::endl;
         std::cout << "OpenCV version: " << CV_VERSION << std::endl;
-        std::cout << "Number of CPU cores: " << cv::getNumberOfCPUs() << std::endl;
-        std::cout << "Number of car_roi: " << numCarRoi << std::endl;
-        std::cout << "Number of ped_roi: " << numPedRoi << std::endl;
-        // do some debugging here
+        std::cout << "Number of CPU cores: " << cv::getNumberOfCPUs()
+                  << std::endl;
     }
 
-    // Instantiate here TrafficManager, and should change whether:
-    // numCarRoi + numPedRoi > numCpuCores
+    // should change whether numCarRoi + numPedRoi > numCpuCores
+    TrafficManager trafficManager(numCarRoi, numPedRoi, debug);
+    trafficManager.start();
 
     return 0;
 }
