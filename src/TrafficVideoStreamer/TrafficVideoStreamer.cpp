@@ -3,7 +3,33 @@
 
 TrafficVideoStreamer::TrafficVideoStreamer() {}
 
-void TrafficVideoStreamer::start()
+TrafficVideoStreamer::~TrafficVideoStreamer()
 {
-    std::cout << "TrafficVideoStreamer started!" << std::endl;
+    stream.release();
+}
+
+bool TrafficVideoStreamer::openVideoStream(const std::string& filename)
+{
+    stream.open(filename);
+
+    if(!stream.isOpened())
+    {
+        std::cerr << "Error: Unable to open stream" << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool TrafficVideoStreamer::getNextFrame(cv::Mat& frame)
+{
+    stream.read(frame);
+    if(frame.empty())
+    {
+        return false;
+    }
+
+    // Perform warping here
+
+    return true;
 }
