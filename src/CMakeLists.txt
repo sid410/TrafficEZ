@@ -1,5 +1,6 @@
 # Add here all the directory of submodules
 add_subdirectory(TrafficManager)
+add_subdirectory(TrafficVideoStreamer)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 

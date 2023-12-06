@@ -5,6 +5,7 @@ TrafficManager::TrafficManager(int numCars, int numPedestrians, bool debug)
     : numberOfCars(numCars)
     , numberOfPedestrians(numPedestrians)
     , debugMode(debug)
+    , videoStreamer()
 {}
 
 void TrafficManager::start()
@@ -13,4 +14,6 @@ void TrafficManager::start()
     std::cout << "Number of Cars: " << numberOfCars << std::endl;
     std::cout << "Number of Pedestrians: " << numberOfPedestrians << std::endl;
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << std::endl;
+
+    videoStreamer.start();
 }

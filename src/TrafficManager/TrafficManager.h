@@ -1,6 +1,8 @@
 #ifndef TRAFFIC_MANAGER_H
 #define TRAFFIC_MANAGER_H
 
+#include "TrafficVideoStreamer.h"
+
 class TrafficManager
 {
 public:
@@ -11,6 +13,7 @@ private:
     int numberOfCars;
     int numberOfPedestrians;
     bool debugMode;
+    TrafficVideoStreamer videoStreamer;
 };
 
 #endif
