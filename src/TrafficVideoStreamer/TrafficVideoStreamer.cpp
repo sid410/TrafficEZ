@@ -21,6 +21,15 @@ bool TrafficVideoStreamer::openVideoStream(const std::string& filename)
     return true;
 }
 
+void TrafficVideoStreamer::constructStreamWindow(const std::string& windowName)
+{
+    originalWidth = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_WIDTH));
+    originalHeight = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_HEIGHT));
+
+    cv::namedWindow(windowName, cv::WINDOW_NORMAL);
+    cv::resizeWindow(windowName, originalWidth, originalHeight);
+}
+
 bool TrafficVideoStreamer::getNextFrame(cv::Mat& frame)
 {
     stream.read(frame);

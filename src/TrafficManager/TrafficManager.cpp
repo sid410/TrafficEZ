@@ -31,7 +31,7 @@ void TrafficManager::spawnCarObserverDebug()
         return;
     }
 
-    cv::namedWindow("Debug Video", cv::WINDOW_NORMAL);
+    videoStreamer.constructStreamWindow("Debug Video");
 
     cv::Mat frame;
 
