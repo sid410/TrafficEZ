@@ -35,8 +35,14 @@ void TrafficManager::spawnCarObserverDebug()
     // videoStreamer.constructStreamWindow("Debug Video");
     // ^ this is only needed after implementing mouse click 4 points
 
+    if(!videoStreamer.readCalibrationPoints("calib_points.yaml"))
+    {
+        return;
+    }
+
     cv::Mat frame;
     cv::Mat warpedFrame;
+
     videoStreamer.initializePerspectiveTransform();
 
     if(!videoStreamer.perspectiveMatrixInitialized)
