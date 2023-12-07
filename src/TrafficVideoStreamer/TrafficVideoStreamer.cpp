@@ -1,7 +1,9 @@
 #include "TrafficVideoStreamer.h"
 #include <iostream>
 
-TrafficVideoStreamer::TrafficVideoStreamer() {}
+TrafficVideoStreamer::TrafficVideoStreamer()
+    : perspectiveMatrixInitialized(false)
+{}
 
 TrafficVideoStreamer::~TrafficVideoStreamer()
 {
@@ -14,7 +16,7 @@ bool TrafficVideoStreamer::openVideoStream(const std::string& filename)
 
     if(!stream.isOpened())
     {
-        std::cerr << "Error: Unable to open stream" << std::endl;
+        std::cerr << "Error: Unable to open stream." << std::endl;
         return false;
     }
 
@@ -38,7 +40,35 @@ bool TrafficVideoStreamer::getNextFrame(cv::Mat& frame)
         return false;
     }
 
-    // Perform warping here
-
     return true;
+}
+
+void TrafficVideoStreamer::initializePerspectiveTransform()
+{
+    // Determine the longer length and width
+    double length1 = cv::norm(srcPoints[0] - srcPoints[1]);
+    double length2 = cv::norm(srcPoints[1] - srcPoints[2]);
+    double width1 = cv::norm(srcPoints[1] - srcPoints[3]);
+    double width2 = cv::norm(srcPoints[2] - srcPoints[3]);
+
+    double maxLength = std::max(length1, length2);
+    double maxWidth = std::max(width1, width2);
+
+    dstPoints = {cv::Point2f(0, 0),
+                 cv::Point2f(maxLength - 1, 0),
+                 cv::Point2f(0, maxWidth - 1),
+                 cv::Point2f(maxLength - 1, maxWidth - 1)};
+
+    perspectiveMatrix = cv::getPerspectiveTransform(srcPoints, dstPoints);
+    perspectiveMatrixInitialized = true;
+}
+
+void TrafficVideoStreamer::warpFrame(const cv::Mat& inputFrame,
+                                     cv::Mat& warpedFrame)
+{
+    cv::warpPerspective(inputFrame,
+                        warpedFrame,
+                        perspectiveMatrix,
+                        cv::Size(static_cast<int>(dstPoints[1].x),
+                                 static_cast<int>(dstPoints[2].y)));
 }

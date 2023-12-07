@@ -28,16 +28,29 @@ void TrafficManager::spawnCarObserverDebug()
 
     if(!videoStreamer.openVideoStream("debug.mp4"))
     {
+        std::cerr << "Error: Failed to open the video stream." << std::endl;
         return;
     }
 
-    videoStreamer.constructStreamWindow("Debug Video");
+    // videoStreamer.constructStreamWindow("Debug Video");
+    // ^ this is only needed after implementing mouse click 4 points
 
     cv::Mat frame;
+    cv::Mat warpedFrame;
+    videoStreamer.initializePerspectiveTransform();
+
+    if(!videoStreamer.perspectiveMatrixInitialized)
+    {
+        std::cerr << "Error: Failed to initialize perspective matrix."
+                  << std::endl;
+        return;
+    }
 
     while(videoStreamer.getNextFrame(frame))
     {
-        cv::imshow("Debug Video", frame);
+        videoStreamer.warpFrame(frame, warpedFrame);
+
+        cv::imshow("Debug Warped Video", warpedFrame);
 
         if(cv::waitKey(30) == 27)
             break;
