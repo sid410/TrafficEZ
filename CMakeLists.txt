@@ -32,3 +32,4 @@ else()
 endif()
 
 add_subdirectory(src)
+add_subdirectory(util/yaml-cpp)
