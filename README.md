@@ -28,8 +28,8 @@ Affiliation: USTP-RSPOT IIoT Lab
 
   - [x] read from mp4 files (for debugging).
   - [ ] read from RTSP stream (for production) by loading environment variables from rtsp_links config file.
-  - [ ] trim and warp frame based on the dictionary from lane_calib config file.
-  - [ ] return success and reference to warped frame.
+  - [x] trim and warp frame based on the calib_points yaml.
+  - [x] return successfully read and initialized before anything can be changed to warped frame.
 
 - [ ] CalibrationModule (Only run once during calibration phase, assuming installed cameras don't move)
 
