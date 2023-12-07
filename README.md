@@ -22,14 +22,14 @@ Affiliation: USTP-RSPOT IIoT Lab
     - [x] number of pedestrian ROIs.
     - [x] debug toggle and view help.
     - [ ] check if total ROI <= number of cores.
-  - [ ] create TrafficManager object.
+  - [x] create TrafficManager object.
 
-- [ ] VideoCaptureModule
+- [ ] TrafficVideoStreamer
 
-  - [ ] read from mp4 files (for debugging).
+  - [x] read from mp4 files (for debugging).
   - [ ] read from RTSP stream (for production) by loading environment variables from rtsp_links config file.
   - [ ] trim and warp frame based on the dictionary from lane_calib config file.
-  - [ ] return warped frame.
+  - [ ] return success and reference to warped frame.
 
 - [ ] CalibrationModule (Only run once during calibration phase, assuming installed cameras don't move)
 
@@ -90,7 +90,7 @@ Affiliation: USTP-RSPOT IIoT Lab
 
 - [ ] TrafficManager
 
-  - [ ] contructor to be initialized in main (should be initialized with number of ROIs for car and for pedestrian inputted as arguments).
+  - [x] contructor to be initialized in main (should be initialized with number of ROIs for car and for pedestrian inputted as arguments).
   - [ ] load truth_table config file mapping the logic of green/red lights to lanes.
   - [ ] spawn processes (parallelized) based on the number of car + pedestrian ROIs.
   - [ ] create pipes to communicate state variables from parent to child, and communicate traffic density information from child to parent.
