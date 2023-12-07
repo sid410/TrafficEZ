@@ -3,7 +3,7 @@ name: Dispatch progress event
 on:
   push:
     branches:
-      - "dev/*"
+      - "release/*"
     paths:
       - "**/README.md"
 

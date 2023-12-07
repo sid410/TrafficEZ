@@ -1,8 +1,11 @@
 #include "TrafficVideoStreamer.h"
+#include <fstream>
 #include <iostream>
+#include <yaml-cpp/yaml.h>
 
 TrafficVideoStreamer::TrafficVideoStreamer()
     : perspectiveMatrixInitialized(false)
+    , readCalibSuccess(false)
 {}
 
 TrafficVideoStreamer::~TrafficVideoStreamer()
@@ -10,9 +13,9 @@ TrafficVideoStreamer::~TrafficVideoStreamer()
     stream.release();
 }
 
-bool TrafficVideoStreamer::openVideoStream(const std::string& filename)
+bool TrafficVideoStreamer::openVideoStream(const std::string& streamName)
 {
-    stream.open(filename);
+    stream.open(streamName);
 
     if(!stream.isOpened())
     {
@@ -43,8 +46,56 @@ bool TrafficVideoStreamer::getNextFrame(cv::Mat& frame)
     return true;
 }
 
+bool TrafficVideoStreamer::readCalibrationPoints(
+    const std::string& yamlFilename)
+{
+    try
+    {
+        std::ifstream fin(yamlFilename);
+        if(!fin.is_open())
+        {
+            std::cerr << "Error: Failed to open calibration file." << std::endl;
+            return false;
+        }
+
+        YAML::Node yamlNode = YAML::Load(fin);
+
+        const YAML::Node& pointsNode = yamlNode["calibration_points"];
+        if(!pointsNode || !pointsNode.IsSequence())
+        {
+            std::cerr << "Error: Calibration points not found or not in the "
+                         "correct format."
+                      << std::endl;
+            return false;
+        }
+
+        srcPoints.clear();
+
+        for(const auto& point : pointsNode)
+        {
+            double x = point["x"].as<double>();
+            double y = point["y"].as<double>();
+            srcPoints.emplace_back(x, y);
+        }
+
+        fin.close();
+        readCalibSuccess = true;
+        return true;
+    }
+    catch(const YAML::Exception& e)
+    {
+        std::cerr << "Error while parsing YAML: " << e.what() << std::endl;
+        return false;
+    }
+}
+
 void TrafficVideoStreamer::initializePerspectiveTransform()
 {
+    if(!readCalibSuccess)
+    {
+        return;
+    }
+
     // Determine the longer length and width
     double length1 = cv::norm(srcPoints[0] - srcPoints[1]);
     double length2 = cv::norm(srcPoints[1] - srcPoints[2]);

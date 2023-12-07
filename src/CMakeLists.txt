@@ -4,8 +4,10 @@ add_subdirectory(TrafficVideoStreamer)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 
-# Link the OpenCV libraries
+# Link the 3rd party libraries
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${OpenCV_LIBS})
+# only link yaml-cpp to where we need to parse yaml files
+# target_link_libraries(${EXECUTABLE_NAME} PRIVATE yaml-cpp)
 
 # Add here, link all submodule libraries
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE TrafficManager)

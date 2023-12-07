@@ -4,3 +4,4 @@ target_include_directories(
                               ${OpenCV_INCLUDE_DIRS})
 
 target_link_libraries(TrafficVideoStreamer PRIVATE ${OpenCV_LIBS})
+target_link_libraries(TrafficVideoStreamer PRIVATE yaml-cpp)
