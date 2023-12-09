@@ -19,7 +19,7 @@ bool VideoStreamer::openVideoStream(const std::string& streamName)
 
     if(!stream.isOpened())
     {
-        std::cerr << "Error: Unable to open stream:" << streamName << "\n";
+        std::cerr << "Error: Unable to open stream: " << streamName << "\n";
         return false;
     }
 

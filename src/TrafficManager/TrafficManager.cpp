@@ -19,7 +19,7 @@ void TrafficManager::start()
     // This is blocking! change this later
     spawnCarObserverDebug();
 
-    std::cout << "TrafficManager ended\n";
+    std::cout << "TrafficManager ended.\n";
 }
 
 void TrafficManager::spawnCarObserverDebug()
@@ -28,7 +28,6 @@ void TrafficManager::spawnCarObserverDebug()
 
     if(!videoStreamer.openVideoStream("debug.mp4"))
     {
-        std::cerr << "Error: Failed to open the video stream.\n";
         return;
     }
 
