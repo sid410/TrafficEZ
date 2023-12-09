@@ -1,7 +1,7 @@
 #ifndef TRAFFIC_MANAGER_H
 #define TRAFFIC_MANAGER_H
 
-class TrafficVideoStreamer;
+class VideoStreamer;
 
 class TrafficManager
 {

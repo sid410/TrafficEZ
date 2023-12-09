@@ -2,6 +2,6 @@ add_library(TrafficManager TrafficManager.cpp)
 
 target_include_directories(
   TrafficManager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                        ${CMAKE_CURRENT_SOURCE_DIR}/../TrafficVideoStreamer)
+                        ${CMAKE_CURRENT_SOURCE_DIR}/../VideoStreamer)
 
-target_link_libraries(TrafficManager PRIVATE TrafficVideoStreamer)
+target_link_libraries(TrafficManager PRIVATE VideoStreamer)

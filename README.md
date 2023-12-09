@@ -24,7 +24,7 @@ Affiliation: USTP-RSPOT IIoT Lab
     - [ ] check if total ROI <= number of cores.
   - [x] create TrafficManager object.
 
-- [ ] TrafficVideoStreamer
+- [ ] VideoStreamer
 
   - [x] read from mp4 files (for debugging).
   - [ ] read from RTSP stream (for production) by loading environment variables from rtsp_links config file.
