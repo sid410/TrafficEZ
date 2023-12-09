@@ -31,13 +31,13 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [x] trim and warp frame based on the calib_points yaml.
   - [x] return successfully read and initialized before anything can be changed to warped frame.
 
-- [ ] CalibrationModule (Only run once during calibration phase, assuming installed cameras don't move)
+- [ ] CalibrateVideoStreamer (Only run once during calibration phase, assuming installed cameras don't move)
 
-  - [ ] same with VideoCaptureModule, read from stream.
+  - [x] Inherit from VideoStreamer: openVideoStream, constructStreamWindow, getNextFrame, readCalibrationPoints, initializePerspectiveTransform, warpFrame.
   - [ ] show frame that can also be accessed remotely (SSH).
-  - [ ] click four points (resettable if unhappy) to define the image transformation matrix for warping the perspective to bird's eye view.
+  - [x] setCalibrationPointsFromMouse: click four points (resettable if unhappy) to define the image transformation matrix for warping the perspective to bird's eye view.
   - [ ] input the length and width of these corresponding lane points.
-  - [ ] save the corresponding {stream-name, four-calibration-points} dictionary to a lane_calib config file, together with the length and width of lane.
+  - [ ] saveCalibrationPoints: save the corresponding {stream-name, four-calibration-points} dictionary to a lane_calib config file, together with the length and width of lane.
   - [ ] (optional) add a line guide calculated from Hough line transform to snap to.
 
 - [ ] HullRecognitionModule

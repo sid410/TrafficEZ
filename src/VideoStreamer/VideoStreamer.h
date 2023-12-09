@@ -1,5 +1,5 @@
-#ifndef VIDEOSTREAMER_H
-#define VIDEOSTREAMER_H
+#ifndef VIDEO_STREAMER_H
+#define VIDEO_STREAMER_H
 
 #include <opencv2/opencv.hpp>
 #include <yaml-cpp/yaml.h>
