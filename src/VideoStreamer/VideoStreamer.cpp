@@ -103,21 +103,45 @@ void VideoStreamer::initializePerspectiveTransform()
         return;
     }
 
-    // Determine the longer length and width
-    double length1 = cv::norm(srcPoints[0] - srcPoints[1]);
-    double length2 = cv::norm(srcPoints[1] - srcPoints[2]);
-    double width1 = cv::norm(srcPoints[1] - srcPoints[3]);
-    double width2 = cv::norm(srcPoints[2] - srcPoints[3]);
+    /// Sort the points based on y-coordinates
+    std::sort(srcPoints.begin(),
+              srcPoints.end(),
+              [](cv::Point2f a, cv::Point2f b) { return a.y < b.y; });
+
+    // Split the sorted points into top and bottom
+    std::vector<cv::Point2f> topPoints, bottomPoints;
+    topPoints.push_back(srcPoints[0]);
+    topPoints.push_back(srcPoints[1]);
+    bottomPoints.push_back(srcPoints[2]);
+    bottomPoints.push_back(srcPoints[3]);
+
+    // Sort the top and bottom points based on x-coordinates
+    std::sort(topPoints.begin(),
+              topPoints.end(),
+              [](cv::Point2f a, cv::Point2f b) { return a.x < b.x; });
+    std::sort(bottomPoints.begin(),
+              bottomPoints.end(),
+              [](cv::Point2f a, cv::Point2f b) { return a.x < b.x; });
+
+    // Combine the top and bottom points
+    std::vector<cv::Point2f> sortedPoints = {
+        topPoints[0], topPoints[1], bottomPoints[0], bottomPoints[1]};
+
+    double length1 = cv::norm(sortedPoints[0] - sortedPoints[1]);
+    double length2 = cv::norm(sortedPoints[1] - sortedPoints[2]);
+    double width1 = cv::norm(sortedPoints[1] - sortedPoints[3]);
+    double width2 = cv::norm(sortedPoints[2] - sortedPoints[3]);
 
     double maxLength = std::max(length1, length2);
     double maxWidth = std::max(width1, width2);
 
+    // Destination points for the bird's eye view
     dstPoints = {cv::Point2f(0, 0),
                  cv::Point2f(maxLength - 1, 0),
                  cv::Point2f(0, maxWidth - 1),
                  cv::Point2f(maxLength - 1, maxWidth - 1)};
 
-    perspectiveMatrix = cv::getPerspectiveTransform(srcPoints, dstPoints);
+    perspectiveMatrix = cv::getPerspectiveTransform(sortedPoints, dstPoints);
     perspectiveMatrixInitialized = true;
 }
 
