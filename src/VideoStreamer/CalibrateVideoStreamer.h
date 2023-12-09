@@ -10,10 +10,9 @@ public:
     CalibrateVideoStreamer();
     ~CalibrateVideoStreamer();
 
-    void setCalibrationPoints(const std::vector<cv::Point2f>& points);
+    void setCalibrationPointsFromMouse(const std::string& windowName);
 
 private:
-    std::vector<cv::Point2f> calibrationPoints;
 };
 
 #endif

@@ -17,8 +17,9 @@ void TrafficManager::start()
     std::cout << "Number of Pedestrians: " << numberOfPedestrians << "\n";
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
 
-    // This is blocking! change this later
     calibrateStreamPoints();
+    // This is blocking! change this later
+    // spawnCarObserverDebug();
 
     std::cout << "TrafficManager ended.\n";
 }
@@ -26,14 +27,15 @@ void TrafficManager::start()
 void TrafficManager::calibrateStreamPoints()
 {
     CalibrateVideoStreamer calibrateStreamer;
+    std::string calibWindow = "Calibrate Points";
 
-    std::vector<cv::Point2f> calibrationPoints = {cv::Point2f(666, 0),
-                                                  cv::Point2f(0, 303),
-                                                  cv::Point2f(789, 702),
-                                                  cv::Point2f(1274, 566)};
+    if(!calibrateStreamer.openVideoStream("debug.mp4"))
+    {
+        return;
+    }
 
-    calibrateStreamer.setCalibrationPoints(calibrationPoints);
-    std::cout << "Successfully calibrated.\n";
+    calibrateStreamer.constructStreamWindow(calibWindow);
+    calibrateStreamer.setCalibrationPointsFromMouse(calibWindow);
 }
 
 void TrafficManager::spawnCarObserverDebug()
