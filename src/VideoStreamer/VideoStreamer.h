@@ -1,14 +1,14 @@
-#ifndef TRAFFICVIDEOSTREAMER_H
-#define TRAFFICVIDEOSTREAMER_H
+#ifndef VIDEOSTREAMER_H
+#define VIDEOSTREAMER_H
 
 #include <opencv2/opencv.hpp>
 #include <yaml-cpp/yaml.h>
 
-class TrafficVideoStreamer
+class VideoStreamer
 {
 public:
-    TrafficVideoStreamer();
-    ~TrafficVideoStreamer();
+    VideoStreamer();
+    ~VideoStreamer();
 
     bool openVideoStream(const std::string& filename);
     void constructStreamWindow(const std::string& windowName);

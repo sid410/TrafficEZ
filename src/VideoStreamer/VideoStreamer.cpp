@@ -1,19 +1,19 @@
-#include "TrafficVideoStreamer.h"
+#include "VideoStreamer.h"
 #include <fstream>
 #include <iostream>
 #include <yaml-cpp/yaml.h>
 
-TrafficVideoStreamer::TrafficVideoStreamer()
+VideoStreamer::VideoStreamer()
     : perspectiveMatrixInitialized(false)
     , readCalibSuccess(false)
 {}
 
-TrafficVideoStreamer::~TrafficVideoStreamer()
+VideoStreamer::~VideoStreamer()
 {
     stream.release();
 }
 
-bool TrafficVideoStreamer::openVideoStream(const std::string& streamName)
+bool VideoStreamer::openVideoStream(const std::string& streamName)
 {
     stream.open(streamName);
 
@@ -26,7 +26,7 @@ bool TrafficVideoStreamer::openVideoStream(const std::string& streamName)
     return true;
 }
 
-void TrafficVideoStreamer::constructStreamWindow(const std::string& windowName)
+void VideoStreamer::constructStreamWindow(const std::string& windowName)
 {
     originalWidth = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_WIDTH));
     originalHeight = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_HEIGHT));
@@ -35,7 +35,7 @@ void TrafficVideoStreamer::constructStreamWindow(const std::string& windowName)
     cv::resizeWindow(windowName, originalWidth, originalHeight);
 }
 
-bool TrafficVideoStreamer::getNextFrame(cv::Mat& frame)
+bool VideoStreamer::getNextFrame(cv::Mat& frame)
 {
     stream.read(frame);
     if(frame.empty())
@@ -46,8 +46,7 @@ bool TrafficVideoStreamer::getNextFrame(cv::Mat& frame)
     return true;
 }
 
-bool TrafficVideoStreamer::readCalibrationPoints(
-    const std::string& yamlFilename)
+bool VideoStreamer::readCalibrationPoints(const std::string& yamlFilename)
 {
     try
     {
@@ -89,7 +88,7 @@ bool TrafficVideoStreamer::readCalibrationPoints(
     }
 }
 
-void TrafficVideoStreamer::initializePerspectiveTransform()
+void VideoStreamer::initializePerspectiveTransform()
 {
     if(!readCalibSuccess)
     {
@@ -114,8 +113,7 @@ void TrafficVideoStreamer::initializePerspectiveTransform()
     perspectiveMatrixInitialized = true;
 }
 
-void TrafficVideoStreamer::warpFrame(const cv::Mat& inputFrame,
-                                     cv::Mat& warpedFrame)
+void VideoStreamer::warpFrame(const cv::Mat& inputFrame, cv::Mat& warpedFrame)
 {
     cv::warpPerspective(inputFrame,
                         warpedFrame,

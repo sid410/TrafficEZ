@@ -1,5 +1,5 @@
 #include "TrafficManager.h"
-#include "TrafficVideoStreamer.h"
+#include "VideoStreamer.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
@@ -24,7 +24,7 @@ void TrafficManager::start()
 
 void TrafficManager::spawnCarObserverDebug()
 {
-    TrafficVideoStreamer videoStreamer;
+    VideoStreamer videoStreamer;
 
     if(!videoStreamer.openVideoStream("debug.mp4"))
     {
