@@ -33,9 +33,9 @@ Affiliation: USTP-RSPOT IIoT Lab
 
 - [ ] CalibrateVideoStreamer (Only run once during calibration phase, assuming installed cameras don't move)
 
-  - [ ] Inherit from VideoStreamer: openVideoStream, constructStreamWindow, getNextFrame, readCalibrationPoints, initializePerspectiveTransform, warpFrame.
+  - [x] Inherit from VideoStreamer: openVideoStream, constructStreamWindow, getNextFrame, readCalibrationPoints, initializePerspectiveTransform, warpFrame.
   - [ ] show frame that can also be accessed remotely (SSH).
-  - [ ] setCalibrationPoints: click four points (resettable if unhappy) to define the image transformation matrix for warping the perspective to bird's eye view.
+  - [x] setCalibrationPointsFromMouse: click four points (resettable if unhappy) to define the image transformation matrix for warping the perspective to bird's eye view.
   - [ ] input the length and width of these corresponding lane points.
   - [ ] saveCalibrationPoints: save the corresponding {stream-name, four-calibration-points} dictionary to a lane_calib config file, together with the length and width of lane.
   - [ ] (optional) add a line guide calculated from Hough line transform to snap to.
