@@ -1,4 +1,5 @@
 #include "TrafficManager.h"
+#include "CalibrateVideoStreamer.h"
 #include "VideoStreamer.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -17,9 +18,22 @@ void TrafficManager::start()
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
 
     // This is blocking! change this later
-    spawnCarObserverDebug();
+    calibrateStreamPoints();
 
     std::cout << "TrafficManager ended.\n";
+}
+
+void TrafficManager::calibrateStreamPoints()
+{
+    CalibrateVideoStreamer calibrateStreamer;
+
+    std::vector<cv::Point2f> calibrationPoints = {cv::Point2f(666, 0),
+                                                  cv::Point2f(0, 303),
+                                                  cv::Point2f(789, 702),
+                                                  cv::Point2f(1274, 566)};
+
+    calibrateStreamer.setCalibrationPoints(calibrationPoints);
+    std::cout << "Successfully calibrated.\n";
 }
 
 void TrafficManager::spawnCarObserverDebug()
