@@ -4,10 +4,14 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-TrafficManager::TrafficManager(int numCars, int numPedestrians, bool debug)
+TrafficManager::TrafficManager(int numCars,
+                               int numPedestrians,
+                               bool debug,
+                               bool calib)
     : numberOfCars(numCars)
     , numberOfPedestrians(numPedestrians)
     , debugMode(debug)
+    , calibMode(calib)
 {}
 
 void TrafficManager::start()
@@ -17,9 +21,15 @@ void TrafficManager::start()
     std::cout << "Number of Pedestrians: " << numberOfPedestrians << "\n";
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
 
-    calibrateStreamPoints();
-    // This is blocking! change this later
-    // spawnCarObserverDebug();
+    if(calibMode)
+    {
+        calibrateStreamPoints();
+    }
+    if(debugMode)
+    {
+        // This is blocking! change this later
+        spawnCarObserverDebug();
+    }
 
     std::cout << "TrafficManager ended.\n";
 }
@@ -46,9 +56,6 @@ void TrafficManager::spawnCarObserverDebug()
     {
         return;
     }
-
-    // videoStreamer.constructStreamWindow("Debug Video");
-    // ^ this is only needed after implementing mouse click 4 points
 
     if(!videoStreamer.readCalibrationPoints("calib_points.yaml"))
     {

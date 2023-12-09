@@ -3,4 +3,4 @@
 # Shortcut to run both clean then debug
 
 ./clean.sh
-./debug.sh
+./calib_debug.sh

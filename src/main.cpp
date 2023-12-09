@@ -19,8 +19,11 @@ int main(int argc, char* argv[])
     options.add_options()("d,debug",
                           "Enable debugging",
                           cxxopts::value<bool>()->default_value("false"))(
-        "c,car",
-        "Number of car ROIs",
+        "c,calib",
+        "Enter calibration",
+        cxxopts::value<bool>()->default_value("false"))(
+        "v,vehicle",
+        "Number of vehicle ROIs",
         cxxopts::value<int>()->default_value("3"))(
         "p,pedestrian",
         "Number of pedestrian ROIs",
@@ -35,7 +38,8 @@ int main(int argc, char* argv[])
     }
 
     bool debug = result["debug"].as<bool>();
-    int numCarRoi = result["car"].as<int>();
+    bool calib = result["calib"].as<bool>();
+    int numCarRoi = result["vehicle"].as<int>();
     int numPedRoi = result["pedestrian"].as<int>();
 
     if(debug)
@@ -46,7 +50,7 @@ int main(int argc, char* argv[])
     }
 
     // should change whether numCarRoi + numPedRoi > numCpuCores
-    TrafficManager trafficManager(numCarRoi, numPedRoi, debug);
+    TrafficManager trafficManager(numCarRoi, numPedRoi, debug, calib);
     trafficManager.start();
 
     return 0;
