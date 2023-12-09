@@ -19,7 +19,7 @@ bool VideoStreamer::openVideoStream(const std::string& streamName)
 
     if(!stream.isOpened())
     {
-        std::cerr << "Error: Unable to open stream." << std::endl;
+        std::cerr << "Error: Unable to open stream:" << streamName << std::endl;
         return false;
     }
 
@@ -48,9 +48,10 @@ bool VideoStreamer::getNextFrame(cv::Mat& frame)
 
 bool VideoStreamer::readCalibrationPoints(const std::string& yamlFilename)
 {
+    std::ifstream fin(yamlFilename);
+
     try
     {
-        std::ifstream fin(yamlFilename);
         if(!fin.is_open())
         {
             std::cerr << "Error: Failed to open calibration file." << std::endl;
@@ -79,19 +80,27 @@ bool VideoStreamer::readCalibrationPoints(const std::string& yamlFilename)
 
         fin.close();
         readCalibSuccess = true;
-        return true;
     }
     catch(const YAML::Exception& e)
     {
         std::cerr << "Error while parsing YAML: " << e.what() << std::endl;
-        return false;
+        fin.close();
+        readCalibSuccess = false;
     }
+
+    return readCalibSuccess;
 }
 
 void VideoStreamer::initializePerspectiveTransform()
 {
     if(!readCalibSuccess)
     {
+        return;
+    }
+
+    if(srcPoints.size() < 4)
+    {
+        std::cerr << "Error: Insufficient calibration points." << std::endl;
         return;
     }
 
