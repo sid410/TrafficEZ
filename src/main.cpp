@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 
     if(result.count("help"))
     {
-        std::cout << options.help() << std::endl;
+        std::cout << options.help();
         exit(0);
     }
 
@@ -40,10 +40,9 @@ int main(int argc, char* argv[])
 
     if(debug)
     {
-        std::cout << "Project version: " << PROJECT_NAME_VER << std::endl;
-        std::cout << "OpenCV version: " << CV_VERSION << std::endl;
-        std::cout << "Number of CPU cores: " << cv::getNumberOfCPUs()
-                  << std::endl;
+        std::cout << "Project version: " << PROJECT_NAME_VER << "\n";
+        std::cout << "OpenCV version: " << CV_VERSION << "\n";
+        std::cout << "Number of CPU cores: " << cv::getNumberOfCPUs() << "\n";
     }
 
     // should change whether numCarRoi + numPedRoi > numCpuCores

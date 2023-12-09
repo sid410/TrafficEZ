@@ -11,15 +11,15 @@ TrafficManager::TrafficManager(int numCars, int numPedestrians, bool debug)
 
 void TrafficManager::start()
 {
-    std::cout << "TrafficManager starting..." << std::endl;
-    std::cout << "Number of Cars: " << numberOfCars << std::endl;
-    std::cout << "Number of Pedestrians: " << numberOfPedestrians << std::endl;
-    std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << std::endl;
+    std::cout << "TrafficManager starting...\n";
+    std::cout << "Number of Cars: " << numberOfCars << "\n";
+    std::cout << "Number of Pedestrians: " << numberOfPedestrians << "\n";
+    std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
 
     // This is blocking! change this later
     spawnCarObserverDebug();
 
-    std::cout << "TrafficManager ended" << std::endl;
+    std::cout << "TrafficManager ended\n";
 }
 
 void TrafficManager::spawnCarObserverDebug()
@@ -28,7 +28,7 @@ void TrafficManager::spawnCarObserverDebug()
 
     if(!videoStreamer.openVideoStream("debug.mp4"))
     {
-        std::cerr << "Error: Failed to open the video stream." << std::endl;
+        std::cerr << "Error: Failed to open the video stream.\n";
         return;
     }
 
@@ -47,8 +47,7 @@ void TrafficManager::spawnCarObserverDebug()
 
     if(!videoStreamer.perspectiveMatrixInitialized)
     {
-        std::cerr << "Error: Failed to initialize perspective matrix."
-                  << std::endl;
+        std::cerr << "Error: Failed to initialize perspective matrix.\n";
         return;
     }
 
