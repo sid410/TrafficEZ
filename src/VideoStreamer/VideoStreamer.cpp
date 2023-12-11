@@ -94,6 +94,7 @@ void VideoStreamer::initializePerspectiveTransform()
 {
     if(!readCalibSuccess)
     {
+        std::cerr << "Error: Not calibrated.\n";
         return;
     }
 
@@ -127,9 +128,9 @@ void VideoStreamer::initializePerspectiveTransform()
     std::vector<cv::Point2f> sortedPoints = {
         topPoints[0], topPoints[1], bottomPoints[0], bottomPoints[1]};
 
-    double length1 = cv::norm(sortedPoints[0] - sortedPoints[1]);
-    double length2 = cv::norm(sortedPoints[1] - sortedPoints[2]);
-    double width1 = cv::norm(sortedPoints[1] - sortedPoints[3]);
+    double length1 = cv::norm(sortedPoints[0] - sortedPoints[2]);
+    double length2 = cv::norm(sortedPoints[1] - sortedPoints[3]);
+    double width1 = cv::norm(sortedPoints[0] - sortedPoints[1]);
     double width2 = cv::norm(sortedPoints[2] - sortedPoints[3]);
 
     double maxLength = std::max(length1, length2);
@@ -159,11 +160,12 @@ bool VideoStreamer::warpFrame(cv::Mat& frame, cv::Mat& warpedFrame)
         return false;
     }
 
-    cv::warpPerspective(frame,
-                        warpedFrame,
-                        perspectiveMatrix,
-                        cv::Size(static_cast<int>(dstPoints[1].x),
-                                 static_cast<int>(dstPoints[2].y)));
+    cv::warpPerspective(
+        frame,
+        warpedFrame,
+        perspectiveMatrix,
+        cv::Size(static_cast<int>(cv::norm(dstPoints[1] - dstPoints[0])),
+                 static_cast<int>(cv::norm(dstPoints[2] - dstPoints[0]))));
 
     return true;
 }
