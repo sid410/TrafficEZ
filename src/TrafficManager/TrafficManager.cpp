@@ -1,6 +1,8 @@
 #include "TrafficManager.h"
 #include "CalibrateVideoStreamer.h"
+#include "TrimPerspective.h"
 #include "VideoStreamer.h"
+#include "WarpPerspective.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
@@ -37,6 +39,8 @@ void TrafficManager::start()
 void TrafficManager::calibrateStreamPoints()
 {
     CalibrateVideoStreamer calibrateStreamer;
+    WarpPerspective warpPerspective;
+    TrimPerspective trimPerspective;
 
     cv::String calibWindow = "Calibrate Points";
     cv::String previewWindow = "Preview Warp";
@@ -62,7 +66,8 @@ void TrafficManager::calibrateStreamPoints()
 
         if(previewToggle)
         {
-            if(!calibrateStreamer.applyFrameRoi(frame, warpedFrame))
+            if(!calibrateStreamer.applyFrameRoi(
+                   frame, warpedFrame, warpPerspective))
                 return;
             cv::imshow(previewWindow, warpedFrame);
         }
@@ -83,7 +88,7 @@ void TrafficManager::calibrateStreamPoints()
                 break;
             previewToggle = !previewToggle;
             if(previewToggle)
-                calibrateStreamer.initPreviewWarp();
+                calibrateStreamer.initPreview(warpPerspective);
             else
                 cv::destroyWindow(previewWindow);
             break;
@@ -98,6 +103,8 @@ void TrafficManager::calibrateStreamPoints()
 void TrafficManager::spawnCarObserverDebug()
 {
     VideoStreamer videoStreamer;
+    WarpPerspective warpPerspective;
+    TrimPerspective trimPerspective;
 
     if(!videoStreamer.openVideoStream("debug.mp4"))
     {
@@ -112,9 +119,9 @@ void TrafficManager::spawnCarObserverDebug()
     cv::Mat frame;
     cv::Mat warpedFrame;
 
-    videoStreamer.initializePerspectiveTransform();
+    videoStreamer.initializePerspectiveTransform(warpPerspective);
 
-    while(videoStreamer.applyFrameRoi(frame, warpedFrame))
+    while(videoStreamer.applyFrameRoi(frame, warpedFrame, warpPerspective))
     {
         cv::imshow("Debug Warped Video", warpedFrame);
 

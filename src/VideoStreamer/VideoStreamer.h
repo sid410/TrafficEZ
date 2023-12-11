@@ -1,6 +1,7 @@
 #ifndef VIDEO_STREAMER_H
 #define VIDEO_STREAMER_H
 
+#include "TransformPerspective.h"
 #include <opencv2/opencv.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -16,12 +17,17 @@ public:
     bool getNextFrame(cv::Mat& frame);
     bool readCalibrationPoints(const cv::String& filename);
 
-    void initializePerspectiveTransform();
-    bool applyFrameRoi(cv::Mat& frame, cv::Mat& warpedFrame);
+    void initializePerspectiveTransform(TransformPerspective& perspective);
+    bool applyFrameRoi(cv::Mat& frame,
+                       cv::Mat& warpedFrame,
+                       TransformPerspective& perspective);
 
 protected:
     bool readCalibSuccess;
+
+    cv::Mat perspectiveMatrix;
     std::vector<cv::Point2f> srcPoints;
+    std::vector<cv::Point2f> dstPoints;
 
 private:
     cv::VideoCapture stream;
@@ -29,9 +35,6 @@ private:
     int originalHeight;
 
     bool perspectiveMatrixInitialized;
-
-    std::vector<cv::Point2f> dstPoints;
-    cv::Mat perspectiveMatrix;
 };
 
 #endif

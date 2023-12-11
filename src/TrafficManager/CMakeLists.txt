@@ -4,5 +4,6 @@ target_include_directories(
   TrafficManager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                         ${CMAKE_CURRENT_SOURCE_DIR}/../VideoStreamer)
 
-target_link_libraries(TrafficManager PRIVATE VideoStreamer
-                                             CalibrateVideoStreamer)
+target_link_libraries(
+  TrafficManager PRIVATE VideoStreamer CalibrateVideoStreamer
+                         TransformPerspective)
