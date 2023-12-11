@@ -13,7 +13,7 @@ VideoStreamer::~VideoStreamer()
     stream.release();
 }
 
-bool VideoStreamer::openVideoStream(const std::string& streamName)
+bool VideoStreamer::openVideoStream(const cv::String& streamName)
 {
     stream.open(streamName);
 
@@ -26,7 +26,7 @@ bool VideoStreamer::openVideoStream(const std::string& streamName)
     return true;
 }
 
-void VideoStreamer::constructStreamWindow(const std::string& windowName)
+void VideoStreamer::constructStreamWindow(const cv::String& windowName)
 {
     originalWidth = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_WIDTH));
     originalHeight = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_HEIGHT));
@@ -46,7 +46,7 @@ bool VideoStreamer::getNextFrame(cv::Mat& frame)
     return true;
 }
 
-bool VideoStreamer::readCalibrationPoints(const std::string& yamlFilename)
+bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
 {
     std::ifstream fin(yamlFilename);
 
@@ -145,11 +145,25 @@ void VideoStreamer::initializePerspectiveTransform()
     perspectiveMatrixInitialized = true;
 }
 
-void VideoStreamer::warpFrame(const cv::Mat& inputFrame, cv::Mat& warpedFrame)
+bool VideoStreamer::warpFrame(cv::Mat& frame, cv::Mat& warpedFrame)
 {
-    cv::warpPerspective(inputFrame,
+    if(!perspectiveMatrixInitialized)
+    {
+        std::cerr << "Error: Failed to initialize perspective matrix.\n";
+        return false;
+    }
+
+    if(!getNextFrame(frame))
+    {
+        std::cerr << "Error: Unable to retrieve the next frame.\n";
+        return false;
+    }
+
+    cv::warpPerspective(frame,
                         warpedFrame,
                         perspectiveMatrix,
                         cv::Size(static_cast<int>(dstPoints[1].x),
                                  static_cast<int>(dstPoints[2].y)));
+
+    return true;
 }

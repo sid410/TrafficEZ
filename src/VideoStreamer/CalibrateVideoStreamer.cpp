@@ -5,6 +5,7 @@
 
 CalibrateVideoStreamer::CalibrateVideoStreamer()
     : VideoStreamer()
+    , pointsSetSuccessfully(false)
 {}
 
 CalibrateVideoStreamer::~CalibrateVideoStreamer() {}
@@ -20,22 +21,32 @@ void onMouseClickCallback(int event, int x, int y, int flags, void* userdata)
     }
 }
 
-void resetCalibrationPoints(std::vector<cv::Point2f>& points, bool& success)
+void CalibrateVideoStreamer::initCalibrationPoints(const cv::String& windowName)
 {
-    points.clear();
-    success = false;
+    std::cout << "Please click on four points (x, y) for calibration.\n"
+              << "Press 'r' to reset, or 's' to save and exit.\n";
+
+    cv::setMouseCallback(
+        windowName, onMouseClickCallback, &mouseCalibrationPoints);
+}
+
+void CalibrateVideoStreamer::resetCalibrationPoints()
+{
+    mouseCalibrationPoints.clear();
     std::cout << "Calibration points reset.\n";
 }
 
-void saveCalibrationPoints(const std::vector<cv::Point2f>& points,
-                           const std::string& filename)
+void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
 {
+    if(!haveSetFourPoints())
+        return;
+
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
     emitter << YAML::Key << "calibration_points";
     emitter << YAML::Value << YAML::BeginSeq;
 
-    for(const auto& point : points)
+    for(const auto& point : mouseCalibrationPoints)
     {
         emitter << YAML::BeginMap;
         emitter << YAML::Key << "x" << YAML::Value << point.x;
@@ -51,71 +62,49 @@ void saveCalibrationPoints(const std::vector<cv::Point2f>& points,
     fout.close();
 
     std::cout << "Calibration points saved to " << filename << ".\n";
+    pointsSetSuccessfully = true;
 }
 
-void CalibrateVideoStreamer::setCalibrationPointsFromMouse(
-    const std::string& windowName)
+void CalibrateVideoStreamer::showCalibrationPoints(cv::Mat& frame)
 {
-    std::cout << "Please click on four points (x, y) for calibration.\n"
-              << "Press 'r' to reset, or 's' to save and exit.\n";
-
-    std::vector<cv::Point2f> mouseCalibrationPoints;
-    bool pointsSetSuccessfully = false;
-
-    cv::setMouseCallback(
-        windowName, onMouseClickCallback, &mouseCalibrationPoints);
-
-    cv::Mat frame;
-    cv::String calibFilename = "calib_points.yaml";
-
-    while(!pointsSetSuccessfully)
+    for(const auto& point : mouseCalibrationPoints)
     {
-        if(getNextFrame(frame))
-        {
-            // Draw yellow circles at the existing calibration points
-            for(const auto& point : mouseCalibrationPoints)
-            {
-                cv::circle(frame,
-                           cv::Point(point.x, point.y),
-                           5,
-                           cv::Scalar(0, 255, 255),
-                           -1);
-            }
-
-            cv::imshow(windowName, frame);
-
-            int key = cv::waitKey(30); // lower this delay for RTSP
-
-            switch(key)
-            {
-            case 27: // 'Esc' key to exit by interruption
-                std::cout << "Calibration interrupted.\n";
-                return;
-            case 'r': // 'r' key to reset
-            case 'R':
-                resetCalibrationPoints(mouseCalibrationPoints,
-                                       pointsSetSuccessfully);
-                break;
-            case 's': // 's' key to exit successfully
-            case 'S':
-                if(mouseCalibrationPoints.size() == 4)
-                {
-                    pointsSetSuccessfully = true;
-                    saveCalibrationPoints(mouseCalibrationPoints,
-                                          calibFilename);
-                }
-                else
-                {
-                    std::cout << "Please set exactly 4 calibration points "
-                                 "before saving and exiting.\n";
-                }
-                break;
-            }
-        }
-        else
-        {
-            std::cerr << "Error: Unable to retrieve the next frame.\n";
-            break;
-        }
+        cv::circle(
+            frame, cv::Point(point.x, point.y), 5, cv::Scalar(0, 255, 255), -1);
     }
+}
+
+void CalibrateVideoStreamer::initPreviewWarp()
+{
+    srcPoints.clear();
+    srcPoints = mouseCalibrationPoints;
+    readCalibSuccess = true;
+
+    initializePerspectiveTransform();
+}
+
+bool CalibrateVideoStreamer::settingCalibrationPoints(cv::Mat& frame)
+{
+    if(!getNextFrame(frame))
+    {
+        std::cerr << "Error: Unable to retrieve the next frame.\n";
+        return false;
+    }
+
+    if(pointsSetSuccessfully)
+        return false;
+
+    return true;
+}
+
+bool CalibrateVideoStreamer::haveSetFourPoints()
+{
+    if(mouseCalibrationPoints.size() != 4)
+    {
+        std::cout
+            << "Please set exactly 4 calibration points before proceeding.\n";
+        return false;
+    }
+    else
+        return true;
 }

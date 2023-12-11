@@ -10,22 +10,26 @@ public:
     VideoStreamer();
     ~VideoStreamer();
 
-    bool openVideoStream(const std::string& filename);
-    void constructStreamWindow(const std::string& windowName);
-    bool getNextFrame(cv::Mat& frame);
+    bool openVideoStream(const cv::String& filename);
+    void constructStreamWindow(const cv::String& windowName);
 
-    bool readCalibrationPoints(const std::string& filename);
-    bool perspectiveMatrixInitialized;
+    bool getNextFrame(cv::Mat& frame);
+    bool readCalibrationPoints(const cv::String& filename);
+
     void initializePerspectiveTransform();
-    void warpFrame(const cv::Mat& inputFrame, cv::Mat& warpedFrame);
+    bool warpFrame(cv::Mat& frame, cv::Mat& warpedFrame);
+
+protected:
+    bool readCalibSuccess;
+    std::vector<cv::Point2f> srcPoints;
 
 private:
     cv::VideoCapture stream;
     int originalWidth;
     int originalHeight;
 
-    bool readCalibSuccess;
-    std::vector<cv::Point2f> srcPoints;
+    bool perspectiveMatrixInitialized;
+
     std::vector<cv::Point2f> dstPoints;
     cv::Mat perspectiveMatrix;
 };

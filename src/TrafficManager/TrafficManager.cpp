@@ -37,15 +37,62 @@ void TrafficManager::start()
 void TrafficManager::calibrateStreamPoints()
 {
     CalibrateVideoStreamer calibrateStreamer;
-    std::string calibWindow = "Calibrate Points";
+
+    cv::String calibWindow = "Calibrate Points";
+    cv::String previewWindow = "Preview Warp";
+    cv::String calibFilename = "calib_points.yaml";
 
     if(!calibrateStreamer.openVideoStream("debug.mp4"))
     {
         return;
     }
 
+    cv::Mat frame;
+    cv::Mat warpedFrame;
+    bool previewToggle = false;
+
     calibrateStreamer.constructStreamWindow(calibWindow);
-    calibrateStreamer.setCalibrationPointsFromMouse(calibWindow);
+    calibrateStreamer.initCalibrationPoints(calibWindow);
+
+    while(calibrateStreamer.settingCalibrationPoints(frame))
+    {
+        calibrateStreamer.showCalibrationPoints(frame);
+
+        cv::imshow(calibWindow, frame);
+
+        if(previewToggle)
+        {
+            if(!calibrateStreamer.warpFrame(frame, warpedFrame))
+                return;
+            cv::imshow(previewWindow, warpedFrame);
+        }
+
+        int key = cv::waitKey(30);
+        switch(key)
+        {
+        case 27: // 'Esc' key to exit by interruption
+            std::cout << "Calibration interrupted.\n";
+            return;
+        case 'r': // 'r' key to reset
+        case 'R':
+            calibrateStreamer.resetCalibrationPoints();
+            break;
+        case 'p': // 'p' key to preview warped frame
+        case 'P':
+            if(!calibrateStreamer.haveSetFourPoints())
+                break;
+            previewToggle = !previewToggle;
+            if(previewToggle)
+                calibrateStreamer.initPreviewWarp();
+            else
+                cv::destroyWindow(previewWindow);
+            break;
+        case 's': // 's' key to exit successfully
+        case 'S':
+            calibrateStreamer.saveCalibrationPoints(calibFilename);
+            break;
+        }
+    }
 }
 
 void TrafficManager::spawnCarObserverDebug()
@@ -67,16 +114,8 @@ void TrafficManager::spawnCarObserverDebug()
 
     videoStreamer.initializePerspectiveTransform();
 
-    if(!videoStreamer.perspectiveMatrixInitialized)
+    while(videoStreamer.warpFrame(frame, warpedFrame))
     {
-        std::cerr << "Error: Failed to initialize perspective matrix.\n";
-        return;
-    }
-
-    while(videoStreamer.getNextFrame(frame))
-    {
-        videoStreamer.warpFrame(frame, warpedFrame);
-
         cv::imshow("Debug Warped Video", warpedFrame);
 
         if(cv::waitKey(30) == 27)

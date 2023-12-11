@@ -10,9 +10,18 @@ public:
     CalibrateVideoStreamer();
     ~CalibrateVideoStreamer();
 
-    void setCalibrationPointsFromMouse(const std::string& windowName);
+    void initCalibrationPoints(const cv::String& windowName);
+    void resetCalibrationPoints();
+    void saveCalibrationPoints(const cv::String& filename);
+    void showCalibrationPoints(cv::Mat& frame);
+    void initPreviewWarp();
+
+    bool settingCalibrationPoints(cv::Mat& frame);
+    bool haveSetFourPoints();
 
 private:
+    bool pointsSetSuccessfully;
+    std::vector<cv::Point2f> mouseCalibrationPoints;
 };
 
 #endif
