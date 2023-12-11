@@ -17,7 +17,7 @@ public:
     bool readCalibrationPoints(const cv::String& filename);
 
     void initializePerspectiveTransform();
-    bool warpFrame(cv::Mat& frame, cv::Mat& warpedFrame);
+    bool applyFrameRoi(cv::Mat& frame, cv::Mat& warpedFrame);
 
 protected:
     bool readCalibSuccess;

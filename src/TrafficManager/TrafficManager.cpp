@@ -62,7 +62,7 @@ void TrafficManager::calibrateStreamPoints()
 
         if(previewToggle)
         {
-            if(!calibrateStreamer.warpFrame(frame, warpedFrame))
+            if(!calibrateStreamer.applyFrameRoi(frame, warpedFrame))
                 return;
             cv::imshow(previewWindow, warpedFrame);
         }
@@ -114,7 +114,7 @@ void TrafficManager::spawnCarObserverDebug()
 
     videoStreamer.initializePerspectiveTransform();
 
-    while(videoStreamer.warpFrame(frame, warpedFrame))
+    while(videoStreamer.applyFrameRoi(frame, warpedFrame))
     {
         cv::imshow("Debug Warped Video", warpedFrame);
 

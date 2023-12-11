@@ -146,7 +146,7 @@ void VideoStreamer::initializePerspectiveTransform()
     perspectiveMatrixInitialized = true;
 }
 
-bool VideoStreamer::warpFrame(cv::Mat& frame, cv::Mat& warpedFrame)
+bool VideoStreamer::applyFrameRoi(cv::Mat& frame, cv::Mat& preprocessedFrame)
 {
     if(!perspectiveMatrixInitialized)
     {
@@ -162,7 +162,7 @@ bool VideoStreamer::warpFrame(cv::Mat& frame, cv::Mat& warpedFrame)
 
     cv::warpPerspective(
         frame,
-        warpedFrame,
+        preprocessedFrame,
         perspectiveMatrix,
         cv::Size(static_cast<int>(cv::norm(dstPoints[1] - dstPoints[0])),
                  static_cast<int>(cv::norm(dstPoints[2] - dstPoints[0]))));
