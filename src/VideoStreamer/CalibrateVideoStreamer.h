@@ -14,7 +14,7 @@ public:
     void resetCalibrationPoints();
     void saveCalibrationPoints(const cv::String& filename);
     void showCalibrationPoints(cv::Mat& frame);
-    void initPreview(TransformPerspective& perspective);
+    void initPreview(cv::Mat& frame, TransformPerspective& perspective);
 
     bool settingCalibrationPoints(cv::Mat& frame);
     bool haveSetFourPoints();

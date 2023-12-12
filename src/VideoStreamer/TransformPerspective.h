@@ -11,7 +11,8 @@ protected:
 
 public:
     virtual ~TransformPerspective() {}
-    virtual void initialize(std::vector<cv::Point2f>& srcPoints,
+    virtual void initialize(cv::Mat& frame,
+                            std::vector<cv::Point2f>& srcPoints,
                             std::vector<cv::Point2f>& dstPoints,
                             cv::Mat& perspectiveMatrix) = 0;
     virtual void apply(const cv::Mat& input,

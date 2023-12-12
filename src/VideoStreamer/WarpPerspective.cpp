@@ -1,7 +1,8 @@
 #include "WarpPerspective.h"
 #include <opencv2/opencv.hpp>
 
-void WarpPerspective::initialize(std::vector<cv::Point2f>& srcPoints,
+void WarpPerspective::initialize(cv::Mat& frame,
+                                 std::vector<cv::Point2f>& srcPoints,
                                  std::vector<cv::Point2f>& dstPoints,
                                  cv::Mat& perspectiveMatrix)
 {

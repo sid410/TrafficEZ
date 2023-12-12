@@ -102,9 +102,9 @@ void TrafficManager::calibrateStreamPoints()
             {
                 warpToggle = !warpToggle; // debugging just for now
                 if(warpToggle)
-                    calibrateStreamer.initPreview(warpPerspective);
+                    calibrateStreamer.initPreview(frame, warpPerspective);
                 else
-                    calibrateStreamer.initPreview(trimPerspective);
+                    calibrateStreamer.initPreview(frame, trimPerspective);
             }
             else
                 cv::destroyWindow(previewWindow);
@@ -136,7 +136,7 @@ void TrafficManager::spawnCarObserverDebug()
     cv::Mat frame;
     cv::Mat warpedFrame;
 
-    videoStreamer.initializePerspectiveTransform(warpPerspective);
+    videoStreamer.initializePerspectiveTransform(frame, warpPerspective);
 
     while(videoStreamer.applyFrameRoi(frame, warpedFrame, warpPerspective))
     {

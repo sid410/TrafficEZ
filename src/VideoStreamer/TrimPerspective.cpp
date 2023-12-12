@@ -1,10 +1,14 @@
 #include "TrimPerspective.h"
 #include <opencv2/opencv.hpp>
 
-void TrimPerspective::initialize(std::vector<cv::Point2f>& srcPoints,
+void TrimPerspective::initialize(cv::Mat& frame,
+                                 std::vector<cv::Point2f>& srcPoints,
                                  std::vector<cv::Point2f>& dstPoints,
                                  cv::Mat& perspectiveMatrix)
 {
+    std::cout << frame.type() << "Format.\n";
+    std::cout << frame.size() << "Size.\n";
+
     std::vector<cv::Point2f> sortedPoints;
     sortPoints(srcPoints, sortedPoints);
 
@@ -40,4 +44,15 @@ void TrimPerspective::apply(const cv::Mat& input,
                        cv::Scalar(255, 255, 255));
 
     cv::bitwise_and(input, perspectiveMatrix, output);
+
+    cv::Mat outputGray;
+    cv::cvtColor(output, outputGray, cv::COLOR_BGR2GRAY);
+
+    cv::Rect boundingBox = cv::boundingRect(outputGray);
+    // cv::namedWindow("Trimmed Window",
+    //                 cv::WINDOW_NORMAL); // Create a resizable window
+    // cv::resizeWindow("Trimmed Window", boundingBox.width, boundingBox.height);
+    // cv::imshow("Trimmed Window", output(boundingBox));
+
+    output = output(boundingBox);
 }

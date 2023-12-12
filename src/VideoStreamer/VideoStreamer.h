@@ -17,7 +17,8 @@ public:
     bool getNextFrame(cv::Mat& frame);
     bool readCalibrationPoints(const cv::String& filename);
 
-    void initializePerspectiveTransform(TransformPerspective& perspective);
+    void initializePerspectiveTransform(cv::Mat& frame,
+                                        TransformPerspective& perspective);
     bool applyFrameRoi(cv::Mat& frame,
                        cv::Mat& warpedFrame,
                        TransformPerspective& perspective);
@@ -33,6 +34,7 @@ private:
     cv::VideoCapture stream;
     int originalWidth;
     int originalHeight;
+    int originalFormat;
 
     bool perspectiveMatrixInitialized;
 };

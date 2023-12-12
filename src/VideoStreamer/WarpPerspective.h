@@ -6,7 +6,8 @@
 class WarpPerspective : public TransformPerspective
 {
 public:
-    virtual void initialize(std::vector<cv::Point2f>& srcPoints,
+    virtual void initialize(cv::Mat& frame,
+                            std::vector<cv::Point2f>& srcPoints,
                             std::vector<cv::Point2f>& dstPoints,
                             cv::Mat& perspectiveMatrix) override;
     virtual void apply(const cv::Mat& input,

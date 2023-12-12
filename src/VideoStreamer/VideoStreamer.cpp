@@ -91,7 +91,7 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
 }
 
 void VideoStreamer::initializePerspectiveTransform(
-    TransformPerspective& perspective)
+    cv::Mat& frame, TransformPerspective& perspective)
 {
     if(!readCalibSuccess)
     {
@@ -105,7 +105,7 @@ void VideoStreamer::initializePerspectiveTransform(
         return;
     }
 
-    perspective.initialize(srcPoints, dstPoints, perspectiveMatrix);
+    perspective.initialize(frame, srcPoints, dstPoints, perspectiveMatrix);
     perspectiveMatrixInitialized = true;
 }
 

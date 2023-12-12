@@ -74,13 +74,14 @@ void CalibrateVideoStreamer::showCalibrationPoints(cv::Mat& frame)
     }
 }
 
-void CalibrateVideoStreamer::initPreview(TransformPerspective& perspective)
+void CalibrateVideoStreamer::initPreview(cv::Mat& frame,
+                                         TransformPerspective& perspective)
 {
     srcPoints.clear();
     srcPoints = mouseCalibrationPoints;
     readCalibSuccess = true;
 
-    initializePerspectiveTransform(perspective);
+    initializePerspectiveTransform(frame, perspective);
 }
 
 bool CalibrateVideoStreamer::settingCalibrationPoints(cv::Mat& frame)
