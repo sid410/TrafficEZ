@@ -4,6 +4,10 @@
 #include "VideoStreamer.h"
 #include <vector>
 
+/**
+ * @brief Child class of VideoStreamer 
+ * used for ROI Calibration with mouse clicks.
+ */
 class CalibrateVideoStreamer : public VideoStreamer
 {
 public:
@@ -14,7 +18,7 @@ public:
     void resetCalibrationPoints();
     void saveCalibrationPoints(const cv::String& filename);
     void showCalibrationPoints(cv::Mat& frame);
-    void initPreview(cv::Mat& frame, TransformPerspective& perspective);
+    void initializePreview(cv::Mat& frame, TransformPerspective& perspective);
 
     bool settingCalibrationPoints(cv::Mat& frame);
     bool haveSetFourPoints();

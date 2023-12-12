@@ -28,7 +28,7 @@ void TrimPerspective::initialize(cv::Mat& frame,
             cv::Point(static_cast<int>(point.x), static_cast<int>(point.y)));
     }
 
-    // fill only the regoin of interest part
+    // fill only the region of interest part
     roiMatrix = cv::Mat::zeros(frame.size(), frame.type());
     cv::fillConvexPoly(roiMatrix,
                        intPoints.data(),

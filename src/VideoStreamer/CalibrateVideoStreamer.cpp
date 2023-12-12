@@ -10,10 +10,15 @@ CalibrateVideoStreamer::CalibrateVideoStreamer()
 
 CalibrateVideoStreamer::~CalibrateVideoStreamer() {}
 
+/**
+ * @brief non-member function only used for setMouseCallback
+ * of CalibrateVideoStreamer::initCalibrationPoints
+ */
 void onMouseClickCallback(int event, int x, int y, int flags, void* userdata)
 {
     auto& points = *static_cast<std::vector<cv::Point2f>*>(userdata);
 
+    // maximum of four points to set the ROI
     if(event == cv::EVENT_LBUTTONDOWN && points.size() < 4)
     {
         points.emplace_back(x, y);
@@ -21,6 +26,10 @@ void onMouseClickCallback(int event, int x, int y, int flags, void* userdata)
     }
 }
 
+/**
+ * @brief Initialize the mouse callback function to set four ROI points.
+ * @param windowName the window to listen for mouse click callback.
+ */
 void CalibrateVideoStreamer::initCalibrationPoints(const cv::String& windowName)
 {
     std::cout << "Please click on four points (x, y) for calibration.\n"
@@ -30,16 +39,25 @@ void CalibrateVideoStreamer::initCalibrationPoints(const cv::String& windowName)
         windowName, onMouseClickCallback, &mouseCalibrationPoints);
 }
 
+/**
+ * @brief Clears the currently held mouseCalibrationPoints.
+ */
 void CalibrateVideoStreamer::resetCalibrationPoints()
 {
     mouseCalibrationPoints.clear();
     std::cout << "Calibration points reset.\n";
 }
 
+/**
+ * @brief Saves the four mouseCalibrationPoints to a yaml file.
+ * After saving, we can exit the calibration loop by setting
+ * pointsSetSuccessfully = true.
+ * @param filename the name of the yaml file to save the four ROI points.
+ */
 void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
 {
     if(!haveSetFourPoints())
-        return;
+        return; // need to have four points to define the ROI quadrilateral.
 
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
@@ -62,28 +80,44 @@ void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
     fout.close();
 
     std::cout << "Calibration points saved to " << filename << ".\n";
-    pointsSetSuccessfully = true;
+    pointsSetSuccessfully = true; // exit the calibration loop.
 }
 
+/**
+ * @brief Visualize the current calibration points set by mouse.
+ * @param frame the frame to visualize the calibration points.
+ */
 void CalibrateVideoStreamer::showCalibrationPoints(cv::Mat& frame)
 {
     for(const auto& point : mouseCalibrationPoints)
     {
         cv::circle(
             frame, cv::Point(point.x, point.y), 5, cv::Scalar(0, 255, 255), -1);
-    }
+    } // visualize yellow dots at each point.
 }
 
-void CalibrateVideoStreamer::initPreview(cv::Mat& frame,
-                                         TransformPerspective& perspective)
+/**
+ * @brief An extension of the parent class function initializePerspectiveTransform.
+ * This is so we can preview the Warped/Trimmed view before saving the ROI points.
+ */
+void CalibrateVideoStreamer::initializePreview(
+    cv::Mat& frame, TransformPerspective& perspective)
 {
     roiPoints.clear();
     roiPoints = mouseCalibrationPoints;
-    readCalibSuccess = true;
+    readCalibSuccess = true; // this is a workaround to pass the check
+    // of yaml file successfully reading the calibration points.
 
     initializePerspectiveTransform(frame, perspective);
 }
 
+/**
+ * @brief Use this to control the while-loop logic while
+ * setting the calibration points.
+ * @param frame reference for the next stream frame.
+ * @return true if still in calibration phase and
+ * next frame is available.
+ */
 bool CalibrateVideoStreamer::settingCalibrationPoints(cv::Mat& frame)
 {
     if(!getNextFrame(frame))
@@ -93,11 +127,15 @@ bool CalibrateVideoStreamer::settingCalibrationPoints(cv::Mat& frame)
     }
 
     if(pointsSetSuccessfully)
-        return false;
+        return false; // so we can exit the calibration loop.
 
     return true;
 }
 
+/**
+ * @brief Check for having exactly four points to save.
+ * @return true if mouseCalibrationPoints is exactly four points. 
+ */
 bool CalibrateVideoStreamer::haveSetFourPoints()
 {
     if(mouseCalibrationPoints.size() != 4)

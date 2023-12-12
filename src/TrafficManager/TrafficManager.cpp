@@ -102,9 +102,9 @@ void TrafficManager::calibrateStreamPoints()
             {
                 warpToggle = !warpToggle; // debugging just for now
                 if(warpToggle)
-                    calibrateStreamer.initPreview(frame, warpPerspective);
+                    calibrateStreamer.initializePreview(frame, warpPerspective);
                 else
-                    calibrateStreamer.initPreview(frame, trimPerspective);
+                    calibrateStreamer.initializePreview(frame, trimPerspective);
             }
             else
                 cv::destroyWindow(previewWindow);

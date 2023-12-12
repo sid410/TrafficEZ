@@ -3,15 +3,17 @@
 
 #include "TransformPerspective.h"
 
+/**
+ * @brief Trim strategy of TransformPerspective
+ */
 class TrimPerspective : public TransformPerspective
 {
 public:
     virtual void initialize(cv::Mat& frame,
                             std::vector<cv::Point2f>& roiPoints,
                             cv::Mat& roiMatrix) override;
-    virtual void apply(const cv::Mat& input,
-                       cv::Mat& output,
-                       cv::Mat& roiMatrix) override;
+    virtual void
+    apply(const cv::Mat& input, cv::Mat& output, cv::Mat& roiMatrix) override;
 
 private:
     bool isBoxInitialized;
