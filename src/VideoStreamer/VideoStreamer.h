@@ -1,33 +1,45 @@
 #ifndef VIDEO_STREAMER_H
 #define VIDEO_STREAMER_H
 
+#include "TransformPerspective.h"
 #include <opencv2/opencv.hpp>
 #include <yaml-cpp/yaml.h>
 
+/**
+ * @brief Class for reading/getting frames from a stream,
+ * then transforming that to the ROI based on the chosen
+ * TransformPerspective strategy: Warp/Trim.
+ */
 class VideoStreamer
 {
 public:
     VideoStreamer();
     ~VideoStreamer();
 
-    bool openVideoStream(const std::string& filename);
-    void constructStreamWindow(const std::string& windowName);
-    bool getNextFrame(cv::Mat& frame);
+    bool openVideoStream(const cv::String& streamName);
+    void constructStreamWindow(const cv::String& windowName);
 
-    bool readCalibrationPoints(const std::string& filename);
-    bool perspectiveMatrixInitialized;
-    void initializePerspectiveTransform();
-    void warpFrame(const cv::Mat& inputFrame, cv::Mat& warpedFrame);
+    bool getNextFrame(cv::Mat& frame);
+    bool readCalibrationPoints(const cv::String& filename);
+
+    void initializePerspectiveTransform(cv::Mat& frame,
+                                        TransformPerspective& perspective);
+    bool applyFrameRoi(cv::Mat& frame,
+                       cv::Mat& roiFrame,
+                       TransformPerspective& perspective);
+
+protected:
+    bool readCalibSuccess; // used also in the child class
+
+    cv::Mat roiMatrix;
+    std::vector<cv::Point2f> roiPoints;
 
 private:
     cv::VideoCapture stream;
     int originalWidth;
     int originalHeight;
 
-    bool readCalibSuccess;
-    std::vector<cv::Point2f> srcPoints;
-    std::vector<cv::Point2f> dstPoints;
-    cv::Mat perspectiveMatrix;
+    bool roiMatrixInitialized;
 };
 
 #endif

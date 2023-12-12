@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 
 VideoStreamer::VideoStreamer()
-    : perspectiveMatrixInitialized(false)
+    : roiMatrixInitialized(false)
     , readCalibSuccess(false)
 {}
 
@@ -13,7 +13,12 @@ VideoStreamer::~VideoStreamer()
     stream.release();
 }
 
-bool VideoStreamer::openVideoStream(const std::string& streamName)
+/**
+ * @brief Opens a stream with cv::VideoCapture method.
+ * @param streamName can be video file or link to video stream.
+ * @return true if successfully opened.
+ */
+bool VideoStreamer::openVideoStream(const cv::String& streamName)
 {
     stream.open(streamName);
 
@@ -26,7 +31,12 @@ bool VideoStreamer::openVideoStream(const std::string& streamName)
     return true;
 }
 
-void VideoStreamer::constructStreamWindow(const std::string& windowName)
+/**
+ * @brief Create and resize an OpenCV window.
+ * (There is still no implementation to resize window based on input)
+ * @param windowName window label name.
+ */
+void VideoStreamer::constructStreamWindow(const cv::String& windowName)
 {
     originalWidth = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_WIDTH));
     originalHeight = static_cast<int>(stream.get(cv::CAP_PROP_FRAME_HEIGHT));
@@ -35,18 +45,23 @@ void VideoStreamer::constructStreamWindow(const std::string& windowName)
     cv::resizeWindow(windowName, originalWidth, originalHeight);
 }
 
+/**
+ * @brief Grabs/decodes the next frame from the stream.
+ * @param frame the matrix reference to store the next frame.
+ * @return true if the next frame is not empty.
+ */
 bool VideoStreamer::getNextFrame(cv::Mat& frame)
 {
     stream.read(frame);
-    if(frame.empty())
-    {
-        return false;
-    }
-
-    return true;
+    return !frame.empty();
 }
 
-bool VideoStreamer::readCalibrationPoints(const std::string& yamlFilename)
+/**
+ * @brief Reads the four ROI points from a yaml file.
+ * @param yamlFilename the yaml file to open.
+ * @return true if successfully parsed the yaml file.
+ */
+bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
 {
     std::ifstream fin(yamlFilename);
 
@@ -68,13 +83,13 @@ bool VideoStreamer::readCalibrationPoints(const std::string& yamlFilename)
             return false;
         }
 
-        srcPoints.clear();
+        roiPoints.clear();
 
         for(const auto& point : pointsNode)
         {
             double x = point["x"].as<double>();
             double y = point["y"].as<double>();
-            srcPoints.emplace_back(x, y);
+            roiPoints.emplace_back(x, y);
         }
 
         fin.close();
@@ -90,66 +105,51 @@ bool VideoStreamer::readCalibrationPoints(const std::string& yamlFilename)
     return readCalibSuccess;
 }
 
-void VideoStreamer::initializePerspectiveTransform()
+/**
+ * @brief Initialize TransformPerspective strategy.
+ * @param frame need a reference for frame type and size.
+ * @param perspective choose between Warp or Trim.
+ */
+void VideoStreamer::initializePerspectiveTransform(
+    cv::Mat& frame, TransformPerspective& perspective)
 {
-    if(!readCalibSuccess)
+    if(!readCalibSuccess || roiPoints.size() < 4)
     {
+        std::cerr << "Calibration points error.\n";
         return;
     }
 
-    if(srcPoints.size() < 4)
-    {
-        std::cerr << "Error: Insufficient calibration points.\n";
-        return;
-    }
-
-    /// Sort the points based on y-coordinates
-    std::sort(srcPoints.begin(),
-              srcPoints.end(),
-              [](cv::Point2f a, cv::Point2f b) { return a.y < b.y; });
-
-    // Split the sorted points into top and bottom
-    std::vector<cv::Point2f> topPoints, bottomPoints;
-    topPoints.push_back(srcPoints[0]);
-    topPoints.push_back(srcPoints[1]);
-    bottomPoints.push_back(srcPoints[2]);
-    bottomPoints.push_back(srcPoints[3]);
-
-    // Sort the top and bottom points based on x-coordinates
-    std::sort(topPoints.begin(),
-              topPoints.end(),
-              [](cv::Point2f a, cv::Point2f b) { return a.x < b.x; });
-    std::sort(bottomPoints.begin(),
-              bottomPoints.end(),
-              [](cv::Point2f a, cv::Point2f b) { return a.x < b.x; });
-
-    // Combine the top and bottom points
-    std::vector<cv::Point2f> sortedPoints = {
-        topPoints[0], topPoints[1], bottomPoints[0], bottomPoints[1]};
-
-    double length1 = cv::norm(sortedPoints[0] - sortedPoints[1]);
-    double length2 = cv::norm(sortedPoints[1] - sortedPoints[2]);
-    double width1 = cv::norm(sortedPoints[1] - sortedPoints[3]);
-    double width2 = cv::norm(sortedPoints[2] - sortedPoints[3]);
-
-    double maxLength = std::max(length1, length2);
-    double maxWidth = std::max(width1, width2);
-
-    // Destination points for the bird's eye view
-    dstPoints = {cv::Point2f(0, 0),
-                 cv::Point2f(maxLength - 1, 0),
-                 cv::Point2f(0, maxWidth - 1),
-                 cv::Point2f(maxLength - 1, maxWidth - 1)};
-
-    perspectiveMatrix = cv::getPerspectiveTransform(sortedPoints, dstPoints);
-    perspectiveMatrixInitialized = true;
+    perspective.initialize(frame, roiPoints, roiMatrix);
+    roiMatrixInitialized = true;
 }
 
-void VideoStreamer::warpFrame(const cv::Mat& inputFrame, cv::Mat& warpedFrame)
+/**
+ * @brief Use this to control the while-loop logic to
+ * apply the chosen TransformPerspective strategy.
+ * This needs an roiMatrix to be initialized first 
+ * with initializePerspectiveTransform.
+ * @param frame the input frame from stream.
+ * @param roiFrame the output frame displaying only ROI.
+ * @param perspective choose between Warp or Trim.
+ * Important: this should be the same strategy with initialize.
+ * @return true if it gets and transformed the next frame to ROI.
+ */
+bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
+                                  cv::Mat& roiFrame,
+                                  TransformPerspective& perspective)
 {
-    cv::warpPerspective(inputFrame,
-                        warpedFrame,
-                        perspectiveMatrix,
-                        cv::Size(static_cast<int>(dstPoints[1].x),
-                                 static_cast<int>(dstPoints[2].y)));
+    if(!roiMatrixInitialized)
+    {
+        std::cerr << "Error: Failed to initialize.\n";
+        return false;
+    }
+
+    if(!getNextFrame(frame))
+    {
+        std::cerr << "Error: Unable to retrieve the next frame.\n";
+        return false;
+    }
+
+    perspective.apply(frame, roiFrame, roiMatrix);
+    return true;
 }

@@ -5,14 +5,20 @@
 
 CalibrateVideoStreamer::CalibrateVideoStreamer()
     : VideoStreamer()
+    , pointsSetSuccessfully(false)
 {}
 
 CalibrateVideoStreamer::~CalibrateVideoStreamer() {}
 
+/**
+ * @brief non-member function only used for setMouseCallback
+ * of CalibrateVideoStreamer::initCalibrationPoints
+ */
 void onMouseClickCallback(int event, int x, int y, int flags, void* userdata)
 {
     auto& points = *static_cast<std::vector<cv::Point2f>*>(userdata);
 
+    // maximum of four points to set the ROI
     if(event == cv::EVENT_LBUTTONDOWN && points.size() < 4)
     {
         points.emplace_back(x, y);
@@ -20,22 +26,45 @@ void onMouseClickCallback(int event, int x, int y, int flags, void* userdata)
     }
 }
 
-void resetCalibrationPoints(std::vector<cv::Point2f>& points, bool& success)
+/**
+ * @brief Initialize the mouse callback function to set four ROI points.
+ * @param windowName the window to listen for mouse click callback.
+ */
+void CalibrateVideoStreamer::initCalibrationPoints(const cv::String& windowName)
 {
-    points.clear();
-    success = false;
+    std::cout << "Please click on four points (x, y) for calibration.\n"
+              << "Press 'r' to reset, or 's' to save and exit.\n";
+
+    cv::setMouseCallback(
+        windowName, onMouseClickCallback, &mouseCalibrationPoints);
+}
+
+/**
+ * @brief Clears the currently held mouseCalibrationPoints.
+ */
+void CalibrateVideoStreamer::resetCalibrationPoints()
+{
+    mouseCalibrationPoints.clear();
     std::cout << "Calibration points reset.\n";
 }
 
-void saveCalibrationPoints(const std::vector<cv::Point2f>& points,
-                           const std::string& filename)
+/**
+ * @brief Saves the four mouseCalibrationPoints to a yaml file.
+ * After saving, we can exit the calibration loop by setting
+ * pointsSetSuccessfully = true.
+ * @param filename the name of the yaml file to save the four ROI points.
+ */
+void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
 {
+    if(!haveSetFourPoints())
+        return; // need to have four points to define the ROI quadrilateral.
+
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
     emitter << YAML::Key << "calibration_points";
     emitter << YAML::Value << YAML::BeginSeq;
 
-    for(const auto& point : points)
+    for(const auto& point : mouseCalibrationPoints)
     {
         emitter << YAML::BeginMap;
         emitter << YAML::Key << "x" << YAML::Value << point.x;
@@ -51,71 +80,67 @@ void saveCalibrationPoints(const std::vector<cv::Point2f>& points,
     fout.close();
 
     std::cout << "Calibration points saved to " << filename << ".\n";
+    pointsSetSuccessfully = true; // exit the calibration loop.
 }
 
-void CalibrateVideoStreamer::setCalibrationPointsFromMouse(
-    const std::string& windowName)
+/**
+ * @brief Visualize the current calibration points set by mouse.
+ * @param frame the frame to visualize the calibration points.
+ */
+void CalibrateVideoStreamer::showCalibrationPoints(cv::Mat& frame)
 {
-    std::cout << "Please click on four points (x, y) for calibration.\n"
-              << "Press 'r' to reset, or 's' to save and exit.\n";
-
-    std::vector<cv::Point2f> mouseCalibrationPoints;
-    bool pointsSetSuccessfully = false;
-
-    cv::setMouseCallback(
-        windowName, onMouseClickCallback, &mouseCalibrationPoints);
-
-    cv::Mat frame;
-    cv::String calibFilename = "calib_points.yaml";
-
-    while(!pointsSetSuccessfully)
+    for(const auto& point : mouseCalibrationPoints)
     {
-        if(getNextFrame(frame))
-        {
-            // Draw yellow circles at the existing calibration points
-            for(const auto& point : mouseCalibrationPoints)
-            {
-                cv::circle(frame,
-                           cv::Point(point.x, point.y),
-                           5,
-                           cv::Scalar(0, 255, 255),
-                           -1);
-            }
+        cv::circle(
+            frame, cv::Point(point.x, point.y), 5, cv::Scalar(0, 255, 255), -1);
+    } // visualize yellow dots at each point.
+}
 
-            cv::imshow(windowName, frame);
+/**
+ * @brief An extension of the parent class function initializePerspectiveTransform.
+ * This is so we can preview the Warped/Trimmed view before saving the ROI points.
+ */
+void CalibrateVideoStreamer::initializePreview(
+    cv::Mat& frame, TransformPerspective& perspective)
+{
+    roiPoints = mouseCalibrationPoints;
+    readCalibSuccess = true; // this is a workaround to pass the check
+    // of yaml file successfully reading the calibration points.
 
-            int key = cv::waitKey(30); // lower this delay for RTSP
+    initializePerspectiveTransform(frame, perspective);
+}
 
-            switch(key)
-            {
-            case 27: // 'Esc' key to exit by interruption
-                std::cout << "Calibration interrupted.\n";
-                return;
-            case 'r': // 'r' key to reset
-            case 'R':
-                resetCalibrationPoints(mouseCalibrationPoints,
-                                       pointsSetSuccessfully);
-                break;
-            case 's': // 's' key to exit successfully
-            case 'S':
-                if(mouseCalibrationPoints.size() == 4)
-                {
-                    pointsSetSuccessfully = true;
-                    saveCalibrationPoints(mouseCalibrationPoints,
-                                          calibFilename);
-                }
-                else
-                {
-                    std::cout << "Please set exactly 4 calibration points "
-                                 "before saving and exiting.\n";
-                }
-                break;
-            }
-        }
-        else
-        {
-            std::cerr << "Error: Unable to retrieve the next frame.\n";
-            break;
-        }
+/**
+ * @brief Use this to control the while-loop logic while
+ * setting the calibration points.
+ * @param frame reference for the next stream frame.
+ * @return true if still in calibration phase and
+ * next frame is available.
+ */
+bool CalibrateVideoStreamer::settingCalibrationPoints(cv::Mat& frame)
+{
+    if(!getNextFrame(frame))
+    {
+        std::cerr << "Error: Unable to retrieve the next frame.\n";
+        return false;
     }
+
+    // so we can exit the calibration loop.
+    return !pointsSetSuccessfully;
+}
+
+/**
+ * @brief Check for having exactly four points to save.
+ * @return true if mouseCalibrationPoints is exactly four points. 
+ */
+bool CalibrateVideoStreamer::haveSetFourPoints()
+{
+    if(mouseCalibrationPoints.size() != 4)
+    {
+        std::cout
+            << "Please set exactly 4 calibration points before proceeding.\n";
+        return false;
+    }
+
+    return true;
 }

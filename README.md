@@ -30,6 +30,7 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [ ] read from RTSP stream (for production) by loading environment variables from rtsp_links config file.
   - [x] trim and warp frame based on the calib_points yaml.
   - [x] return successfully read and initialized before anything can be changed to warped frame.
+  - [x] able to switch strategy between Warp and Trim for TransformPerspective interface.
 
 - [ ] CalibrateVideoStreamer (Only run once during calibration phase, assuming installed cameras don't move)
 

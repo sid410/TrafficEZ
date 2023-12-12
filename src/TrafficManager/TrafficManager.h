@@ -7,7 +7,9 @@ class TrafficManager
 {
 public:
     TrafficManager(int numCars, int numPedestrians, bool debug, bool calib);
+
     void start();
+
     void calibrateStreamPoints();
     void spawnCarObserverDebug();
 
