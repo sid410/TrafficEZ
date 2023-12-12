@@ -7,12 +7,11 @@ class WarpPerspective : public TransformPerspective
 {
 public:
     virtual void initialize(cv::Mat& frame,
-                            std::vector<cv::Point2f>& srcPoints,
-                            std::vector<cv::Point2f>& dstPoints,
-                            cv::Mat& perspectiveMatrix) override;
+                            std::vector<cv::Point2f>& roiPoints,
+                            cv::Mat& roiMatrix) override;
     virtual void apply(const cv::Mat& input,
                        cv::Mat& output,
-                       cv::Mat& perspectiveMatrix) override;
+                       cv::Mat& roiMatrix) override;
 
 private:
     cv::Size outputSize;

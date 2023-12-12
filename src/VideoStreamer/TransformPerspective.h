@@ -3,6 +3,11 @@
 
 #include <opencv2/opencv.hpp>
 
+/**
+ * @brief Interface for transforming the perspective
+ * defined by the four ROI points.
+ *
+ */
 class TransformPerspective
 {
 protected:
@@ -12,12 +17,10 @@ protected:
 public:
     virtual ~TransformPerspective() {}
     virtual void initialize(cv::Mat& frame,
-                            std::vector<cv::Point2f>& srcPoints,
-                            std::vector<cv::Point2f>& dstPoints,
-                            cv::Mat& perspectiveMatrix) = 0;
-    virtual void apply(const cv::Mat& input,
-                       cv::Mat& output,
-                       cv::Mat& perspectiveMatrix) = 0;
+                            std::vector<cv::Point2f>& roiPoints,
+                            cv::Mat& roiMatrix) = 0;
+    virtual void
+    apply(const cv::Mat& input, cv::Mat& output, cv::Mat& roiMatrix) = 0;
 };
 
 #endif

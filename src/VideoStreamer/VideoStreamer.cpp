@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 
 VideoStreamer::VideoStreamer()
-    : perspectiveMatrixInitialized(false)
+    : roiMatrixInitialized(false)
     , readCalibSuccess(false)
 {}
 
@@ -68,13 +68,13 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
             return false;
         }
 
-        srcPoints.clear();
+        roiPoints.clear();
 
         for(const auto& point : pointsNode)
         {
             double x = point["x"].as<double>();
             double y = point["y"].as<double>();
-            srcPoints.emplace_back(x, y);
+            roiPoints.emplace_back(x, y);
         }
 
         fin.close();
@@ -99,21 +99,21 @@ void VideoStreamer::initializePerspectiveTransform(
         return;
     }
 
-    if(srcPoints.size() < 4)
+    if(roiPoints.size() < 4)
     {
         std::cerr << "Error: Insufficient calibration points.\n";
         return;
     }
 
-    perspective.initialize(frame, srcPoints, dstPoints, perspectiveMatrix);
-    perspectiveMatrixInitialized = true;
+    perspective.initialize(frame, roiPoints, roiMatrix);
+    roiMatrixInitialized = true;
 }
 
 bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
                                   cv::Mat& preprocessedFrame,
                                   TransformPerspective& perspective)
 {
-    if(!perspectiveMatrixInitialized)
+    if(!roiMatrixInitialized)
     {
         std::cerr << "Error: Failed to initialize.\n";
         return false;
@@ -125,7 +125,6 @@ bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
         return false;
     }
 
-    perspective.apply(frame, preprocessedFrame, perspectiveMatrix);
-
+    perspective.apply(frame, preprocessedFrame, roiMatrix);
     return true;
 }

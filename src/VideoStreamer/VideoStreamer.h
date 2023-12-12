@@ -26,9 +26,8 @@ public:
 protected:
     bool readCalibSuccess;
 
-    cv::Mat perspectiveMatrix;
-    std::vector<cv::Point2f> srcPoints;
-    std::vector<cv::Point2f> dstPoints;
+    cv::Mat roiMatrix;
+    std::vector<cv::Point2f> roiPoints;
 
 private:
     cv::VideoCapture stream;
@@ -36,7 +35,7 @@ private:
     int originalHeight;
     int originalFormat;
 
-    bool perspectiveMatrixInitialized;
+    bool roiMatrixInitialized;
 };
 
 #endif

@@ -2,15 +2,17 @@
 #include <opencv2/opencv.hpp>
 
 /**
- * @brief Initialize Warp Perspective for a bird's eye view
+ * @brief Initialize Warp Perspective for a bird's eye view.
+ * @param frame not used in this strategy.
+ * @param roiPoints the four unsorted ROI points.
+ * @param roiMatrix the matrix to store getPerspectiveTransform.
  */
 void WarpPerspective::initialize(cv::Mat& frame,
-                                 std::vector<cv::Point2f>& srcPoints,
-                                 std::vector<cv::Point2f>& dstPoints,
-                                 cv::Mat& perspectiveMatrix)
+                                 std::vector<cv::Point2f>& roiPoints,
+                                 cv::Mat& roiMatrix)
 {
     std::vector<cv::Point2f> sortedPoints;
-    sortPoints(srcPoints, sortedPoints);
+    sortPoints(roiPoints, sortedPoints);
 
     double length1 = cv::norm(sortedPoints[0] - sortedPoints[2]); // left side
     double length2 = cv::norm(sortedPoints[1] - sortedPoints[3]); // right side
@@ -21,23 +23,29 @@ void WarpPerspective::initialize(cv::Mat& frame,
     double maxWidth = std::max(width1, width2);
 
     // create rectangle with 4 points
-    dstPoints = {cv::Point2f(0, 0),
-                 cv::Point2f(maxLength - 1, 0),
-                 cv::Point2f(0, maxWidth - 1),
-                 cv::Point2f(maxLength - 1, maxWidth - 1)};
+    std::vector<cv::Point2f> warpPoints = {
+        cv::Point2f(0, 0),
+        cv::Point2f(maxLength - 1, 0),
+        cv::Point2f(0, maxWidth - 1),
+        cv::Point2f(maxLength - 1, maxWidth - 1)};
 
-    perspectiveMatrix = cv::getPerspectiveTransform(sortedPoints, dstPoints);
+    roiMatrix = cv::getPerspectiveTransform(sortedPoints, warpPoints);
 
-    outputSize.width = static_cast<int>(cv::norm(dstPoints[1] - dstPoints[0]));
-    outputSize.height = static_cast<int>(cv::norm(dstPoints[2] - dstPoints[0]));
+    outputSize.width =
+        static_cast<int>(cv::norm(warpPoints[1] - warpPoints[0]));
+    outputSize.height =
+        static_cast<int>(cv::norm(warpPoints[2] - warpPoints[0]));
 }
 
 /**
- * @brief Apply the bird's eye view from input to output frame
+ * @brief Apply Warp Perspective for a bird's eye view.
+ * @param input input frame from videostream.
+ * @param output the warped ROI frame.
+ * @param roiMatrix matrix from getPerspectiveTransform.
  */
 void WarpPerspective::apply(const cv::Mat& input,
                             cv::Mat& output,
-                            cv::Mat& perspectiveMatrix)
+                            cv::Mat& roiMatrix)
 {
-    cv::warpPerspective(input, output, perspectiveMatrix, outputSize);
+    cv::warpPerspective(input, output, roiMatrix, outputSize);
 }
