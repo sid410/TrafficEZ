@@ -53,10 +53,7 @@ void VideoStreamer::constructStreamWindow(const cv::String& windowName)
 bool VideoStreamer::getNextFrame(cv::Mat& frame)
 {
     stream.read(frame);
-    if(frame.empty())
-        return false;
-
-    return true;
+    return !frame.empty();
 }
 
 /**
@@ -116,15 +113,9 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
 void VideoStreamer::initializePerspectiveTransform(
     cv::Mat& frame, TransformPerspective& perspective)
 {
-    if(!readCalibSuccess)
+    if(!readCalibSuccess || roiPoints.size() < 4)
     {
-        std::cerr << "Error: Not calibrated.\n";
-        return;
-    }
-
-    if(roiPoints.size() < 4)
-    {
-        std::cerr << "Error: Insufficient calibration points.\n";
+        std::cerr << "Calibration points error.\n";
         return;
     }
 

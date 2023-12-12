@@ -6,8 +6,8 @@
 #include <yaml-cpp/yaml.h>
 
 /**
- * @brief Class for reading/getting frames from stream,
- * then transform that to the ROI based on the chosen
+ * @brief Class for reading/getting frames from a stream,
+ * then transforming that to the ROI based on the chosen
  * TransformPerspective strategy: Warp/Trim.
  */
 class VideoStreamer
