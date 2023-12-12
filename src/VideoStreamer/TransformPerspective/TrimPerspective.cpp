@@ -1,6 +1,10 @@
 #include "TrimPerspective.h"
 #include <opencv2/opencv.hpp>
 
+TrimPerspective::TrimPerspective()
+    : isBoxInitialized(false)
+{}
+
 /**
  * @brief Initialize Trim Perspective for a focused ROI.
  * This function takes the inside ROI pixels
@@ -14,7 +18,7 @@ void TrimPerspective::initialize(cv::Mat& frame,
                                  cv::Mat& roiMatrix)
 {
     std::vector<cv::Point2f> sortedPoints;
-    sortPoints(roiPoints, sortedPoints);
+    sortQuadPoints(roiPoints, sortedPoints);
 
     // we go the order 0, 1, 3, 2 because we want to order clockwise
     sortedPoints = {

@@ -8,10 +8,18 @@
  * 2 - bottom left;
  * 3 - bottom right;
  */
-void TransformPerspective::sortPoints(std::vector<cv::Point2f>& unsortedPoints,
-                                      std::vector<cv::Point2f>& sortedPoints)
+void TransformPerspective::sortQuadPoints(
+    std::vector<cv::Point2f>& unsortedPoints,
+    std::vector<cv::Point2f>& sortedPoints)
 {
-    /// Sort the points based on y-coordinates
+    if(unsortedPoints.size() != 4)
+    {
+        std::cerr << "Error: Exactly 4 points are required for perspective "
+                     "transformation.\n";
+        return;
+    }
+
+    // Sort the points based on y-coordinates
     std::sort(unsortedPoints.begin(),
               unsortedPoints.end(),
               [](cv::Point2f a, cv::Point2f b) { return a.y < b.y; });

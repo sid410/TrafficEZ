@@ -1,6 +1,10 @@
 #include "WarpPerspective.h"
 #include <opencv2/opencv.hpp>
 
+WarpPerspective::WarpPerspective()
+    : outputSize(0, 0)
+{}
+
 /**
  * @brief Initialize Warp Perspective for a bird's eye view.
  * @param frame not used in this strategy.
@@ -12,7 +16,7 @@ void WarpPerspective::initialize(cv::Mat& frame,
                                  cv::Mat& roiMatrix)
 {
     std::vector<cv::Point2f> sortedPoints;
-    sortPoints(roiPoints, sortedPoints);
+    sortQuadPoints(roiPoints, sortedPoints);
 
     double length1 = cv::norm(sortedPoints[0] - sortedPoints[2]); // left side
     double length2 = cv::norm(sortedPoints[1] - sortedPoints[3]); // right side

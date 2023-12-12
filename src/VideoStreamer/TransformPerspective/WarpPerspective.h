@@ -9,6 +9,8 @@
 class WarpPerspective : public TransformPerspective
 {
 public:
+    WarpPerspective();
+
     virtual void initialize(cv::Mat& frame,
                             std::vector<cv::Point2f>& roiPoints,
                             cv::Mat& roiMatrix) override;

@@ -11,7 +11,7 @@
 class TransformPerspective
 {
 protected:
-    void sortPoints(std::vector<cv::Point2f>& unsortedPoints,
+    void sortQuadPoints(std::vector<cv::Point2f>& unsortedPoints,
                     std::vector<cv::Point2f>& sortedPoints);
 
 public:
