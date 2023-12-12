@@ -103,7 +103,6 @@ void CalibrateVideoStreamer::showCalibrationPoints(cv::Mat& frame)
 void CalibrateVideoStreamer::initializePreview(
     cv::Mat& frame, TransformPerspective& perspective)
 {
-    roiPoints.clear();
     roiPoints = mouseCalibrationPoints;
     readCalibSuccess = true; // this is a workaround to pass the check
     // of yaml file successfully reading the calibration points.
@@ -126,10 +125,8 @@ bool CalibrateVideoStreamer::settingCalibrationPoints(cv::Mat& frame)
         return false;
     }
 
-    if(pointsSetSuccessfully)
-        return false; // so we can exit the calibration loop.
-
-    return true;
+    // so we can exit the calibration loop.
+    return !pointsSetSuccessfully;
 }
 
 /**
@@ -144,6 +141,6 @@ bool CalibrateVideoStreamer::haveSetFourPoints()
             << "Please set exactly 4 calibration points before proceeding.\n";
         return false;
     }
-    else
-        return true;
+
+    return true;
 }
