@@ -17,8 +17,7 @@ public:
                             cv::Mat& perspectiveMatrix) = 0;
     virtual void apply(const cv::Mat& input,
                        cv::Mat& output,
-                       cv::Mat& perspectiveMatrix,
-                       std::vector<cv::Point2f>& dstPoints) = 0;
+                       cv::Mat& perspectiveMatrix) = 0;
 };
 
 #endif

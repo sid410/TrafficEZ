@@ -42,8 +42,8 @@ void TrafficManager::calibrateStreamPoints()
     WarpPerspective warpPerspective;
     TrimPerspective trimPerspective;
 
-    cv::String calibWindow = "Calibrate Points";
-    cv::String previewWindow = "Preview Warp";
+    cv::String calibWindow = "Calibration Window";
+    cv::String previewWindow = "Preview Perspective";
     cv::String calibFilename = "calib_points.yaml";
 
     if(!calibrateStreamer.openVideoStream("debug.mp4"))

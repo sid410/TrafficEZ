@@ -125,7 +125,7 @@ bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
         return false;
     }
 
-    perspective.apply(frame, preprocessedFrame, perspectiveMatrix, dstPoints);
+    perspective.apply(frame, preprocessedFrame, perspectiveMatrix);
 
     return true;
 }

@@ -12,8 +12,7 @@ public:
                             cv::Mat& perspectiveMatrix) override;
     virtual void apply(const cv::Mat& input,
                        cv::Mat& output,
-                       cv::Mat& perspectiveMatrix,
-                       std::vector<cv::Point2f>& dstPoints) override;
+                       cv::Mat& perspectiveMatrix) override;
 
 private:
     cv::Size outputSize;

@@ -1,5 +1,13 @@
 #include "TransformPerspective.h"
 
+/**
+ * @brief Sorts 4 points in order of array.
+ *
+ * 0: top left
+ * 1: top right
+ * 2: bottom left
+ * 3: bottom right
+ */
 void TransformPerspective::sortPoints(std::vector<cv::Point2f>& unsortedPoints,
                                       std::vector<cv::Point2f>& sortedPoints)
 {
