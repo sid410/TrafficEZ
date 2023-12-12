@@ -1,6 +1,7 @@
 add_library(VideoStreamer VideoStreamer.cpp)
 add_library(CalibrateVideoStreamer CalibrateVideoStreamer.cpp)
-add_library(TransformPerspective WarpPerspective.cpp TrimPerspective.cpp)
+add_library(TransformPerspective TransformPerspective.cpp WarpPerspective.cpp
+                                 TrimPerspective.cpp)
 
 target_include_directories(VideoStreamer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                                 ${OpenCV_INCLUDE_DIRS})

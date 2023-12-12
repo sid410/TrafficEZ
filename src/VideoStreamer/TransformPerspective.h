@@ -5,6 +5,10 @@
 
 class TransformPerspective
 {
+protected:
+    void sortPoints(std::vector<cv::Point2f>& unsortedPoints,
+                    std::vector<cv::Point2f>& sortedPoints);
+
 public:
     virtual ~TransformPerspective() {}
     virtual void initialize(std::vector<cv::Point2f>& srcPoints,

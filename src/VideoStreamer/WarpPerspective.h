@@ -13,6 +13,9 @@ public:
                        cv::Mat& output,
                        cv::Mat& perspectiveMatrix,
                        std::vector<cv::Point2f>& dstPoints) override;
+
+private:
+    cv::Size outputSize;
 };
 
 #endif

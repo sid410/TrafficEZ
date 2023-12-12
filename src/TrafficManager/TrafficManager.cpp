@@ -54,6 +54,7 @@ void TrafficManager::calibrateStreamPoints()
     cv::Mat frame;
     cv::Mat warpedFrame;
     bool previewToggle = false;
+    bool warpToggle = false;
 
     calibrateStreamer.constructStreamWindow(calibWindow);
     calibrateStreamer.initCalibrationPoints(calibWindow);
@@ -66,9 +67,19 @@ void TrafficManager::calibrateStreamPoints()
 
         if(previewToggle)
         {
-            if(!calibrateStreamer.applyFrameRoi(
-                   frame, warpedFrame, warpPerspective))
-                return;
+            if(warpToggle) // this is so ugly. change later, for now just debugging
+            {
+                if(!calibrateStreamer.applyFrameRoi(
+                       frame, warpedFrame, warpPerspective))
+                    return;
+            }
+            else
+            {
+                if(!calibrateStreamer.applyFrameRoi(
+                       frame, warpedFrame, trimPerspective))
+                    return;
+            }
+
             cv::imshow(previewWindow, warpedFrame);
         }
 
@@ -88,7 +99,13 @@ void TrafficManager::calibrateStreamPoints()
                 break;
             previewToggle = !previewToggle;
             if(previewToggle)
-                calibrateStreamer.initPreview(warpPerspective);
+            {
+                warpToggle = !warpToggle; // debugging just for now
+                if(warpToggle)
+                    calibrateStreamer.initPreview(warpPerspective);
+                else
+                    calibrateStreamer.initPreview(trimPerspective);
+            }
             else
                 cv::destroyWindow(previewWindow);
             break;
