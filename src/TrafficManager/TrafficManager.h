@@ -10,6 +10,8 @@ public:
 
     void start();
 
+    void testGuiFactory();
+    void testHeadlessFactory();
     void calibrateStreamPoints();
     void spawnCarObserverDebug();
 
