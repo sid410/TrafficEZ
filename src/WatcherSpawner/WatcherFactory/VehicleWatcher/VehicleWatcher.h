@@ -1,0 +1,14 @@
+#ifndef VEHICLE_WATCHER_H
+#define VEHICLE_WATCHER_H
+
+#include "Watcher.h"
+
+class VehicleWatcher : public Watcher
+{
+public:
+    void spawn(RenderMode mode,
+               const std::string& streamName,
+               const std::string& calibName) const override;
+};
+
+#endif

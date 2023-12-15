@@ -3,6 +3,7 @@
 #include "TrimPerspective.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
+#include "WatcherSpawner.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
@@ -25,15 +26,63 @@ void TrafficManager::start()
 
     if(calibMode)
     {
-        calibrateStreamPoints();
+        testGuiFactory();
     }
     if(debugMode)
     {
-        // This is blocking! change this later
-        spawnCarObserverDebug();
+        testHeadlessFactory();
     }
 
     std::cout << "TrafficManager ended.\n";
+}
+
+void TrafficManager::testGuiFactory()
+{
+    WatcherSpawner spawner;
+
+    Watcher* vehicleWatcherGui = spawner.spawnWatcher(
+        WatcherType::VEHICLE, RenderMode::GUI, "VehicleStream", "VehicleCalib");
+
+    Watcher* pedestrianWatcherGui =
+        spawner.spawnWatcher(WatcherType::PEDESTRIAN,
+                             RenderMode::GUI,
+                             "PedestrianStream",
+                             "PedestrianCalib");
+
+    Watcher* calibrateWatcherGui = spawner.spawnWatcher(WatcherType::CALIBRATE,
+                                                        RenderMode::GUI,
+                                                        "CalibrateStream",
+                                                        "CalibrateCalib");
+
+    delete vehicleWatcherGui;
+    delete pedestrianWatcherGui;
+    delete calibrateWatcherGui;
+}
+
+void TrafficManager::testHeadlessFactory()
+{
+    WatcherSpawner spawner;
+
+    Watcher* vehicleWatcherHeadless = spawner.spawnWatcher(WatcherType::VEHICLE,
+                                                           RenderMode::HEADLESS,
+                                                           "VehicleStream",
+                                                           "VehicleCalib");
+
+    Watcher* pedestrianWatcherHeadless =
+        spawner.spawnWatcher(WatcherType::PEDESTRIAN,
+                             RenderMode::HEADLESS,
+                             "PedestrianStream",
+                             "PedestrianCalib");
+
+    Watcher* calibrateWatcherHeadless =
+        spawner.spawnWatcher(WatcherType::CALIBRATE,
+                             RenderMode::HEADLESS,
+                             "CalibrateStream",
+                             "CalibrateCalib");
+
+    delete vehicleWatcherHeadless;
+    delete pedestrianWatcherHeadless;
+    delete calibrateWatcherHeadless;
 }
 
 void TrafficManager::calibrateStreamPoints()
