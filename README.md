@@ -100,6 +100,18 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [ ] output signal to outside traffic light control.
   - [ ] (optional) create a traffic light control simulator to receive the signal.
 
+- [ ] WatcherSpawner
+
+  - [x] Create abstract factory that handles the spawning of Watcher objects.
+  - [x] Create spawner interface for client side so factory remains hidden.
+  - [ ] Implement the following concerete Watchers:
+    - [ ] Vehicle Watcher Gui
+    - [ ] Vehicle Watcher Headless
+    - [ ] Pedestrian Watcher Gui
+    - [ ] Pedestrian Watcher Headless
+    - [ ] Calibrate Watcher Gui
+    - [ ] Calibrate Watcher Headless
+
 - [ ] (Optional) HullDetectionOptimizer: To automize the manually set HullParametersBlender.
 
 - [ ] Setup CMake
