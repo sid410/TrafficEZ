@@ -40,8 +40,10 @@ void TrafficManager::testGuiFactory()
 {
     WatcherSpawner spawner;
 
-    Watcher* vehicleWatcherGui = spawner.spawnWatcher(
-        WatcherType::VEHICLE, RenderMode::GUI, "VehicleStream", "VehicleCalib");
+    Watcher* vehicleWatcherGui = spawner.spawnWatcher(WatcherType::VEHICLE,
+                                                      RenderMode::GUI,
+                                                      "debug.mp4",
+                                                      "calib_points.yaml");
 
     Watcher* pedestrianWatcherGui =
         spawner.spawnWatcher(WatcherType::PEDESTRIAN,
@@ -164,36 +166,4 @@ void TrafficManager::calibrateStreamPoints()
             break;
         }
     }
-}
-
-void TrafficManager::spawnCarObserverDebug()
-{
-    VideoStreamer videoStreamer;
-    WarpPerspective warpPerspective;
-    TrimPerspective trimPerspective;
-
-    if(!videoStreamer.openVideoStream("debug.mp4"))
-    {
-        return;
-    }
-
-    if(!videoStreamer.readCalibrationPoints("calib_points.yaml"))
-    {
-        return;
-    }
-
-    cv::Mat frame;
-    cv::Mat warpedFrame;
-
-    videoStreamer.initializePerspectiveTransform(frame, warpPerspective);
-
-    while(videoStreamer.applyFrameRoi(frame, warpedFrame, warpPerspective))
-    {
-        cv::imshow("Debug Warped Video", warpedFrame);
-
-        if(cv::waitKey(30) == 27)
-            break;
-    }
-
-    cv::destroyAllWindows();
 }
