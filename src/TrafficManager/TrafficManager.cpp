@@ -1,11 +1,6 @@
 #include "TrafficManager.h"
-#include "CalibrateVideoStreamer.h"
-#include "TrimPerspective.h"
-#include "VideoStreamer.h"
-#include "WarpPerspective.h"
 #include "WatcherSpawner.h"
 #include <iostream>
-#include <opencv2/opencv.hpp>
 
 TrafficManager::TrafficManager(int numCars,
                                int numPedestrians,
@@ -24,65 +19,61 @@ void TrafficManager::start()
     std::cout << "Number of Pedestrians: " << numberOfPedestrians << "\n";
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
 
+    WatcherSpawner spawner;
+
     if(calibMode)
     {
-        testGuiFactory();
+        Watcher* calibrateWatcherGui =
+            spawner.spawnWatcher(WatcherType::CALIBRATE,
+                                 RenderMode::GUI,
+                                 "debug.mp4",
+                                 "calib_points.yaml");
+        delete calibrateWatcherGui;
     }
     if(debugMode)
     {
-        testHeadlessFactory();
+        testEmptyWatchers();
     }
-
-    std::cout << "TrafficManager ended.\n";
-}
-
-void TrafficManager::testGuiFactory()
-{
-    WatcherSpawner spawner;
-
-    Watcher* calibrateWatcherGui = spawner.spawnWatcher(WatcherType::CALIBRATE,
-                                                        RenderMode::GUI,
-                                                        "debug.mp4",
-                                                        "calib_points.yaml");
 
     Watcher* vehicleWatcherGui = spawner.spawnWatcher(WatcherType::VEHICLE,
                                                       RenderMode::GUI,
                                                       "debug.mp4",
                                                       "calib_points.yaml");
-
-    Watcher* pedestrianWatcherGui =
-        spawner.spawnWatcher(WatcherType::PEDESTRIAN,
-                             RenderMode::GUI,
-                             "PedestrianStream",
-                             "PedestrianCalib");
-
     delete vehicleWatcherGui;
-    delete pedestrianWatcherGui;
-    delete calibrateWatcherGui;
+
+    std::cout << "TrafficManager ended.\n";
 }
 
-void TrafficManager::testHeadlessFactory()
+void TrafficManager::testEmptyWatchers()
 {
-    WatcherSpawner spawner;
+    WatcherSpawner testSpawner;
+
+    Watcher* pedestrianWatcherGui =
+        testSpawner.spawnWatcher(WatcherType::PEDESTRIAN,
+                                 RenderMode::GUI,
+                                 "PedestrianStream",
+                                 "PedestrianCalib");
 
     Watcher* calibrateWatcherHeadless =
-        spawner.spawnWatcher(WatcherType::CALIBRATE,
-                             RenderMode::HEADLESS,
-                             "CalibrateStream",
-                             "CalibrateCalib");
+        testSpawner.spawnWatcher(WatcherType::CALIBRATE,
+                                 RenderMode::HEADLESS,
+                                 "CalibrateStream",
+                                 "CalibrateCalib");
 
-    Watcher* vehicleWatcherHeadless = spawner.spawnWatcher(WatcherType::VEHICLE,
-                                                           RenderMode::HEADLESS,
-                                                           "VehicleStream",
-                                                           "VehicleCalib");
+    Watcher* vehicleWatcherHeadless =
+        testSpawner.spawnWatcher(WatcherType::VEHICLE,
+                                 RenderMode::HEADLESS,
+                                 "VehicleStream",
+                                 "VehicleCalib");
 
     Watcher* pedestrianWatcherHeadless =
-        spawner.spawnWatcher(WatcherType::PEDESTRIAN,
-                             RenderMode::HEADLESS,
-                             "PedestrianStream",
-                             "PedestrianCalib");
+        testSpawner.spawnWatcher(WatcherType::PEDESTRIAN,
+                                 RenderMode::HEADLESS,
+                                 "PedestrianStream",
+                                 "PedestrianCalib");
 
+    delete pedestrianWatcherGui;
+    delete calibrateWatcherHeadless;
     delete vehicleWatcherHeadless;
     delete pedestrianWatcherHeadless;
-    delete calibrateWatcherHeadless;
 }

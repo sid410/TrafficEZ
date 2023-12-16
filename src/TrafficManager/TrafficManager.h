@@ -1,8 +1,6 @@
 #ifndef TRAFFIC_MANAGER_H
 #define TRAFFIC_MANAGER_H
 
-class VideoStreamer;
-
 class TrafficManager
 {
 public:
@@ -10,8 +8,7 @@ public:
 
     void start();
 
-    void testGuiFactory();
-    void testHeadlessFactory();
+    void testEmptyWatchers();
 
 private:
     int numberOfCars;
