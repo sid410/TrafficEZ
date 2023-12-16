@@ -105,11 +105,11 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [x] Create abstract factory that handles the spawning of Watcher objects.
   - [x] Create spawner interface for client side so factory remains hidden.
   - [ ] Implement the following concerete Watchers:
-    - [ ] Vehicle Watcher Gui
+    - [x] Vehicle Watcher Gui
     - [ ] Vehicle Watcher Headless
     - [ ] Pedestrian Watcher Gui
     - [ ] Pedestrian Watcher Headless
-    - [ ] Calibrate Watcher Gui
+    - [x] Calibrate Watcher Gui
     - [ ] Calibrate Watcher Headless
 
 - [ ] (Optional) HullDetectionOptimizer: To automize the manually set HullParametersBlender.
