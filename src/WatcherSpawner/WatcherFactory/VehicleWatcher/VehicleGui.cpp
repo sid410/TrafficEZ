@@ -8,17 +8,18 @@ void VehicleGui::display(const std::string& streamName,
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
 
+    cv::Mat inputFrame;
+    cv::Mat warpedFrame;
+
     if(!videoStreamer.openVideoStream(streamName))
         return;
 
     if(!videoStreamer.readCalibrationPoints(calibName))
         return;
 
-    cv::Mat frame;
-    cv::Mat warpedFrame;
-    videoStreamer.initializePerspectiveTransform(frame, warpPerspective);
+    videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    while(videoStreamer.applyFrameRoi(frame, warpedFrame, warpPerspective))
+    while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         cv::imshow("Vehicle Gui", warpedFrame);
 

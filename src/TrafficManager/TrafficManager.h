@@ -12,8 +12,6 @@ public:
 
     void testGuiFactory();
     void testHeadlessFactory();
-    void calibrateStreamPoints();
-    void spawnCarObserverDebug();
 
 private:
     int numberOfCars;
