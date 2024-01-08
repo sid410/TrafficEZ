@@ -100,6 +100,20 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [ ] output signal to outside traffic light control.
   - [ ] (optional) create a traffic light control simulator to receive the signal.
 
+- [ ] WatcherSpawner
+
+  - [x] Create abstract factory that handles the spawning of Watcher objects.
+  - [x] Create spawner interface for client side so factory remains hidden.
+  - [ ] Implement the following concerete Watchers:
+    - [x] Vehicle Watcher Gui
+    - [ ] Vehicle Watcher Headless
+    - [ ] Pedestrian Watcher Gui
+    - [ ] Pedestrian Watcher Headless
+    - [x] Calibrate Watcher Gui
+    - [ ] Calibrate Watcher Headless
+
+- [x] (Optional) FPSHelper: A helper class for easily display fps in either terminal or directly overlaid in frame. There are also methods for sampling the duration of how much time it takes to execute between lines of code.
+
 - [ ] (Optional) HullDetectionOptimizer: To automize the manually set HullParametersBlender.
 
 - [ ] Setup CMake

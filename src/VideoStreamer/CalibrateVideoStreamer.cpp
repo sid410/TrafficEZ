@@ -33,7 +33,8 @@ void onMouseClickCallback(int event, int x, int y, int flags, void* userdata)
 void CalibrateVideoStreamer::initCalibrationPoints(const cv::String& windowName)
 {
     std::cout << "Please click on four points (x, y) for calibration.\n"
-              << "Press 'r' to reset, or 's' to save and exit.\n";
+              << "Press 'r' to reset, 'p' to preview between warp/trim, "
+                 "and 's' to save and exit.\n";
 
     cv::setMouseCallback(
         windowName, onMouseClickCallback, &mouseCalibrationPoints);
