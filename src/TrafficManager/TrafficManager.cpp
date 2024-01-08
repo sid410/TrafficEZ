@@ -32,14 +32,12 @@ void TrafficManager::start()
     }
     if(debugMode)
     {
-        testEmptyWatchers();
+        Watcher* vehicleWatcherGui = spawner.spawnWatcher(WatcherType::VEHICLE,
+                                                          RenderMode::GUI,
+                                                          "debug.mp4",
+                                                          "calib_points.yaml");
+        delete vehicleWatcherGui;
     }
-
-    Watcher* vehicleWatcherGui = spawner.spawnWatcher(WatcherType::VEHICLE,
-                                                      RenderMode::GUI,
-                                                      "debug.mp4",
-                                                      "calib_points.yaml");
-    delete vehicleWatcherGui;
 
     std::cout << "TrafficManager ended.\n";
 }

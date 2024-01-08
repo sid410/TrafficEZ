@@ -6,6 +6,7 @@ target_include_directories(
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include
          ${CMAKE_CURRENT_SOURCE_DIR}/../../../VideoStreamer
          ${CMAKE_CURRENT_SOURCE_DIR}/../../../VideoStreamer/TransformPerspective
-)
+         ${CMAKE_CURRENT_SOURCE_DIR}/../../../FPSHelper)
 
-target_link_libraries(VehicleWatcher PRIVATE VideoStreamer TransformPerspective)
+target_link_libraries(VehicleWatcher PRIVATE VideoStreamer TransformPerspective
+                                             FPSHelper)

@@ -1,4 +1,5 @@
 #include "VehicleGui.h"
+#include "FPSHelper.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
 
@@ -7,6 +8,7 @@ void VehicleGui::display(const std::string& streamName,
 {
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
+    FPSHelper fpsHelper;
 
     cv::Mat inputFrame;
     cv::Mat warpedFrame;
@@ -21,6 +23,9 @@ void VehicleGui::display(const std::string& streamName,
 
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
+        fpsHelper.avgFps();
+        fpsHelper.displayFps(warpedFrame);
+
         cv::imshow("Vehicle Gui", warpedFrame);
 
         if(cv::waitKey(30) == 27)
