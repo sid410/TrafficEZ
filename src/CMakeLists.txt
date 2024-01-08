@@ -2,6 +2,7 @@
 add_subdirectory(TrafficManager)
 add_subdirectory(VideoStreamer)
 add_subdirectory(WatcherSpawner)
+add_subdirectory(FPSHelper)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 
