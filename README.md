@@ -112,6 +112,8 @@ Affiliation: USTP-RSPOT IIoT Lab
     - [x] Calibrate Watcher Gui
     - [ ] Calibrate Watcher Headless
 
+- [x] (Optional) FPSHelper: A helper class for easily display fps in either terminal or directly overlaid in frame. There are also methods for sampling the duration of how much time it takes to execute between lines of code.
+
 - [ ] (Optional) HullDetectionOptimizer: To automize the manually set HullParametersBlender.
 
 - [ ] Setup CMake
