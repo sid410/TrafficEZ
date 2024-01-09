@@ -8,8 +8,6 @@ public:
 
     void start();
 
-    void testEmptyWatchers();
-
 private:
     int numberOfCars;
     int numberOfPedestrians;

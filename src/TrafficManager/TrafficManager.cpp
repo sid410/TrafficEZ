@@ -41,37 +41,3 @@ void TrafficManager::start()
 
     std::cout << "TrafficManager ended.\n";
 }
-
-void TrafficManager::testEmptyWatchers()
-{
-    WatcherSpawner testSpawner;
-
-    Watcher* pedestrianWatcherGui =
-        testSpawner.spawnWatcher(WatcherType::PEDESTRIAN,
-                                 RenderMode::GUI,
-                                 "PedestrianStream",
-                                 "PedestrianCalib");
-
-    Watcher* calibrateWatcherHeadless =
-        testSpawner.spawnWatcher(WatcherType::CALIBRATE,
-                                 RenderMode::HEADLESS,
-                                 "CalibrateStream",
-                                 "CalibrateCalib");
-
-    Watcher* vehicleWatcherHeadless =
-        testSpawner.spawnWatcher(WatcherType::VEHICLE,
-                                 RenderMode::HEADLESS,
-                                 "VehicleStream",
-                                 "VehicleCalib");
-
-    Watcher* pedestrianWatcherHeadless =
-        testSpawner.spawnWatcher(WatcherType::PEDESTRIAN,
-                                 RenderMode::HEADLESS,
-                                 "PedestrianStream",
-                                 "PedestrianCalib");
-
-    delete pedestrianWatcherGui;
-    delete calibrateWatcherHeadless;
-    delete vehicleWatcherHeadless;
-    delete pedestrianWatcherHeadless;
-}
