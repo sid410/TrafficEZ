@@ -10,6 +10,7 @@ void VehicleGui::display(const std::string& streamName,
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
     FPSHelper fpsHelper;
+    PreprocessPipelineBuilder pipeBuilder;
 
     cv::Mat inputFrame;
     cv::Mat warpedFrame;
@@ -22,12 +23,22 @@ void VehicleGui::display(const std::string& streamName,
 
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
+    pipeBuilder.addGrayscaleStep()
+        .addGaussianBlurStep()
+        .addMOG2BackgroundSubtractionStep()
+        .addThresholdStep()
+        .addDilationStep()
+        .addErosionStep();
+
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         // hullDetector.getHulls(warpedFrame);
 
         fpsHelper.avgFps();
-        fpsHelper.displayFps(warpedFrame);
+        fpsHelper.printFps();
+
+        // pipeBuilder.process(warpedFrame);
+
         cv::imshow("Vehicle Gui", warpedFrame);
 
         if(cv::waitKey(30) == 27)

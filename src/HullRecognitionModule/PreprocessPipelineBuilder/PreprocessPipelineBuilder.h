@@ -13,7 +13,7 @@ private:
 public:
     PreprocessPipelineBuilder& addGrayscaleStep();
     PreprocessPipelineBuilder& addGaussianBlurStep(int kernelSize = 5,
-                                                   double sigma = 1.5);
+                                                   double sigma = 9);
     PreprocessPipelineBuilder&
     addMOG2BackgroundSubtractionStep(int history = 150,
                                      double varThreshold = 16,
@@ -28,11 +28,11 @@ public:
     PreprocessPipelineBuilder&
     addDilationStep(int morphShape = cv::MORPH_ELLIPSE,
                     cv::Size kernelSize = cv::Size(5, 5),
-                    int iterations = 1);
+                    int iterations = 4);
     PreprocessPipelineBuilder&
     addErosionStep(int morphShape = cv::MORPH_ELLIPSE,
-                   cv::Size kernelSize = cv::Size(5, 5),
-                   int iterations = 1);
+                   cv::Size kernelSize = cv::Size(3, 3),
+                   int iterations = 5);
     void process(cv::Mat& frame);
 };
 
