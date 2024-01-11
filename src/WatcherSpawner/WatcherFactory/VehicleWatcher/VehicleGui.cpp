@@ -1,5 +1,6 @@
 #include "VehicleGui.h"
 #include "FPSHelper.h"
+#include "HullDetector.h"
 #include "PreprocessPipelineBuilder.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
@@ -10,10 +11,13 @@ void VehicleGui::display(const std::string& streamName,
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
     FPSHelper fpsHelper;
+
     PreprocessPipelineBuilder pipeBuilder;
+    HullDetector hullDetector;
 
     cv::Mat inputFrame;
     cv::Mat warpedFrame;
+    cv::Mat preprocessedFrame;
 
     if(!videoStreamer.openVideoStream(streamName))
         return;
@@ -32,13 +36,16 @@ void VehicleGui::display(const std::string& streamName,
 
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
-        // hullDetector.getHulls(warpedFrame);
+        warpedFrame.copyTo(preprocessedFrame);
+        pipeBuilder.process(preprocessedFrame);
+        cv::imshow("Debug", preprocessedFrame);
+
+        std::vector<std::vector<cv::Point>> hulls;
+        hullDetector.getHulls(preprocessedFrame, hulls);
+        cv::drawContours(warpedFrame, hulls, -1, cv::Scalar(0, 255, 0), 2);
 
         fpsHelper.avgFps();
-        fpsHelper.printFps();
-
-        // pipeBuilder.process(warpedFrame);
-
+        fpsHelper.displayFps(warpedFrame);
         cv::imshow("Vehicle Gui", warpedFrame);
 
         if(cv::waitKey(30) == 27)
