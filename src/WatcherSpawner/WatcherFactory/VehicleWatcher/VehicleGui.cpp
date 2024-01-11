@@ -1,5 +1,6 @@
 #include "VehicleGui.h"
 #include "FPSHelper.h"
+#include "PreprocessPipelineBuilder.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
 
@@ -23,9 +24,10 @@ void VehicleGui::display(const std::string& streamName,
 
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
+        // hullDetector.getHulls(warpedFrame);
+
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);
-
         cv::imshow("Vehicle Gui", warpedFrame);
 
         if(cv::waitKey(30) == 27)
