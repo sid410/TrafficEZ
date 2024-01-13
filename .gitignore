@@ -33,6 +33,7 @@
 *.la
 *.a
 *.lib
+!libyaml-cpp.a
 
 # Executables
 *.exe
