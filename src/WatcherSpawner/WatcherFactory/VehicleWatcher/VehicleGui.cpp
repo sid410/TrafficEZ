@@ -37,8 +37,7 @@ void VehicleGui::display(const std::string& streamName,
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         warpedFrame.copyTo(preprocessedFrame);
-        pipeBuilder.process(preprocessedFrame);
-        cv::imshow("Debug", preprocessedFrame);
+        pipeBuilder.processDebugStack(preprocessedFrame);
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(preprocessedFrame, hulls);

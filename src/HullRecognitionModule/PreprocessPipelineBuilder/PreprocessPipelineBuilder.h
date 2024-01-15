@@ -5,6 +5,10 @@
 #include <memory>
 #include <vector>
 
+/**
+ * @brief Class for building the processing steps required
+ * for image processing. Follows the builder pattern.
+ */
 class PreprocessPipelineBuilder
 {
 private:
@@ -33,7 +37,9 @@ public:
     addErosionStep(int morphShape = cv::MORPH_ELLIPSE,
                    cv::Size kernelSize = cv::Size(3, 3),
                    int iterations = 5);
+
     void process(cv::Mat& frame);
+    void processDebugStack(cv::Mat& frame, int hStackLength = 3);
 };
 
 #endif

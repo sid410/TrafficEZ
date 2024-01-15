@@ -3,6 +3,11 @@
 
 #include <opencv2/opencv.hpp>
 
+/**
+ * @brief Class for detecting convex hulls.
+ * Optionally, you can specify the minimum area of
+ * hulls to detect in the constructor.
+ */
 class HullDetector
 {
 private:
