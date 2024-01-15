@@ -17,7 +17,7 @@ void VehicleGui::display(const std::string& streamName,
 
     cv::Mat inputFrame;
     cv::Mat warpedFrame;
-    cv::Mat preprocessedFrame;
+    cv::Mat processFrame;
 
     if(!videoStreamer.openVideoStream(streamName))
         return;
@@ -36,12 +36,13 @@ void VehicleGui::display(const std::string& streamName,
 
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
-        warpedFrame.copyTo(preprocessedFrame);
-        pipeBuilder.processDebugStack(preprocessedFrame);
+        warpedFrame.copyTo(processFrame);
+        pipeBuilder.process(processFrame);
+        // pipeBuilder.processDebugStack(processFrame);
 
         std::vector<std::vector<cv::Point>> hulls;
-        hullDetector.getHulls(preprocessedFrame, hulls);
-        cv::drawContours(warpedFrame, hulls, -1, cv::Scalar(0, 255, 0), 2);
+        hullDetector.getHulls(processFrame, hulls);
+        hullDetector.drawUnreliableHulls(warpedFrame, hulls);
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);
