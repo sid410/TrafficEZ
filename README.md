@@ -47,17 +47,19 @@ Affiliation: USTP-RSPOT IIoT Lab
 
   - [ ] create HullDetector
 
-    - [ ] read cv_params config file to load constants of CV pipeline.
-    - [ ] pre-process frame with grayscale and gaussian blur.
-    - [ ] apply MOG2 background subtraction.
-    - [ ] filter out shadows.
-    - [ ] apply morphological operation (dilation then erosion, i.e. closing morph) with different kernels.
-    - [ ] find contours and store their moments.
+    - [ ] read cv_params config file to load constants of CV pipeline (HullDetector settings interface).
+    - [x] pre-process frame using the builder pattern with the following steps:
+      - [x] grayscale.
+      - [x] gaussian blur.
+      - [x] MOG2 background subtraction.
+      - [x] threshold to filter out shadows.
+      - [x] morphological operation (dilation then erosion, i.e. closing morph) with different kernels.
+    - [x] find and draw contours.
 
   - [ ] create HullTracker
 
-    - [ ] get reference of moments of contours from HullDetector.
-    - [ ] match existing tracked hulls by comparing current and previous hulls info [centroid, area] that is calculated from contour moments.
+    - [ ] get moments of hulls from HullDetector.
+    - [ ] match existing tracked hulls by comparing current and previous hulls info [centroid, area] that is calculated from contour/hull moments.
     - [ ] add new tracked hulls with unique ID, but reset count every start of green light change.
     - [ ] remove duplicates (same hull but assigned multiple IDs) and inactive tracked hulls.
     - [ ] return reliable tracked hulls.
