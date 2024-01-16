@@ -5,6 +5,7 @@ add_subdirectory(WatcherSpawner)
 add_subdirectory(FPSHelper)
 add_subdirectory(HullRecognitionModule/PreprocessPipelineBuilder)
 add_subdirectory(HullRecognitionModule/HullDetector)
+add_subdirectory(HullRecognitionModule/HullTracker)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 

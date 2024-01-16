@@ -1,6 +1,7 @@
 #include "VehicleGui.h"
 #include "FPSHelper.h"
 #include "HullDetector.h"
+#include "HullTracker.h"
 #include "PreprocessPipelineBuilder.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
@@ -14,6 +15,7 @@ void VehicleGui::display(const std::string& streamName,
 
     PreprocessPipelineBuilder pipeBuilder;
     HullDetector hullDetector;
+    HullTracker hullTracker;
 
     cv::Mat inputFrame;
     cv::Mat warpedFrame;
@@ -42,7 +44,7 @@ void VehicleGui::display(const std::string& streamName,
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(processFrame, hulls);
-        hullDetector.drawUnreliableHulls(warpedFrame, hulls);
+        hullTracker.drawUnreliableHulls(warpedFrame, hulls);
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);
