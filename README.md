@@ -133,7 +133,7 @@ Affiliation: USTP-RSPOT IIoT Lab
 ## Environments guide
 
 - Write in **C++11** to conform to OpenCV coding style.
-- Require **OpenCV 4.8.1** version (latest as of 2023/12/1) or above.
+- Require **OpenCV 4.9.0** version or above.
 - Code should be cross-platform, but prioritize build on **Ubuntu 22.04.3 LTS** (headless server to be deployed).
 - Use **CMake 3.22.1** or above (latest stable version from apt in the above Ubuntu version).
 - For Linux toolchain, use the following versions or above:
