@@ -1,9 +1,10 @@
 #include "HullTracker.h"
 #include <opencv2/opencv.hpp>
 
-HullTracker::HullTracker(double maxDist, int maxFrames)
+HullTracker::HullTracker(double maxDist, int maxFrames, int maxIdValue)
     : maxDistance(maxDist)
     , maxFramesNotSeen(maxFrames)
+    , maxId(maxIdValue)
     , nextId(0)
 {}
 
@@ -58,6 +59,11 @@ void HullTracker::addNewTrackables(
     {
         if(!matched[i])
         {
+            if(nextId > maxId)
+            {
+                nextId = 0;
+            }
+
             HullTrackable newTrackable(nextId++, newHulls[i]);
             trackedHulls[newTrackable.id] = newTrackable;
         }
