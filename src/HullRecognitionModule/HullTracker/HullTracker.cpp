@@ -1,10 +1,10 @@
 #include "HullTracker.h"
-#include "HullTrackable.h"
 #include <opencv2/opencv.hpp>
 
-HullTracker::HullTracker()
-    : maxDistance(100.0)
-    , maxFramesNotSeen(3)
+HullTracker::HullTracker(double maxDist, int maxFrames)
+    : maxDistance(maxDist)
+    , maxFramesNotSeen(maxFrames)
+    , nextId(0)
 {}
 
 void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
@@ -20,7 +20,6 @@ void HullTracker::matchAndUpdateTrackables(
     const std::vector<std::vector<cv::Point>>& newHulls,
     std::vector<bool>& matched)
 {
-    // Iterate over trackedHulls
     for(auto& trackablePair : trackedHulls)
     {
         HullTrackable& trackable = trackablePair.second;
@@ -34,7 +33,6 @@ void HullTracker::matchAndUpdateTrackables(
             if(cv::norm(trackable.centroid - HullTrackable::computeCentroid(
                                                  newHulls[i])) < maxDistance)
             {
-                // Update existing trackable with new hull
                 trackable.hull = newHulls[i];
                 trackable.centroid =
                     HullTrackable::computeCentroid(newHulls[i]);
@@ -47,7 +45,6 @@ void HullTracker::matchAndUpdateTrackables(
 
         if(!isMatched)
         {
-            // Increment the 'not seen' counter if no match found
             trackable.framesSinceLastSeen++;
         }
     }
@@ -61,7 +58,7 @@ void HullTracker::addNewTrackables(
     {
         if(!matched[i])
         {
-            HullTrackable newTrackable(newHulls[i]);
+            HullTrackable newTrackable(nextId++, newHulls[i]);
             trackedHulls[newTrackable.id] = newTrackable;
         }
     }
@@ -92,13 +89,11 @@ void HullTracker::drawTrackedHulls(cv::Mat& frame) const
 {
     for(const auto& pair : trackedHulls)
     {
-        const auto& id = pair.first;
-        const auto& trackable = pair.second;
-
+        const HullTrackable& trackable = pair.second;
         std::vector<std::vector<cv::Point>> hullVec = {trackable.hull};
         cv::drawContours(frame, hullVec, -1, cv::Scalar(0, 255, 0), 2);
         cv::putText(frame,
-                    std::to_string(id),
+                    std::to_string(trackable.id),
                     trackable.centroid,
                     cv::FONT_HERSHEY_SIMPLEX,
                     0.5,

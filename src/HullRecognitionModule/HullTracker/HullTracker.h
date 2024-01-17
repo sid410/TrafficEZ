@@ -8,9 +8,11 @@
 class HullTracker
 {
 private:
-    std::unordered_map<int, HullTrackable> trackedHulls;
+    std::unordered_map<int, HullTrackable>
+        trackedHulls; // Map to store tracked hulls
     const double maxDistance; // Max allowed distance for matching
     const int maxFramesNotSeen; // Frames to wait before removing a hull
+    int nextId; // Counter for generating unique IDs for HullTrackables
 
     void matchAndUpdateTrackables(
         const std::vector<std::vector<cv::Point>>& newHulls,
@@ -20,7 +22,7 @@ private:
     void removeStaleTrackables();
 
 public:
-    HullTracker();
+    HullTracker(double maxDistance = 100.0, int maxFramesNotSeen = 3);
     void update(const std::vector<std::vector<cv::Point>>& newHulls);
     const std::unordered_map<int, HullTrackable>& getTrackedHulls() const;
     void drawTrackedHulls(cv::Mat& frame) const;

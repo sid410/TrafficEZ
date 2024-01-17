@@ -1,14 +1,13 @@
 #include "HullTrackable.h"
 
-int HullTrackable::nextId = 0; // Initialize static ID counter
-
 HullTrackable::HullTrackable()
-    : id(nextId++)
-    , framesSinceLastSeen(-1)
+    : id(-1)
+    , framesSinceLastSeen(0)
+    , centroid(cv::Point2f(0.0f, 0.0f))
 {}
 
-HullTrackable::HullTrackable(const std::vector<cv::Point>& hull)
-    : id(nextId++)
+HullTrackable::HullTrackable(int id, const std::vector<cv::Point>& hull)
+    : id(id)
     , hull(hull)
     , framesSinceLastSeen(0)
     , centroid(computeCentroid(hull))
