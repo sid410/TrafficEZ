@@ -11,6 +11,15 @@ void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
 {
     std::vector<bool> matched(newHulls.size(), false);
 
+    matchAndUpdateTrackables(newHulls, matched);
+    addNewTrackables(newHulls, matched);
+    removeStaleTrackables();
+}
+
+void HullTracker::matchAndUpdateTrackables(
+    const std::vector<std::vector<cv::Point>>& newHulls,
+    std::vector<bool>& matched)
+{
     // Iterate over trackedHulls
     for(auto& trackablePair : trackedHulls)
     {
@@ -42,8 +51,12 @@ void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
             trackable.framesSinceLastSeen++;
         }
     }
+}
 
-    // Add new hulls as trackable objects
+void HullTracker::addNewTrackables(
+    const std::vector<std::vector<cv::Point>>& newHulls,
+    const std::vector<bool>& matched)
+{
     for(size_t i = 0; i < newHulls.size(); ++i)
     {
         if(!matched[i])
@@ -52,8 +65,10 @@ void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
             trackedHulls[newTrackable.id] = newTrackable;
         }
     }
+}
 
-    // Remove hulls not seen for a certain number of frames
+void HullTracker::removeStaleTrackables()
+{
     for(auto it = trackedHulls.begin(); it != trackedHulls.end();)
     {
         if(it->second.framesSinceLastSeen > maxFramesNotSeen)
