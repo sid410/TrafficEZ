@@ -27,15 +27,3 @@ void HullDetector::getHulls(const cv::Mat& frame,
         hulls.push_back(hull);
     }
 }
-
-/**
- * @brief Draw the unreliable/unfiltered hulls onto the frame
- * @param inputFrame the frame to be drawn on.
- * @param unreliableHulls the hulls to draw to the frame.
- */
-void HullDetector::drawUnreliableHulls(
-    const cv::Mat& inputFrame,
-    std::vector<std::vector<cv::Point>>& unreliableHulls)
-{
-    cv::drawContours(inputFrame, unreliableHulls, -1, cv::Scalar(0, 255, 0), 2);
-}

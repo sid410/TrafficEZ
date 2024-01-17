@@ -17,9 +17,6 @@ public:
     HullDetector(double minArea = 500.0);
     void getHulls(const cv::Mat& frame,
                   std::vector<std::vector<cv::Point>>& hulls);
-    void
-    drawUnreliableHulls(const cv::Mat& inputFrame,
-                        std::vector<std::vector<cv::Point>>& unreliableHulls);
 };
 
 #endif

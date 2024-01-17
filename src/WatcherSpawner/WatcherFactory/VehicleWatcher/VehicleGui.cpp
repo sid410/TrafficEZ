@@ -44,7 +44,6 @@ void VehicleGui::display(const std::string& streamName,
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(processFrame, hulls);
-        // hullTracker.drawUnreliableHulls(warpedFrame, hulls);
         hullTracker.update(hulls);
         hullTracker.drawTrackedHulls(warpedFrame);
 
