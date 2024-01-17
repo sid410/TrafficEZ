@@ -13,6 +13,12 @@ HullDetector::HullDetector(double minArea)
 void HullDetector::getHulls(const cv::Mat& frame,
                             std::vector<std::vector<cv::Point>>& hulls)
 {
+    if(frame.empty())
+    {
+        std::cerr << "Error: Input frame is empty or invalid in getHulls\n";
+        return;
+    }
+
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(
         frame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
