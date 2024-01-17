@@ -1,41 +1,93 @@
 #include "HullTracker.h"
+#include "HullTrackable.h"
+#include <opencv2/opencv.hpp>
 
-HullTracker::HullTracker(double minArea)
-    : minContourArea(minArea)
+HullTracker::HullTracker()
+    : maxDistance(100.0)
+    , maxFramesNotSeen(3)
 {}
 
-/**
- * @brief Gets the convex hulls from the contours generated
- * from the preprocessed frame.
- * @param frame the preprocessed frame.
- * @param hulls the hulls reference to store data.
- */
-void HullTracker::getHulls(const cv::Mat& frame,
-                           std::vector<std::vector<cv::Point>>& hulls)
+void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
 {
-    std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(
-        frame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    std::vector<bool> matched(newHulls.size(), false);
 
-    for(const auto& contour : contours)
+    // Iterate over trackedHulls
+    for(auto& trackablePair : trackedHulls)
     {
-        if(cv::contourArea(contour) < minContourArea)
-            continue;
+        HullTrackable& trackable = trackablePair.second;
+        bool isMatched = false;
 
-        std::vector<cv::Point> hull;
-        cv::convexHull(contour, hull);
-        hulls.push_back(hull);
+        for(size_t i = 0; i < newHulls.size(); ++i)
+        {
+            if(matched[i])
+                continue; // Skip already matched hulls
+
+            if(cv::norm(trackable.centroid - HullTrackable::computeCentroid(
+                                                 newHulls[i])) < maxDistance)
+            {
+                // Update existing trackable with new hull
+                trackable.hull = newHulls[i];
+                trackable.centroid =
+                    HullTrackable::computeCentroid(newHulls[i]);
+                trackable.framesSinceLastSeen = 0;
+                matched[i] = true;
+                isMatched = true;
+                break;
+            }
+        }
+
+        if(!isMatched)
+        {
+            // Increment the 'not seen' counter if no match found
+            trackable.framesSinceLastSeen++;
+        }
+    }
+
+    // Add new hulls as trackable objects
+    for(size_t i = 0; i < newHulls.size(); ++i)
+    {
+        if(!matched[i])
+        {
+            HullTrackable newTrackable(newHulls[i]);
+            trackedHulls[newTrackable.id] = newTrackable;
+        }
+    }
+
+    // Remove hulls not seen for a certain number of frames
+    for(auto it = trackedHulls.begin(); it != trackedHulls.end();)
+    {
+        if(it->second.framesSinceLastSeen > maxFramesNotSeen)
+        {
+            it = trackedHulls.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
     }
 }
 
-/**
- * @brief Draw the unreliable/unfiltered hulls onto the frame
- * @param inputFrame the frame to be drawn on.
- * @param unreliableHulls the hulls to draw to the frame.
- */
-void HullTracker::drawUnreliableHulls(
-    const cv::Mat& inputFrame,
-    std::vector<std::vector<cv::Point>>& unreliableHulls)
+const std::unordered_map<int, HullTrackable>&
+HullTracker::getTrackedHulls() const
 {
-    cv::drawContours(inputFrame, unreliableHulls, -1, cv::Scalar(0, 0, 255), 2);
+    return trackedHulls;
+}
+
+void HullTracker::drawTrackedHulls(cv::Mat& frame) const
+{
+    for(const auto& pair : trackedHulls)
+    {
+        const auto& id = pair.first;
+        const auto& trackable = pair.second;
+
+        std::vector<std::vector<cv::Point>> hullVec = {trackable.hull};
+        cv::drawContours(frame, hullVec, -1, cv::Scalar(0, 255, 0), 2);
+        cv::putText(frame,
+                    std::to_string(id),
+                    trackable.centroid,
+                    cv::FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    cv::Scalar(255, 255, 255),
+                    2);
+    }
 }
