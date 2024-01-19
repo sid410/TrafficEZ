@@ -71,16 +71,18 @@ void HullTracker::addNewTrackables(
 
 void HullTracker::removeStaleTrackables()
 {
-    for(auto it = trackedHulls.begin(); it != trackedHulls.end();)
+    std::vector<int> idsToRemove;
+    for(const auto& pair : trackedHulls)
     {
-        if(it->second->getFramesSinceLastSeen() > maxFramesNotSeen)
+        if(pair.second->getFramesSinceLastSeen() > maxFramesNotSeen)
         {
-            it = trackedHulls.erase(it);
+            idsToRemove.push_back(pair.first);
         }
-        else
-        {
-            ++it;
-        }
+    }
+
+    for(int id : idsToRemove)
+    {
+        trackedHulls.erase(id);
     }
 }
 
