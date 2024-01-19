@@ -57,7 +57,7 @@ double FPSHelper::endSample()
  * @brief Averages a duration between two lines of code.
  * Need to call both startSample() and endSample() first.
  * @param newdur new sample of the duration from endSample().
- * @return an averaged duration resistant to fluctuations.
+ * @return an averaged duration (in milliseconds) resistant to fluctuations.
  */
 double FPSHelper::avgDuration(double newdur)
 {

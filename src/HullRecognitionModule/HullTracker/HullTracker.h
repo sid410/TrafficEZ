@@ -2,18 +2,18 @@
 #define HULLTRACKER_H
 
 #include "HullTrackable.h"
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 class HullTracker
 {
 private:
-    std::unordered_map<int, HullTrackable>
-        trackedHulls; // Map to store tracked hulls
-    const double maxDistance; // Max allowed distance for matching
-    const int maxFramesNotSeen; // Frames to wait before removing a hull
-    const int maxId; // Max ID to give to HullTrackable objects before resetting
-    int nextId; // Counter for generating unique IDs for HullTrackables
+    std::unordered_map<int, std::shared_ptr<HullTrackable>> trackedHulls;
+    const double maxDistance;
+    const int maxFramesNotSeen;
+    const int maxId;
+    int nextId;
 
     void matchAndUpdateTrackables(
         const std::vector<std::vector<cv::Point>>& newHulls,
@@ -27,7 +27,8 @@ public:
                 int maxFramesNotSeen = 3,
                 int maxId = 1000);
     void update(const std::vector<std::vector<cv::Point>>& newHulls);
-    const std::unordered_map<int, HullTrackable>& getTrackedHulls() const;
+    const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
+    getTrackedHulls() const;
     void drawTrackedHulls(cv::Mat& frame) const;
 };
 

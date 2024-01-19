@@ -44,8 +44,13 @@ void VehicleGui::display(const std::string& streamName,
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(processFrame, hulls);
+
+        fpsHelper.startSample();
+
         hullTracker.update(hulls);
         hullTracker.drawTrackedHulls(warpedFrame);
+
+        std::cout << fpsHelper.avgDuration(fpsHelper.endSample()) << "\n";
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);

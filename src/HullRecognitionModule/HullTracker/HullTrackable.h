@@ -7,23 +7,22 @@
 class HullTrackable
 {
 private:
-    int id; // Unique ID for each trackable
+    const int id; // Unique ID for each trackable, made constant
     std::vector<cv::Point> hull; // Hull of the object
     int framesSinceLastSeen; // Counter for frames since last seen
-    cv::Point2f centroid; // Centroid of the hull
+    mutable cv::Point2f
+        centroid; // Centroid of the hull, mutable for lazy calculation
+    mutable bool centroidCalculated; // Flag to check if centroid is calculated
 
 public:
-    HullTrackable();
     HullTrackable(int id, const std::vector<cv::Point>& hull);
 
     int getId() const;
-    void setId(int newId);
     const std::vector<cv::Point>& getHull() const;
     void setHull(const std::vector<cv::Point>& newHull);
     int getFramesSinceLastSeen() const;
     void setFramesSinceLastSeen(int newFramesSinceLastSeen);
-    cv::Point2f getCentroid() const;
-    void setCentroid(const cv::Point2f& newCentroid);
+    cv::Point2f getCentroid() const; // Now calculates centroid lazily
 
     static cv::Point2f computeCentroid(const std::vector<cv::Point>& hull);
 };
