@@ -11,7 +11,6 @@ HullTracker::HullTracker(double maxDist, int maxFrames, int maxIdValue)
 void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
 {
     std::vector<bool> matched(newHulls.size(), false);
-
     matchAndUpdateTrackables(newHulls, matched);
     addNewTrackables(newHulls, matched);
     removeStaleTrackables();
@@ -31,13 +30,14 @@ void HullTracker::matchAndUpdateTrackables(
             if(matched[i])
                 continue; // Skip already matched hulls
 
-            if(cv::norm(trackable.centroid - HullTrackable::computeCentroid(
-                                                 newHulls[i])) < maxDistance)
+            if(cv::norm(trackable.getCentroid() -
+                        HullTrackable::computeCentroid(newHulls[i])) <
+               maxDistance)
             {
-                trackable.hull = newHulls[i];
-                trackable.centroid =
-                    HullTrackable::computeCentroid(newHulls[i]);
-                trackable.framesSinceLastSeen = 0;
+                trackable.setHull(newHulls[i]);
+                trackable.setCentroid(
+                    HullTrackable::computeCentroid(newHulls[i]));
+                trackable.setFramesSinceLastSeen(0);
                 matched[i] = true;
                 isMatched = true;
                 break;
@@ -46,7 +46,8 @@ void HullTracker::matchAndUpdateTrackables(
 
         if(!isMatched)
         {
-            trackable.framesSinceLastSeen++;
+            trackable.setFramesSinceLastSeen(
+                trackable.getFramesSinceLastSeen() + 1);
         }
     }
 }
@@ -65,7 +66,7 @@ void HullTracker::addNewTrackables(
             }
 
             HullTrackable newTrackable(nextId++, newHulls[i]);
-            trackedHulls[newTrackable.id] = newTrackable;
+            trackedHulls[newTrackable.getId()] = newTrackable;
         }
     }
 }
@@ -74,7 +75,7 @@ void HullTracker::removeStaleTrackables()
 {
     for(auto it = trackedHulls.begin(); it != trackedHulls.end();)
     {
-        if(it->second.framesSinceLastSeen > maxFramesNotSeen)
+        if(it->second.getFramesSinceLastSeen() > maxFramesNotSeen)
         {
             it = trackedHulls.erase(it);
         }
@@ -96,11 +97,11 @@ void HullTracker::drawTrackedHulls(cv::Mat& frame) const
     for(const auto& pair : trackedHulls)
     {
         const HullTrackable& trackable = pair.second;
-        std::vector<std::vector<cv::Point>> hullVec = {trackable.hull};
+        std::vector<std::vector<cv::Point>> hullVec = {trackable.getHull()};
         cv::drawContours(frame, hullVec, -1, cv::Scalar(0, 255, 0), 2);
         cv::putText(frame,
-                    std::to_string(trackable.id),
-                    trackable.centroid,
+                    std::to_string(trackable.getId()),
+                    trackable.getCentroid(),
                     cv::FONT_HERSHEY_SIMPLEX,
                     0.5,
                     cv::Scalar(255, 255, 255),

@@ -6,12 +6,53 @@ HullTrackable::HullTrackable()
     , centroid(cv::Point2f(0.0f, 0.0f))
 {}
 
-HullTrackable::HullTrackable(int id, const std::vector<cv::Point>& hull)
-    : id(id)
-    , hull(hull)
+HullTrackable::HullTrackable(int newId, const std::vector<cv::Point>& newHull)
+    : id(newId)
+    , hull(newHull)
     , framesSinceLastSeen(0)
-    , centroid(computeCentroid(hull))
+    , centroid(computeCentroid(newHull))
 {}
+
+int HullTrackable::getId() const
+{
+    return id;
+}
+
+void HullTrackable::setId(int newId)
+{
+    id = newId;
+}
+
+const std::vector<cv::Point>& HullTrackable::getHull() const
+{
+    return hull;
+}
+
+void HullTrackable::setHull(const std::vector<cv::Point>& newHull)
+{
+    hull = newHull;
+    centroid = computeCentroid(newHull);
+}
+
+int HullTrackable::getFramesSinceLastSeen() const
+{
+    return framesSinceLastSeen;
+}
+
+void HullTrackable::setFramesSinceLastSeen(int newFramesSinceLastSeen)
+{
+    framesSinceLastSeen = newFramesSinceLastSeen;
+}
+
+cv::Point2f HullTrackable::getCentroid() const
+{
+    return centroid;
+}
+
+void HullTrackable::setCentroid(const cv::Point2f& newCentroid)
+{
+    centroid = newCentroid;
+}
 
 cv::Point2f HullTrackable::computeCentroid(const std::vector<cv::Point>& hull)
 {
