@@ -34,7 +34,7 @@ void HullTracker::matchAndUpdateTrackables(
                         HullTrackable::computeCentroid(newHulls[i])) <
                maxDistance)
             {
-                trackable->setHull(newHulls[i]);
+                trackable->setHull(std::move(newHulls[i]));
                 trackable->setFramesSinceLastSeen(0);
                 matched[i] = true;
                 isMatched = true;

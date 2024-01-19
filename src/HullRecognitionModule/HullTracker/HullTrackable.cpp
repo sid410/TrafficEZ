@@ -20,7 +20,13 @@ const std::vector<cv::Point>& HullTrackable::getHull() const
 void HullTrackable::setHull(const std::vector<cv::Point>& newHull)
 {
     hull = newHull;
-    centroidCalculated = false; // Reset centroid calculation flag
+    centroidCalculated = false;
+}
+
+void HullTrackable::setHull(std::vector<cv::Point>&& newHull)
+{
+    hull = std::move(newHull);
+    centroidCalculated = false;
 }
 
 int HullTrackable::getFramesSinceLastSeen() const

@@ -19,9 +19,15 @@ public:
 
     int getId() const;
     const std::vector<cv::Point>& getHull() const;
-    void setHull(const std::vector<cv::Point>& newHull);
+
+    void
+    setHull(const std::vector<cv::Point>& newHull); // Pass by const reference
+    void
+    setHull(std::vector<cv::Point>&& newHull); // Overload for move semantics
+
     int getFramesSinceLastSeen() const;
     void setFramesSinceLastSeen(int newFramesSinceLastSeen);
+
     cv::Point2f getCentroid() const; // Now calculates centroid lazily
 
     static cv::Point2f computeCentroid(const std::vector<cv::Point>& hull);
