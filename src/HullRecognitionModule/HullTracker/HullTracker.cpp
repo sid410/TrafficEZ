@@ -12,8 +12,8 @@ void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
 {
     std::vector<bool> matched(newHulls.size(), false);
     matchAndUpdateTrackables(newHulls, matched);
-    addNewTrackables(newHulls, matched);
     removeStaleTrackables();
+    addNewTrackables(newHulls, matched);
 }
 
 void HullTracker::matchAndUpdateTrackables(
@@ -56,16 +56,17 @@ void HullTracker::addNewTrackables(
 {
     for(size_t i = 0; i < newHulls.size(); ++i)
     {
-        if(!matched[i])
+        if(matched[i])
+            continue;
+
+        if(nextId > maxId)
         {
-            if(nextId > maxId)
-            {
-                nextId = 0;
-            }
-            auto newTrackable =
-                std::make_shared<HullTrackable>(nextId++, newHulls[i]);
-            trackedHulls[newTrackable->getId()] = newTrackable;
+            nextId = 0;
         }
+
+        auto newTrackable =
+            std::make_shared<HullTrackable>(nextId++, newHulls[i]);
+        trackedHulls[newTrackable->getId()] = newTrackable;
     }
 }
 
