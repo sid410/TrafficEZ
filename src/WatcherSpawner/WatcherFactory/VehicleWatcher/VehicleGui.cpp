@@ -14,7 +14,7 @@ void VehicleGui::display(const std::string& streamName,
     FPSHelper fpsHelper;
 
     PreprocessPipelineBuilder pipeBuilder;
-    HullDetector hullDetector;
+    HullDetector hullDetector(2000, 20, 80);
     HullTracker hullTracker;
 
     cv::Mat inputFrame;
@@ -50,6 +50,8 @@ void VehicleGui::display(const std::string& streamName,
         hullTracker.update(hulls);
         hullTracker.drawTrackedHulls(warpedFrame);
         hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
+
+        hullDetector.drawLengthBoundaries(warpedFrame);
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);
