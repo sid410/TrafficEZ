@@ -27,6 +27,9 @@ void VehicleGui::display(const std::string& streamName,
     if(!videoStreamer.readCalibrationPoints(calibName))
         return;
 
+    static int laneLength = videoStreamer.getLaneLength();
+    static int laneWidth = videoStreamer.getLaneWidth();
+
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
     pipeBuilder.addGrayscaleStep()
@@ -40,17 +43,13 @@ void VehicleGui::display(const std::string& streamName,
     {
         warpedFrame.copyTo(processFrame);
         pipeBuilder.process(processFrame);
-        // pipeBuilder.processDebugStack(processFrame);
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(processFrame, hulls);
 
-        // fpsHelper.startSample();
-
         hullTracker.update(hulls);
         hullTracker.drawTrackedHulls(warpedFrame);
-
-        // std::cout << fpsHelper.avgDuration(fpsHelper.endSample()) << "\n";
+        hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);

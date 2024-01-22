@@ -22,6 +22,9 @@ public:
     bool getNextFrame(cv::Mat& frame);
     bool readCalibrationPoints(const cv::String& filename);
 
+    double getLaneLength() const;
+    double getLaneWidth() const;
+
     void initializePerspectiveTransform(cv::Mat& frame,
                                         TransformPerspective& perspective);
     bool applyFrameRoi(cv::Mat& frame,
@@ -29,7 +32,7 @@ public:
                        TransformPerspective& perspective);
 
 protected:
-    bool readCalibSuccess; // used also in the child class
+    bool readCalibSuccess; // used also in CalibrateVideoStreamer
 
     cv::Mat roiMatrix;
     std::vector<cv::Point2f> roiPoints;
@@ -38,6 +41,9 @@ private:
     cv::VideoCapture stream;
     int originalWidth;
     int originalHeight;
+
+    double laneLength;
+    double laneWidth;
 
     bool roiMatrixInitialized;
 };

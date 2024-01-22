@@ -131,3 +131,36 @@ void HullTracker::drawTrackedHulls(cv::Mat& frame) const
                     2);
     }
 }
+
+// temporary, just for debugging
+void HullTracker::drawLanesInfo(cv::Mat& frame,
+                                int laneLength,
+                                int laneWidth) const
+{
+    std::string laneLengthText =
+        "Lane Length: " + std::to_string(laneLength) + " m";
+    cv::Size textSize = cv::getTextSize(
+        laneLengthText, cv::FONT_HERSHEY_SIMPLEX, 1.0, 2, nullptr);
+    cv::Point laneLengthPos(frame.cols - textSize.width / 2, textSize.height);
+    cv::putText(frame,
+                laneLengthText,
+                laneLengthPos,
+                cv::FONT_HERSHEY_SIMPLEX,
+                0.5,
+                cv::Scalar(0, 0, 255),
+                2);
+
+    std::string laneWidthText =
+        "<-Lane Width: " + std::to_string(laneWidth) + " m->";
+    textSize = cv::getTextSize(
+        laneWidthText, cv::FONT_HERSHEY_SIMPLEX, 1.0, 2, nullptr);
+    cv::Point laneWidthPos((frame.cols - textSize.width / 2) / 2,
+                           frame.rows - 15);
+    cv::putText(frame,
+                laneWidthText,
+                laneWidthPos,
+                cv::FONT_HERSHEY_SIMPLEX,
+                0.5,
+                cv::Scalar(0, 0, 255),
+                2);
+}

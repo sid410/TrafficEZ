@@ -30,6 +30,7 @@ public:
     const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
     getTrackedHulls() const;
     void drawTrackedHulls(cv::Mat& frame) const;
+    void drawLanesInfo(cv::Mat& frame, int laneLength, int laneWidth) const;
 };
 
 #endif
