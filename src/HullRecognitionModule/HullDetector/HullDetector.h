@@ -16,6 +16,10 @@ private:
     const int startDetectPercent;
     const int endDetectPercent;
 
+    mutable int startY;
+    mutable int endY;
+    void calculateBoundaries(int frameHeight) const;
+
 public:
     HullDetector(double minArea = 2500.0,
                  int startPercent = 20,

@@ -4,6 +4,8 @@ HullDetector::HullDetector(double minArea, int startPercent, int endPercent)
     : minContourArea(minArea)
     , startDetectPercent(std::clamp(startPercent, 0, 100))
     , endDetectPercent(std::clamp(endPercent, 0, 100))
+    , startY(0)
+    , endY(0)
 {}
 
 /**
@@ -21,26 +23,55 @@ void HullDetector::getHulls(const cv::Mat& frame,
         return;
     }
 
+    if(startY == 0 && endY == 0)
+    {
+        calculateBoundaries(frame.rows);
+    }
+
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(
         frame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
+    hulls.clear();
     for(const auto& contour : contours)
     {
-        if(cv::contourArea(contour) < minContourArea)
-            continue;
+        // Simplify the contour
+        std::vector<cv::Point> approxContour;
+        cv::approxPolyDP(contour, approxContour, 5, true);
+
+        cv::Moments mu = cv::moments(approxContour);
+        if(mu.m00 < minContourArea)
+            continue; // filter small contours
+
+        cv::Point2f centroid(mu.m10 / mu.m00, mu.m01 / mu.m00);
+        if(centroid.y < startY || centroid.y > endY)
+            continue; // filter contours outside bounds
 
         std::vector<cv::Point> hull;
-        cv::convexHull(contour, hull);
+        cv::convexHull(approxContour, hull);
         hulls.push_back(hull);
     }
 }
 
+void HullDetector::calculateBoundaries(int frameHeight) const
+{
+    startY = static_cast<int>(frameHeight * startDetectPercent / 100.0);
+    endY = static_cast<int>(frameHeight * endDetectPercent / 100.0);
+}
+
 void HullDetector::drawLengthBoundaries(cv::Mat& frame) const
 {
-    int frameHeight = frame.rows;
-    int startY = static_cast<int>(frameHeight * startDetectPercent / 100.0);
-    int endY = static_cast<int>(frameHeight * endDetectPercent / 100.0);
+    if(frame.empty())
+    {
+        std::cerr << "Error: Input frame is empty or invalid in "
+                     "drawLengthBoundaries\n";
+        return;
+    }
+
+    if(startY == 0 && endY == 0)
+    {
+        calculateBoundaries(frame.rows);
+    }
 
     cv::line(frame,
              cv::Point(0, startY),
