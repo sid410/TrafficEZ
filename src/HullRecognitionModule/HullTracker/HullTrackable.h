@@ -1,6 +1,7 @@
 #ifndef HULLTRACKABLE_H
 #define HULLTRACKABLE_H
 
+#include <chrono>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
@@ -13,6 +14,13 @@ private:
     mutable cv::Point2f
         centroid; // Centroid of the hull, mutable for lazy calculation
     mutable bool centroidCalculated; // Flag to check if centroid is calculated
+
+    float avgSpeed; // Average speed in pixels per second
+    float lastDistance;
+    int movingAvgCounter;
+    bool speedInitialized;
+    std::chrono::steady_clock::time_point
+        lastUpdateTime; // Time of the last update
 
 public:
     HullTrackable(int id, const std::vector<cv::Point>& hull);
@@ -29,6 +37,9 @@ public:
     void setFramesSinceLastSeen(int newFramesSinceLastSeen);
 
     cv::Point2f getCentroid() const; // Now calculates centroid lazily
+
+    float getAvgSpeed() const;
+    void setAvgSpeed(float newDistance);
 
     static cv::Point2f computeCentroid(const std::vector<cv::Point>& hull);
 };

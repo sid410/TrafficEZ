@@ -30,12 +30,16 @@ void HullTracker::matchAndUpdateTrackables(
             if(matched[i])
                 continue;
 
-            if(cv::norm(trackable->getCentroid() -
-                        HullTrackable::computeCentroid(newHulls[i])) <
-               maxDistance)
+            float distance =
+                cv::norm(trackable->getCentroid() -
+                         HullTrackable::computeCentroid(newHulls[i]));
+
+            if(distance < maxDistance)
             {
-                trackable->setHull(std::move(newHulls[i]));
+                trackable->setAvgSpeed(distance);
+                trackable->setHull(newHulls[i]);
                 trackable->setFramesSinceLastSeen(0);
+
                 matched[i] = true;
                 isMatched = true;
                 break;
@@ -100,12 +104,30 @@ void HullTracker::drawTrackedHulls(cv::Mat& frame) const
         const auto& trackable = pair.second;
         std::vector<std::vector<cv::Point>> hullVec = {trackable->getHull()};
         cv::drawContours(frame, hullVec, -1, cv::Scalar(0, 255, 0), 2);
+
+        cv::Point2f idPos = trackable->getCentroid();
+        std::string idText = std::to_string(trackable->getId());
         cv::putText(frame,
-                    std::to_string(trackable->getId()),
-                    trackable->getCentroid(),
+                    idText,
+                    idPos,
                     cv::FONT_HERSHEY_SIMPLEX,
                     0.5,
                     cv::Scalar(255, 255, 255),
+                    2);
+
+        cv::Point2f speedPos =
+            idPos + cv::Point2f(0, 15); // Position below the ID
+
+        // print the average speed
+        int intSpeed = static_cast<int>(trackable->getAvgSpeed());
+        std::string speedText = std::to_string(intSpeed) + " px/s";
+
+        cv::putText(frame,
+                    speedText,
+                    speedPos,
+                    cv::FONT_HERSHEY_SIMPLEX,
+                    0.8,
+                    cv::Scalar(0, 255, 255),
                     2);
     }
 }
