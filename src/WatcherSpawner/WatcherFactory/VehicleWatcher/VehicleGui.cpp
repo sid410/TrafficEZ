@@ -9,6 +9,8 @@
 void VehicleGui::display(const std::string& streamName,
                          const std::string& calibName) const
 {
+    int frameCounter = 0; // temporary, for estimating traffic flow
+
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
     FPSHelper fpsHelper;
@@ -57,7 +59,13 @@ void VehicleGui::display(const std::string& streamName,
         fpsHelper.displayFps(warpedFrame);
         cv::imshow("Vehicle Gui", warpedFrame);
 
-        if(cv::waitKey(30) == 27)
+        // temporary, for estimating traffic flow
+        // need a way to constantly cut to uniformly measure
+        frameCounter++;
+        if(frameCounter >= 1000)
+            break;
+
+        if(cv::waitKey(0) == 27)
             break;
     }
 
