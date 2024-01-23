@@ -13,6 +13,8 @@ HullTracker::HullTracker(double maxDist,
     , maxId(maxIdValue)
     , nextId(0)
     , hullCount(0)
+    , totalHullArea(0)
+    , totalAvgSpeeds(0)
     , boundLineY(0)
 {}
 
@@ -26,7 +28,7 @@ void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
     std::vector<bool> matched(newHulls.size(), false);
     matchAndUpdateTrackables(newHulls, matched);
     removeStaleTrackables();
-    countHullsCrossed();
+    processHullsCrossed();
     addNewTrackables(newHulls, matched);
 }
 
@@ -34,6 +36,16 @@ const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
 HullTracker::getTrackedHulls() const
 {
     return trackedHulls;
+}
+
+float HullTracker::getTotalHullArea() const
+{
+    return totalHullArea;
+}
+
+float HullTracker::getOverallAvgSpeed() const
+{
+    return totalAvgSpeeds / hullCount;
 }
 
 void HullTracker::matchAndUpdateTrackables(
@@ -64,7 +76,6 @@ void HullTracker::matchAndUpdateTrackables(
 
             if(distance < maxDistance)
             {
-                trackable->setAvgSpeed(distance);
                 trackable->setHull(newHulls[i]);
                 trackable->setFramesSinceLastSeen(0);
 
@@ -107,7 +118,7 @@ void HullTracker::addNewTrackables(
     }
 }
 
-void HullTracker::countHullsCrossed()
+void HullTracker::processHullsCrossed()
 {
     std::vector<int> hullsToRemove;
 
@@ -118,6 +129,8 @@ void HullTracker::countHullsCrossed()
         if(trackable->getCentroid().y > boundLineY - pixelBoundaryCushion)
         {
             hullCount++; // increase counter
+            totalHullArea += trackable->getHullArea();
+            totalAvgSpeeds += trackable->getAvgSpeed();
             hullsToRemove.push_back(trackablePair.first);
         }
     }
@@ -161,21 +174,6 @@ void HullTracker::drawTrackedHulls(cv::Mat& frame) const
                     cv::FONT_HERSHEY_SIMPLEX,
                     0.5,
                     cv::Scalar(255, 255, 255),
-                    2);
-
-        cv::Point2f speedPos =
-            idPos + cv::Point2f(0, 15); // Position below the ID
-
-        // print the average speed
-        int intSpeed = static_cast<int>(trackable->getAvgSpeed());
-        std::string speedText = std::to_string(intSpeed) + " px/s";
-
-        cv::putText(frame,
-                    speedText,
-                    speedPos,
-                    cv::FONT_HERSHEY_SIMPLEX,
-                    0.8,
-                    cv::Scalar(0, 255, 255),
                     2);
     }
 }

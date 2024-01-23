@@ -45,7 +45,7 @@ void FPSHelper::startSample()
 
 /**
  * @brief Call this method to end sampling a duration.
- * @return the duration. Pass this new sample duration
+ * @return the duration (in milliseconds). Pass this new sample duration
  * to avgDuration().
  */
 double FPSHelper::endSample()

@@ -19,6 +19,8 @@ private:
 
     int nextId;
     int hullCount;
+    float totalHullArea;
+    float totalAvgSpeeds;
 
     mutable int boundLineY;
 
@@ -28,7 +30,7 @@ private:
     void addNewTrackables(const std::vector<std::vector<cv::Point>>& newHulls,
                           const std::vector<bool>& matched);
 
-    void countHullsCrossed();
+    void processHullsCrossed();
     void removeStaleTrackables();
 
 public:
@@ -43,6 +45,9 @@ public:
 
     const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
     getTrackedHulls() const;
+
+    float getTotalHullArea() const;
+    float getOverallAvgSpeed() const;
 
     void drawTrackedHulls(cv::Mat& frame) const;
     void drawLanesInfo(cv::Mat& frame, int laneLength, int laneWidth) const;

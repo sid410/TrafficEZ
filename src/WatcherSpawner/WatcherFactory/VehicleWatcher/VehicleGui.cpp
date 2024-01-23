@@ -46,7 +46,9 @@ void VehicleGui::display(const std::string& streamName,
     hullDetector.initialize(warpedFrame);
     hullTracker.initialize(hullDetector.getOutBoundaryLine());
 
-    // update loop
+    fpsHelper.startSample();
+
+    // frame update loop
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         warpedFrame.copyTo(processFrame);
@@ -75,6 +77,10 @@ void VehicleGui::display(const std::string& streamName,
         if(cv::waitKey(30) == 27)
             break;
     }
+
+    std::cout << fpsHelper.endSample() << " ms\n";
+    std::cout << hullTracker.getTotalHullArea() << " px^2\n";
+    std::cout << hullTracker.getOverallAvgSpeed() << " px/s\n";
 
     cv::destroyAllWindows();
 }
