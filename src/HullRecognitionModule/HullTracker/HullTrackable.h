@@ -28,10 +28,7 @@ public:
     int getId() const;
     const std::vector<cv::Point>& getHull() const;
 
-    void
-    setHull(const std::vector<cv::Point>& newHull); // Pass by const reference
-    void
-    setHull(std::vector<cv::Point>&& newHull); // Overload for move semantics
+    void setHull(const std::vector<cv::Point>& newHull);
 
     int getFramesSinceLastSeen() const;
     void setFramesSinceLastSeen(int newFramesSinceLastSeen);
