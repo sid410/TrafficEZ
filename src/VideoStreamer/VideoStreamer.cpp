@@ -93,7 +93,6 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
             double x = point["x"].as<double>();
             double y = point["y"].as<double>();
             roiPoints.emplace_back(x, y);
-            std::cout << x << ", " << y << "\n";
         }
 
         const YAML::Node& dimensionNode = yamlNode["lanes_dimension"];

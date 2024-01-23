@@ -16,7 +16,6 @@ private:
     mutable bool centroidCalculated; // Flag to check if centroid is calculated
 
     float avgSpeed; // Average speed in pixels per second
-    float lastDistance;
     int movingAvgCounter;
     bool speedInitialized;
     std::chrono::steady_clock::time_point

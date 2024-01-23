@@ -65,7 +65,7 @@ void VehicleGui::display(const std::string& streamName,
         if(frameCounter >= 1000)
             break;
 
-        if(cv::waitKey(0) == 27)
+        if(cv::waitKey(30) == 27)
             break;
     }
 

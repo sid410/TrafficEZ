@@ -9,7 +9,6 @@ HullTrackable::HullTrackable(int newId, const std::vector<cv::Point>& newHull)
     , avgSpeed(0)
     , movingAvgCounter(2)
     , speedInitialized(false)
-    , lastDistance(0)
 {}
 
 int HullTrackable::getId() const
