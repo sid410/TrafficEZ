@@ -78,9 +78,10 @@ void VehicleGui::display(const std::string& streamName,
             break;
     }
 
-    std::cout << fpsHelper.endSample() << " ms\n";
-    std::cout << hullTracker.getTotalHullArea() << " px^2\n";
-    std::cout << hullTracker.getOverallAvgSpeed() << " px/s\n";
+    std::cout << "Total time: " << fpsHelper.endSample() / 1000 << " s\n";
+    std::cout << "Total Area: " << hullTracker.getTotalHullArea() << " px^2\n";
+    std::cout << "Total Speed: " << hullTracker.getOverallAvgSpeed()
+              << " px/s\n";
 
     cv::destroyAllWindows();
 }
