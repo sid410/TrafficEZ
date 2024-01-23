@@ -3,13 +3,17 @@
 
 HullTracker::HullTracker(double maxDist,
                          float threshArea,
+                         int pixelBoundaryCushion,
                          int maxFrames,
                          int maxIdValue)
     : maxDistance(maxDist)
     , thresholdArea(threshArea)
+    , pixelBoundaryCushion(pixelBoundaryCushion)
     , maxFramesNotSeen(maxFrames)
     , maxId(maxIdValue)
     , nextId(0)
+    , hullCount(0)
+    , boundLineY(359)
 {}
 
 void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
@@ -17,6 +21,7 @@ void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
     std::vector<bool> matched(newHulls.size(), false);
     matchAndUpdateTrackables(newHulls, matched);
     removeStaleTrackables();
+    countHullsCrossed();
     addNewTrackables(newHulls, matched);
 }
 
@@ -80,9 +85,35 @@ void HullTracker::addNewTrackables(
             nextId = 0;
         }
 
+        // Check if the hull is too near the boundary
+        cv::Point2f centroid = HullTrackable::computeCentroid(newHulls[i]);
+        if(centroid.y > boundLineY - pixelBoundaryCushion)
+            continue;
+
         auto newTrackable =
             std::make_shared<HullTrackable>(nextId++, newHulls[i]);
         trackedHulls[newTrackable->getId()] = newTrackable;
+    }
+}
+
+void HullTracker::countHullsCrossed()
+{
+    std::vector<int> hullsToRemove;
+
+    for(const auto& trackablePair : trackedHulls)
+    {
+        const auto& trackable = trackablePair.second;
+
+        if(trackable->getCentroid().y > boundLineY - pixelBoundaryCushion)
+        {
+            hullCount++;
+            hullsToRemove.push_back(trackablePair.first);
+        }
+    }
+
+    for(int id : hullsToRemove)
+    {
+        trackedHulls.erase(id);
     }
 }
 
@@ -174,5 +205,17 @@ void HullTracker::drawLanesInfo(cv::Mat& frame,
                 cv::FONT_HERSHEY_SIMPLEX,
                 0.5,
                 cv::Scalar(0, 0, 255),
+                2);
+
+    std::string countText = "Count: " + std::to_string(hullCount);
+    textSize =
+        cv::getTextSize(countText, cv::FONT_HERSHEY_SIMPLEX, 1.0, 2, nullptr);
+    cv::Point countPos(0, frame.rows - 15);
+    cv::putText(frame,
+                countText,
+                countPos,
+                cv::FONT_HERSHEY_SIMPLEX,
+                1,
+                cv::Scalar(0, 255, 0),
                 2);
 }

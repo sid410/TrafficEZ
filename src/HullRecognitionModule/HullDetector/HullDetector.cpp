@@ -57,6 +57,7 @@ void HullDetector::calculateBoundaries(int frameHeight) const
 {
     startY = static_cast<int>(frameHeight * startDetectPercent / 100.0);
     endY = static_cast<int>(frameHeight * endDetectPercent / 100.0);
+    std::cout << endY << "\n";
 }
 
 void HullDetector::drawLengthBoundaries(cv::Mat& frame) const

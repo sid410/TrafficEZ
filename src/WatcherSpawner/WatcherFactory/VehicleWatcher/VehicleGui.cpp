@@ -16,7 +16,7 @@ void VehicleGui::display(const std::string& streamName,
     FPSHelper fpsHelper;
 
     PreprocessPipelineBuilder pipeBuilder;
-    HullDetector hullDetector(2000, 20, 80);
+    HullDetector hullDetector;
     HullTracker hullTracker;
 
     cv::Mat inputFrame;

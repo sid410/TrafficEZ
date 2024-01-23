@@ -23,7 +23,7 @@ private:
 public:
     HullDetector(double minArea = 2000.0,
                  int startPercent = 20,
-                 int endPercent = 80);
+                 int endPercent = 70);
     void getHulls(const cv::Mat& frame,
                   std::vector<std::vector<cv::Point>>& hulls);
     void drawLengthBoundaries(cv::Mat& frame) const;
