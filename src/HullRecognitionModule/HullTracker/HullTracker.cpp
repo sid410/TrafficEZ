@@ -13,8 +13,13 @@ HullTracker::HullTracker(double maxDist,
     , maxId(maxIdValue)
     , nextId(0)
     , hullCount(0)
-    , boundLineY(359)
+    , boundLineY(0)
 {}
+
+void HullTracker::initialize(int outBoundaryLine) const
+{
+    boundLineY = outBoundaryLine;
+}
 
 void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
 {
@@ -23,6 +28,12 @@ void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
     removeStaleTrackables();
     countHullsCrossed();
     addNewTrackables(newHulls, matched);
+}
+
+const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
+HullTracker::getTrackedHulls() const
+{
+    return trackedHulls;
 }
 
 void HullTracker::matchAndUpdateTrackables(
@@ -106,7 +117,7 @@ void HullTracker::countHullsCrossed()
 
         if(trackable->getCentroid().y > boundLineY - pixelBoundaryCushion)
         {
-            hullCount++;
+            hullCount++; // increase counter
             hullsToRemove.push_back(trackablePair.first);
         }
     }
@@ -132,12 +143,6 @@ void HullTracker::removeStaleTrackables()
     {
         trackedHulls.erase(id);
     }
-}
-
-const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
-HullTracker::getTrackedHulls() const
-{
-    return trackedHulls;
 }
 
 void HullTracker::drawTrackedHulls(cv::Mat& frame) const

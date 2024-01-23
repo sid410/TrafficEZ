@@ -8,6 +8,11 @@ HullDetector::HullDetector(double minArea, int startPercent, int endPercent)
     , endY(0)
 {}
 
+void HullDetector::initialize(cv::Mat frame) const
+{
+    calculateBoundaries(frame.rows);
+}
+
 /**
  * @brief Gets the convex hulls from the contours generated
  * from the preprocessed frame.
@@ -25,7 +30,8 @@ void HullDetector::getHulls(const cv::Mat& frame,
 
     if(startY == 0 && endY == 0)
     {
-        calculateBoundaries(frame.rows);
+        std::cerr << "Error: Please call initialize first\n";
+        return;
     }
 
     std::vector<std::vector<cv::Point>> contours;
@@ -57,7 +63,11 @@ void HullDetector::calculateBoundaries(int frameHeight) const
 {
     startY = static_cast<int>(frameHeight * startDetectPercent / 100.0);
     endY = static_cast<int>(frameHeight * endDetectPercent / 100.0);
-    std::cout << endY << "\n";
+}
+
+int HullDetector::getOutBoundaryLine() const
+{
+    return endY;
 }
 
 void HullDetector::drawLengthBoundaries(cv::Mat& frame) const
@@ -71,7 +81,8 @@ void HullDetector::drawLengthBoundaries(cv::Mat& frame) const
 
     if(startY == 0 && endY == 0)
     {
-        calculateBoundaries(frame.rows);
+        std::cerr << "Error: Please call initialize first\n";
+        return;
     }
 
     cv::line(frame,

@@ -19,7 +19,8 @@ private:
 
     int nextId;
     int hullCount;
-    int boundLineY;
+
+    mutable int boundLineY;
 
     void matchAndUpdateTrackables(
         const std::vector<std::vector<cv::Point>>& newHulls,
@@ -36,9 +37,13 @@ public:
                 int pixelBoundaryCushion = 20,
                 int maxFramesNotSeen = 3,
                 int maxId = 1000);
+
+    void initialize(int outBoundaryLine) const;
     void update(const std::vector<std::vector<cv::Point>>& newHulls);
+
     const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
     getTrackedHulls() const;
+
     void drawTrackedHulls(cv::Mat& frame) const;
     void drawLanesInfo(cv::Mat& frame, int laneLength, int laneWidth) const;
 };

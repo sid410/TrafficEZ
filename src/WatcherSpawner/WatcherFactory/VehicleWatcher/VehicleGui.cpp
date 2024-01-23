@@ -41,6 +41,12 @@ void VehicleGui::display(const std::string& streamName,
         .addDilationStep()
         .addErosionStep();
 
+    // for initialization of detector and tracker
+    videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
+    hullDetector.initialize(warpedFrame);
+    hullTracker.initialize(hullDetector.getOutBoundaryLine());
+
+    // update loop
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         warpedFrame.copyTo(processFrame);
@@ -50,9 +56,10 @@ void VehicleGui::display(const std::string& streamName,
         hullDetector.getHulls(processFrame, hulls);
 
         hullTracker.update(hulls);
+
+        // draw information on frame, only for GUI
         hullTracker.drawTrackedHulls(warpedFrame);
         hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
-
         hullDetector.drawLengthBoundaries(warpedFrame);
 
         fpsHelper.avgFps();
