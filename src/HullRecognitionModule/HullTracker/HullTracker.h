@@ -11,6 +11,7 @@ class HullTracker
 private:
     std::unordered_map<int, std::shared_ptr<HullTrackable>> trackedHulls;
     const double maxDistance;
+    const float thresholdArea;
     const int maxFramesNotSeen;
     const int maxId;
     int nextId;
@@ -24,6 +25,7 @@ private:
 
 public:
     HullTracker(double maxDistance = 100.0,
+                float thresholdArea = 0.5,
                 int maxFramesNotSeen = 3,
                 int maxId = 1000);
     void update(const std::vector<std::vector<cv::Point>>& newHulls);

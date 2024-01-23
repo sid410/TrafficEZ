@@ -26,9 +26,10 @@ public:
     HullTrackable(int id, const std::vector<cv::Point>& hull);
 
     int getId() const;
-    const std::vector<cv::Point>& getHull() const;
 
     void setHull(const std::vector<cv::Point>& newHull);
+    const std::vector<cv::Point>& getHull() const;
+    float getHullArea() const;
 
     int getFramesSinceLastSeen() const;
     void setFramesSinceLastSeen(int newFramesSinceLastSeen);

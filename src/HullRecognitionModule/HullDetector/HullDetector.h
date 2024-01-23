@@ -21,7 +21,7 @@ private:
     void calculateBoundaries(int frameHeight) const;
 
 public:
-    HullDetector(double minArea = 2500.0,
+    HullDetector(double minArea = 2000.0,
                  int startPercent = 20,
                  int endPercent = 80);
     void getHulls(const cv::Mat& frame,

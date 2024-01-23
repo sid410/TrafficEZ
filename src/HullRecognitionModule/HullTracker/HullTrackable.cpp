@@ -1,4 +1,5 @@
 #include "HullTrackable.h"
+#include "FPSHelper.h"
 
 HullTrackable::HullTrackable(int newId, const std::vector<cv::Point>& newHull)
     : id(newId)
@@ -19,6 +20,11 @@ int HullTrackable::getId() const
 const std::vector<cv::Point>& HullTrackable::getHull() const
 {
     return hull;
+}
+
+float HullTrackable::getHullArea() const
+{
+    return cv::contourArea(hull);
 }
 
 void HullTrackable::setHull(const std::vector<cv::Point>& newHull)

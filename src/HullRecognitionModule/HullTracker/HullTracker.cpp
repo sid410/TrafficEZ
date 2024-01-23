@@ -1,8 +1,12 @@
 #include "HullTracker.h"
 #include <opencv2/opencv.hpp>
 
-HullTracker::HullTracker(double maxDist, int maxFrames, int maxIdValue)
+HullTracker::HullTracker(double maxDist,
+                         float threshArea,
+                         int maxFrames,
+                         int maxIdValue)
     : maxDistance(maxDist)
+    , thresholdArea(threshArea)
     , maxFramesNotSeen(maxFrames)
     , maxId(maxIdValue)
     , nextId(0)
@@ -23,11 +27,19 @@ void HullTracker::matchAndUpdateTrackables(
     for(auto& trackablePair : trackedHulls)
     {
         auto& trackable = trackablePair.second;
+        float trackableArea = trackable->getHullArea();
         bool isMatched = false;
 
         for(size_t i = 0; i < newHulls.size(); ++i)
         {
             if(matched[i])
+                continue;
+
+            float newHullArea = cv::contourArea(newHulls[i]);
+            float areaDifference = std::abs(trackableArea - newHullArea);
+
+            // Check if hull areas are similar within a threshold
+            if(areaDifference / trackableArea > thresholdArea)
                 continue;
 
             float distance =
