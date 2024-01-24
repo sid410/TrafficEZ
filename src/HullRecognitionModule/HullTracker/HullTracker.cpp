@@ -128,7 +128,8 @@ void HullTracker::processHullsCrossed()
 
         if(trackable->getCentroid().y > boundLineY - pixelBoundaryCushion)
         {
-            hullCount++; // increase counter
+            // update the following data if it crossed the boundary
+            hullCount++;
             totalHullArea += trackable->getHullArea();
             totalAvgSpeeds += trackable->getAvgSpeed();
             hullsToRemove.push_back(trackablePair.first);

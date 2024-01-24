@@ -63,33 +63,6 @@ float HullTrackable::getAvgSpeed()
     return avgSpeed;
 }
 
-// void HullTrackable::setAvgSpeed(float deltaDistance)
-// {
-//     auto currentTime = std::chrono::steady_clock::now();
-
-//     if(!speedInitialized)
-//     {
-//         lastUpdateTime = currentTime;
-//         speedInitialized = true;
-//         avgSpeed = 0;
-//         movingAvgCounter = 2;
-//     }
-//     else
-//     {
-//         std::chrono::duration<float> timeElapsed = currentTime - lastUpdateTime;
-//         float speed =
-//             deltaDistance / timeElapsed.count(); // Speed in pixels/second
-
-//         // Update average speed
-//         avgSpeed =
-//             (avgSpeed == 0) ? speed : (avgSpeed + speed) / movingAvgCounter;
-
-//         // Update the last update time and distance
-//         lastUpdateTime = currentTime;
-//         movingAvgCounter++;
-//     }
-// }
-
 cv::Point2f HullTrackable::computeCentroid(const std::vector<cv::Point>& hull)
 {
     if(hull.empty())
