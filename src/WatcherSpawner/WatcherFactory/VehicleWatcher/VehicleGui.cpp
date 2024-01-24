@@ -43,8 +43,8 @@ void VehicleGui::display(const std::string& streamName,
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
-    hullDetector.initialize(warpedFrame);
-    hullTracker.initialize(hullDetector.getOutBoundaryLine());
+    hullDetector.initDetectionBoundaries(warpedFrame);
+    hullTracker.initialize(hullDetector.getEndDetectionLine());
 
     fpsHelper.startSample();
 

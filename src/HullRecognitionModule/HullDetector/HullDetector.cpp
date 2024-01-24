@@ -1,16 +1,34 @@
 #include "HullDetector.h"
+#include <algorithm>
 
-HullDetector::HullDetector(double minArea, int startPercent, int endPercent)
-    : minContourArea(minArea)
-    , startDetectPercent(std::clamp(startPercent, 0, 100))
-    , endDetectPercent(std::clamp(endPercent, 0, 100))
-    , startY(0)
-    , endY(0)
+HullDetector::HullDetector(double minContourArea,
+                           int detectionStartPercent,
+                           int detectionEndPercent)
+    : minContourArea(minContourArea)
+    , startDetectionPercent(std::clamp(detectionStartPercent, 0, 100))
+    , endDetectionPercent(std::clamp(detectionEndPercent, 0, 100))
+    , startDetectionY(0)
+    , endDetectionY(0)
 {}
 
-void HullDetector::initialize(cv::Mat frame) const
+/**
+ * @brief Initializes detection boundaries based on the frame height.
+ * @param frame The frame used for determining height-based detection boundaries.
+ */
+void HullDetector::initDetectionBoundaries(const cv::Mat& frame) const
 {
     calculateBoundaries(frame.rows);
+}
+
+/**
+ * @brief Calculates the Y-axis boundaries for detection based on the frame height.
+ * @param frameHeight The height of the frame used for detection.
+ */
+void HullDetector::calculateBoundaries(int frameHeight) const
+{
+    startDetectionY =
+        static_cast<int>(frameHeight * startDetectionPercent / 100.0);
+    endDetectionY = static_cast<int>(frameHeight * endDetectionPercent / 100.0);
 }
 
 /**
@@ -28,7 +46,7 @@ void HullDetector::getHulls(const cv::Mat& frame,
         return;
     }
 
-    if(startY == 0 && endY == 0)
+    if(startDetectionY == 0 && endDetectionY == 0)
     {
         std::cerr << "Error: Please call initialize first\n";
         return;
@@ -50,7 +68,7 @@ void HullDetector::getHulls(const cv::Mat& frame,
             continue; // filter small contours
 
         cv::Point2f centroid(mu.m10 / mu.m00, mu.m01 / mu.m00);
-        if(centroid.y < startY || centroid.y > endY)
+        if(centroid.y < startDetectionY || centroid.y > endDetectionY)
             continue; // filter contours outside bounds
 
         std::vector<cv::Point> hull;
@@ -59,17 +77,19 @@ void HullDetector::getHulls(const cv::Mat& frame,
     }
 }
 
-void HullDetector::calculateBoundaries(int frameHeight) const
+/**
+ * @brief Returns the Y-coordinate of the end detection boundary.
+ * @return The Y-coordinate of the end detection boundary.
+ */
+int HullDetector::getEndDetectionLine() const
 {
-    startY = static_cast<int>(frameHeight * startDetectPercent / 100.0);
-    endY = static_cast<int>(frameHeight * endDetectPercent / 100.0);
+    return endDetectionY;
 }
 
-int HullDetector::getOutBoundaryLine() const
-{
-    return endY;
-}
-
+/**
+ * @brief Draws lines on the frame to indicate the start and end detection boundaries.
+ * @param frame The frame on which the boundary lines will be drawn.
+ */
 void HullDetector::drawLengthBoundaries(cv::Mat& frame) const
 {
     if(frame.empty())
@@ -79,20 +99,20 @@ void HullDetector::drawLengthBoundaries(cv::Mat& frame) const
         return;
     }
 
-    if(startY == 0 && endY == 0)
+    if(startDetectionY == 0 && endDetectionY == 0)
     {
         std::cerr << "Error: Please call initialize first\n";
         return;
     }
 
     cv::line(frame,
-             cv::Point(0, startY),
-             cv::Point(frame.cols, startY),
+             cv::Point(0, startDetectionY),
+             cv::Point(frame.cols, startDetectionY),
              cv::Scalar(255, 0, 0),
              2);
     cv::line(frame,
-             cv::Point(0, endY),
-             cv::Point(frame.cols, endY),
+             cv::Point(0, endDetectionY),
+             cv::Point(frame.cols, endDetectionY),
              cv::Scalar(255, 0, 0),
              2);
 }
