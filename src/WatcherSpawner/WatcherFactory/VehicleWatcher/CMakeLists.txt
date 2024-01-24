@@ -9,8 +9,9 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../VideoStreamer/TransformPerspective
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../FPSHelper
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../HullRecognitionModule/PreprocessPipelineBuilder
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../HullRecognitionModule/HullDetector)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../HullRecognitionModule/HullDetector
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../HullRecognitionModule/HullTracker)
 
 target_link_libraries(
   VehicleWatcher PRIVATE VideoStreamer TransformPerspective FPSHelper
-                         PreprocessPipelineBuilder HullDetector)
+                         PreprocessPipelineBuilder HullDetector HullTracker)

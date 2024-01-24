@@ -6,6 +6,8 @@
 VideoStreamer::VideoStreamer()
     : roiMatrixInitialized(false)
     , readCalibSuccess(false)
+    , laneLength(0)
+    , laneWidth(0)
 {}
 
 VideoStreamer::~VideoStreamer()
@@ -83,6 +85,7 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
             return false;
         }
 
+        // for the four ROI points
         roiPoints.clear();
 
         for(const auto& point : pointsNode)
@@ -90,6 +93,40 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
             double x = point["x"].as<double>();
             double y = point["y"].as<double>();
             roiPoints.emplace_back(x, y);
+        }
+
+        const YAML::Node& dimensionNode = yamlNode["lanes_dimension"];
+        if(!dimensionNode || !dimensionNode.IsSequence())
+        {
+            std::cerr << "Error: Lanes dimensions not found or not in the "
+                         "correct format.\n";
+            return false;
+        }
+
+        // for the lanes total length and width
+        this->laneLength = 0;
+        this->laneWidth = 0;
+        bool dimensionsSet = false;
+
+        for(const auto& dimension : dimensionNode)
+        {
+            if(dimensionsSet)
+            {
+                std::cerr
+                    << "Error: Multiple lane dimensions found in YAML file.\n";
+                return false;
+            }
+
+            laneLength = dimension["length"].as<double>();
+            laneWidth = dimension["width"].as<double>();
+
+            dimensionsSet = true;
+        }
+
+        if(!dimensionsSet)
+        {
+            std::cerr << "Error: No lane dimensions found in YAML file.\n";
+            return false;
         }
 
         fin.close();
@@ -103,6 +140,32 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
     }
 
     return readCalibSuccess;
+}
+
+/**
+ * @brief Getter for laneLength. Need to first do readCalibrationPoints
+ * @return the total length of the lanes, in meters.
+ */
+double VideoStreamer::getLaneLength() const
+{
+    if(laneLength == 0)
+    {
+        std::cerr << "Error: laneLength is zero.\n";
+    }
+    return laneLength;
+}
+
+/**
+ * @brief Getter for laneWidth. Need to first do readCalibrationPoints
+ * @return the total width of the lanes, in meters.
+ */
+double VideoStreamer::getLaneWidth() const
+{
+    if(laneWidth == 0)
+    {
+        std::cerr << "Error: laneWidth is zero.\n";
+    }
+    return laneWidth;
 }
 
 /**
