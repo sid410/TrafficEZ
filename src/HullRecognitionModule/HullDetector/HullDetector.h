@@ -5,8 +5,7 @@
 
 /**
  * @brief Class for detecting convex hulls.
- * Optionally, you can specify in the constructor 
- * the following:
+ * Optionally, you can specify in the constructor the following:
  * @param minContourArea contours less than this is ignored.
  * @param detectionStartPercent %height of the frame y-axis to start detecting.
  * @param detectionEndPercent %height of the frame y-axis to end detecting.

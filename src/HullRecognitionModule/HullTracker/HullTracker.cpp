@@ -1,53 +1,86 @@
 #include "HullTracker.h"
+#include <memory>
 #include <opencv2/opencv.hpp>
+#include <unordered_map>
+#include <vector>
 
-HullTracker::HullTracker(double maxDist,
-                         float threshArea,
-                         int pixelBoundaryCushion,
-                         int maxFrames,
-                         int maxIdValue)
-    : maxDistance(maxDist)
-    , thresholdArea(threshArea)
-    , pixelBoundaryCushion(pixelBoundaryCushion)
-    , maxFramesNotSeen(maxFrames)
-    , maxId(maxIdValue)
-    , nextId(0)
+HullTracker::HullTracker(double maxDiffDistance,
+                         float hullAreaThreshold,
+                         int boundaryCushionPixels,
+                         int maxFramesNotSeen,
+                         int maxId)
+    : maxDiffDistance(maxDiffDistance)
+    , hullAreaThreshold(hullAreaThreshold)
+    , boundaryCushionPixels(boundaryCushionPixels)
+    , maxFramesNotSeen(maxFramesNotSeen)
+    , maxId(maxId)
+    , currentId(0)
     , hullCount(0)
     , totalHullArea(0)
-    , totalAvgSpeeds(0)
-    , boundLineY(0)
-{}
-
-void HullTracker::initialize(int outBoundaryLine) const
+    , totalAverageSpeed(0)
+    , boundaryLineY(0)
 {
-    boundLineY = outBoundaryLine;
+    trackedHulls.clear();
 }
 
+/**
+ * @brief Initializes the exit boundary line for hull tracking.
+ * @param lineY Y-coordinate of the boundary line.
+ */
+void HullTracker::initBoundaryLine(int lineY) const
+{
+    boundaryLineY = lineY;
+}
+
+/**
+ * @brief Updates the tracked hulls with newly detected hulls.
+ * @param newHulls New hull points to track and update.
+ */
 void HullTracker::update(const std::vector<std::vector<cv::Point>>& newHulls)
 {
     std::vector<bool> matched(newHulls.size(), false);
+
     matchAndUpdateTrackables(newHulls, matched);
+
     removeStaleTrackables();
-    processHullsCrossed();
-    addNewTrackables(newHulls, matched);
+    processCrossedTrackables();
+
+    createAndAddNewTrackables(newHulls, matched);
 }
 
+/**
+ * @brief Retrieves the currently tracked hulls.
+ * @return A map (dictionary) of tracked hulls keyed by their IDs.
+ */
 const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
 HullTracker::getTrackedHulls() const
 {
     return trackedHulls;
 }
 
+/**
+ * @brief Gets the total hull area.
+ * @return Accumulated area of all exited tracked hulls (sq. pixels).
+ */
 float HullTracker::getTotalHullArea() const
 {
     return totalHullArea;
 }
 
-float HullTracker::getOverallAvgSpeed() const
+/**
+ * @brief Calculates the averaged speed of all exited tracked hulls.
+ * @return Averaged speed of all exited tracked hulls (pixels/second).
+ */
+float HullTracker::calculateAllAveragedSpeed() const
 {
-    return totalAvgSpeeds / hullCount;
+    return totalAverageSpeed / hullCount;
 }
 
+/**
+ * @brief Matches new hulls with existing tracked hulls and updates them.
+ * @param newHulls New hulls detected in the current frame.
+ * @param matched Vector (list) indicating which new hulls have been matched.
+ */
 void HullTracker::matchAndUpdateTrackables(
     const std::vector<std::vector<cv::Point>>& newHulls,
     std::vector<bool>& matched)
@@ -64,17 +97,18 @@ void HullTracker::matchAndUpdateTrackables(
                 continue;
 
             float newHullArea = cv::contourArea(newHulls[i]);
-            float areaDifference = std::abs(trackableArea - newHullArea);
+            float diffArea = std::abs(trackableArea - newHullArea);
 
-            // Check if hull areas are similar within a threshold
-            if(areaDifference / trackableArea > thresholdArea)
+            // check if hull areas are similar within a threshold
+            if(diffArea / trackableArea > hullAreaThreshold)
                 continue;
 
-            float distance =
+            // then check how far they are, i.e. Centroid Tracking
+            float diffDistance =
                 cv::norm(trackable->calculateCentroid() -
                          HullTrackable::computeCentroid(newHulls[i]));
 
-            if(distance < maxDistance)
+            if(diffDistance < maxDiffDistance)
             {
                 trackable->setHullPoints(newHulls[i]);
                 trackable->setFramesSinceSeen(0);
@@ -85,6 +119,7 @@ void HullTracker::matchAndUpdateTrackables(
             }
         }
 
+        // for the existing trackables that did not find a match in this loop
         if(!isMatched)
         {
             trackable->setFramesSinceSeen(trackable->getFramesSinceSeen() + 1);
@@ -92,7 +127,13 @@ void HullTracker::matchAndUpdateTrackables(
     }
 }
 
-void HullTracker::addNewTrackables(
+/**
+ * @brief Creates and adds new trackables for hulls 
+ * that weren't matched with existing trackables.
+ * @param newHulls New hulls detected in the current frame.
+ * @param matched Vector (list) indicating which new hulls have been matched.
+ */
+void HullTracker::createAndAddNewTrackables(
     const std::vector<std::vector<cv::Point>>& newHulls,
     const std::vector<bool>& matched)
 {
@@ -101,23 +142,29 @@ void HullTracker::addNewTrackables(
         if(matched[i])
             continue;
 
-        if(nextId > maxId)
+        // reset ID, should not be a problem if only tracking few IDs at a time
+        if(currentId > maxId)
         {
-            nextId = 0;
+            currentId = 0;
         }
 
-        // Check if the hull is too near the boundary
+        // check if the hull is too near the boundary
         cv::Point2f centroid = HullTrackable::computeCentroid(newHulls[i]);
-        if(centroid.y > boundLineY - pixelBoundaryCushion)
+        if(centroid.y > boundaryLineY - boundaryCushionPixels)
             continue;
 
         auto newTrackable =
-            std::make_shared<HullTrackable>(nextId++, newHulls[i]);
+            std::make_shared<HullTrackable>(currentId++, newHulls[i]);
         trackedHulls[newTrackable->getTrackableId()] = newTrackable;
     }
 }
 
-void HullTracker::processHullsCrossed()
+/**
+ * @brief Processes hulls that have crossed the exit boundary.
+ * That is, updating data needed to estimate traffic density
+ * then removing them from the tracking list, indicating successful exit.
+ */
+void HullTracker::processCrossedTrackables()
 {
     std::vector<int> hullsToRemove;
 
@@ -125,25 +172,34 @@ void HullTracker::processHullsCrossed()
     {
         const auto& trackable = trackablePair.second;
 
-        if(trackable->calculateCentroid().y > boundLineY - pixelBoundaryCushion)
+        // when trackable exits the boundary line,
+        if(trackable->calculateCentroid().y >
+           boundaryLineY - boundaryCushionPixels)
         {
-            // update the following data if it crossed the boundary
+            // update the following data
             hullCount++;
             totalHullArea += trackable->getHullArea();
-            totalAvgSpeeds += trackable->calculateAverageSpeed();
+            totalAverageSpeed += trackable->calculateAverageSpeed();
+
             hullsToRemove.push_back(trackablePair.first);
         }
     }
 
+    // remove the exited hulls from tracking list
     for(int id : hullsToRemove)
     {
         trackedHulls.erase(id);
     }
 }
 
+/**
+ * @brief Removes trackables that have not been tracked
+ * for a specified number of frames.
+ */
 void HullTracker::removeStaleTrackables()
 {
     std::vector<int> idsToRemove;
+
     for(const auto& pair : trackedHulls)
     {
         if(pair.second->getFramesSinceSeen() > maxFramesNotSeen)
@@ -158,6 +214,10 @@ void HullTracker::removeStaleTrackables()
     }
 }
 
+/**
+ * @brief Draws the tracked hulls.
+ * @param frame The frame on which the hulls will be drawn.
+ */
 void HullTracker::drawTrackedHulls(cv::Mat& frame) const
 {
     for(const auto& pair : trackedHulls)
@@ -179,7 +239,12 @@ void HullTracker::drawTrackedHulls(cv::Mat& frame) const
     }
 }
 
-// temporary, just for debugging
+/**
+ * @brief Draws information about the lanes.
+ * @param frame The frame on which the lane information will be drawn.
+ * @param laneLength The total length of the lanes.
+ * @param laneWidth The total width of the lanes.
+ */
 void HullTracker::drawLanesInfo(cv::Mat& frame,
                                 int laneLength,
                                 int laneWidth) const

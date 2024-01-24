@@ -1,4 +1,5 @@
 #include "HullTrackable.h"
+#include <vector>
 
 HullTrackable::HullTrackable(int id, const std::vector<cv::Point>& initHull)
     : trackableId(id)

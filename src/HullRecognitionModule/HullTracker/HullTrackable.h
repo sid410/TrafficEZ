@@ -3,7 +3,6 @@
 
 #include "FPSHelper.h"
 #include <opencv2/opencv.hpp>
-#include <vector>
 
 /**
  * @brief A HullTrackable object with a specified ID and hull shape.
