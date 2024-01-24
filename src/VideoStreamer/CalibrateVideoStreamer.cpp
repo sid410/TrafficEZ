@@ -50,7 +50,8 @@ void CalibrateVideoStreamer::resetCalibrationPoints()
 }
 
 /**
- * @brief Saves the four mouseCalibrationPoints to a yaml file.
+ * @brief Saves the four mouseCalibrationPoints and 
+ * the lanes total length and width to a yaml file.
  * After saving, we can exit the calibration loop by setting
  * pointsSetSuccessfully = true.
  * @param filename the name of the yaml file to save the four ROI points.
@@ -60,11 +61,19 @@ void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
     if(!haveSetFourPoints())
         return; // need to have four points to define the ROI quadrilateral.
 
+    // Ask for lane dimensions
+    double laneLength, laneWidth;
+    std::cout << "Enter lane length: ";
+    std::cin >> laneLength;
+    std::cout << "Enter lane width: ";
+    std::cin >> laneWidth;
+
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
+
+    // Saving calibration points
     emitter << YAML::Key << "calibration_points";
     emitter << YAML::Value << YAML::BeginSeq;
-
     for(const auto& point : mouseCalibrationPoints)
     {
         emitter << YAML::BeginMap;
@@ -72,15 +81,24 @@ void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
         emitter << YAML::Key << "y" << YAML::Value << point.y;
         emitter << YAML::EndMap;
     }
-
     emitter << YAML::EndSeq;
+
+    // Saving lane dimensions
+    emitter << YAML::Key << "lanes_dimension";
+    emitter << YAML::Value << YAML::BeginSeq;
+    emitter << YAML::BeginMap;
+    emitter << YAML::Key << "length" << YAML::Value << laneLength;
+    emitter << YAML::Key << "width" << YAML::Value << laneWidth;
+    emitter << YAML::EndMap;
+    emitter << YAML::EndSeq;
+
     emitter << YAML::EndMap;
 
     std::ofstream fout(filename);
     fout << emitter.c_str();
     fout.close();
 
-    std::cout << "Calibration points saved to " << filename << ".\n";
+    std::cout << "Calibration info saved to " << filename << ".\n";
     pointsSetSuccessfully = true; // exit the calibration loop.
 }
 
