@@ -1,66 +1,68 @@
 #include "HullTrackable.h"
 
-HullTrackable::HullTrackable(int newId, const std::vector<cv::Point>& newHull)
-    : id(newId)
-    , hull(newHull)
-    , framesSinceLastSeen(0)
-    , centroidCalculated(false)
-    , avgSpeed(0)
+HullTrackable::HullTrackable(int id, const std::vector<cv::Point>& hull)
+    : trackableId(id)
+    , hullPoints(hull)
+    , framesSinceSeen(0)
+    , hullCentroid(0, 0)
+    , isCentroidCalculated(false)
+    , averageSpeed(0.0)
+    , trackingStartPoint(computeCentroid(hullPoints))
+    , trackingEndPoint(0, 0)
     , fpsHelper()
 {
     fpsHelper.startSample();
-    startPoint = computeCentroid(hull);
 }
 
-int HullTrackable::getId() const
+int HullTrackable::getTrackableId() const
 {
-    return id;
+    return trackableId;
 }
 
-const std::vector<cv::Point>& HullTrackable::getHull() const
+const std::vector<cv::Point>& HullTrackable::getHullPoints() const
 {
-    return hull;
+    return hullPoints;
 }
 
 float HullTrackable::getHullArea() const
 {
-    return cv::contourArea(hull);
+    return cv::contourArea(hullPoints);
 }
 
-void HullTrackable::setHull(const std::vector<cv::Point>& newHull)
+void HullTrackable::setHullPoints(const std::vector<cv::Point>& newHull)
 {
-    hull = newHull;
-    centroidCalculated = false;
+    hullPoints = newHull;
+    isCentroidCalculated = false;
 }
 
-int HullTrackable::getFramesSinceLastSeen() const
+int HullTrackable::getFramesSinceSeen() const
 {
-    return framesSinceLastSeen;
+    return framesSinceSeen;
 }
 
-void HullTrackable::setFramesSinceLastSeen(int newFramesSinceLastSeen)
+void HullTrackable::setFramesSinceSeen(int untrackedFrames)
 {
-    framesSinceLastSeen = newFramesSinceLastSeen;
+    framesSinceSeen = untrackedFrames;
 }
 
-cv::Point2f HullTrackable::getCentroid() const
+cv::Point2f HullTrackable::calculateCentroid() const
 {
-    if(!centroidCalculated)
+    if(!isCentroidCalculated)
     {
-        centroid = computeCentroid(hull);
-        centroidCalculated = true;
+        hullCentroid = computeCentroid(hullPoints);
+        isCentroidCalculated = true;
     }
-    return centroid;
+    return hullCentroid;
 }
 
-float HullTrackable::getAvgSpeed()
+float HullTrackable::calculateAverageSpeed()
 {
-    float travelTime = fpsHelper.endSample() / 1000;
-    endPoint = computeCentroid(hull);
+    float travelTime = fpsHelper.endSample() / 1000.0;
+    trackingEndPoint = computeCentroid(hullPoints);
 
-    avgSpeed = (cv::norm(startPoint - endPoint)) / travelTime;
+    averageSpeed = cv::norm(trackingStartPoint - trackingEndPoint) / travelTime;
 
-    return avgSpeed;
+    return averageSpeed;
 }
 
 cv::Point2f HullTrackable::computeCentroid(const std::vector<cv::Point>& hull)
