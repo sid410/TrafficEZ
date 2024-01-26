@@ -1,0 +1,3 @@
+add_subdirectory(HullDetector)
+add_subdirectory(HullTracker)
+add_subdirectory(PreprocessPipelineBuilder)

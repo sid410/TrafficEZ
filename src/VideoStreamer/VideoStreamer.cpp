@@ -59,11 +59,11 @@ bool VideoStreamer::getNextFrame(cv::Mat& frame)
 }
 
 /**
- * @brief Reads the four ROI points from a yaml file.
+ * @brief Reads the yaml file containing the calibration data.
  * @param yamlFilename the yaml file to open.
  * @return true if successfully parsed the yaml file.
  */
-bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
+bool VideoStreamer::readCalibrationData(const cv::String& yamlFilename)
 {
     std::ifstream fin(yamlFilename);
 
@@ -143,7 +143,7 @@ bool VideoStreamer::readCalibrationPoints(const cv::String& yamlFilename)
 }
 
 /**
- * @brief Getter for laneLength. Need to first do readCalibrationPoints
+ * @brief Getter for laneLength. Need to first do readCalibrationData
  * @return the total length of the lanes, in meters.
  */
 double VideoStreamer::getLaneLength() const
@@ -156,7 +156,7 @@ double VideoStreamer::getLaneLength() const
 }
 
 /**
- * @brief Getter for laneWidth. Need to first do readCalibrationPoints
+ * @brief Getter for laneWidth. Need to first do readCalibrationData
  * @return the total width of the lanes, in meters.
  */
 double VideoStreamer::getLaneWidth() const

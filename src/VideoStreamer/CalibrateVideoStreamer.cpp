@@ -54,9 +54,9 @@ void CalibrateVideoStreamer::resetCalibrationPoints()
  * the lanes total length and width to a yaml file.
  * After saving, we can exit the calibration loop by setting
  * pointsSetSuccessfully = true.
- * @param filename the name of the yaml file to save the four ROI points.
+ * @param yamlFilename the name of the yaml file to save the four ROI points.
  */
-void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
+void CalibrateVideoStreamer::saveCalibrationData(const cv::String& yamlFilename)
 {
     if(!haveSetFourPoints())
         return; // need to have four points to define the ROI quadrilateral.
@@ -94,11 +94,11 @@ void CalibrateVideoStreamer::saveCalibrationPoints(const cv::String& filename)
 
     emitter << YAML::EndMap;
 
-    std::ofstream fout(filename);
+    std::ofstream fout(yamlFilename);
     fout << emitter.c_str();
     fout.close();
 
-    std::cout << "Calibration info saved to " << filename << ".\n";
+    std::cout << "Calibration info saved to " << yamlFilename << ".\n";
     pointsSetSuccessfully = true; // exit the calibration loop.
 }
 

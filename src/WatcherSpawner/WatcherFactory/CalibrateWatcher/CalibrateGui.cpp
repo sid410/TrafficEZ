@@ -54,7 +54,7 @@ void CalibrateGui::display(const std::string& streamName,
 
         case 's': // 's' key to save and exit successfully
         case 'S':
-            calibrateStreamer.saveCalibrationPoints(calibName);
+            calibrateStreamer.saveCalibrationData(calibName);
             break;
 
         case 'p': // 'p' key to preview between perspectives
