@@ -26,7 +26,7 @@ void VehicleGui::display(const std::string& streamName,
     if(!videoStreamer.openVideoStream(streamName))
         return;
 
-    if(!videoStreamer.readCalibrationPoints(calibName))
+    if(!videoStreamer.readCalibrationData(calibName))
         return;
 
     static int laneLength = videoStreamer.getLaneLength();

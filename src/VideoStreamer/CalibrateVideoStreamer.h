@@ -16,7 +16,7 @@ public:
 
     void initCalibrationPoints(const cv::String& windowName);
     void resetCalibrationPoints();
-    void saveCalibrationPoints(const cv::String& filename);
+    void saveCalibrationData(const cv::String& yamlFilename);
     void showCalibrationPoints(cv::Mat& frame);
 
     void initializePreview(cv::Mat& frame, TransformPerspective& perspective);

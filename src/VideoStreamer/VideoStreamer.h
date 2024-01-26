@@ -3,7 +3,6 @@
 
 #include "TransformPerspective.h"
 #include <opencv2/opencv.hpp>
-#include <yaml-cpp/yaml.h>
 
 /**
  * @brief Class for reading/getting frames from a stream,
@@ -20,7 +19,7 @@ public:
     void constructStreamWindow(const cv::String& windowName);
 
     bool getNextFrame(cv::Mat& frame);
-    bool readCalibrationPoints(const cv::String& filename);
+    bool readCalibrationData(const cv::String& yamlFilename);
 
     double getLaneLength() const;
     double getLaneWidth() const;
