@@ -6,3 +6,8 @@ void GrayscaleStep::process(cv::Mat& frame) const
         return;
     cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
 }
+
+void GrayscaleStep::updateParameters(const StepParameters& params)
+{
+    std::cout << "No parameters to update for grayscale\n";
+}

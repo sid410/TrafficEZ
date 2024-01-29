@@ -2,7 +2,7 @@
 #include "FPSHelper.h"
 #include "HullDetector.h"
 #include "HullTracker.h"
-#include "PreprocessPipelineBuilder.h"
+#include "PipelineBuilder.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
 
@@ -15,7 +15,7 @@ void VehicleGui::display(const std::string& streamName,
     WarpPerspective warpPerspective;
     FPSHelper fpsHelper;
 
-    PreprocessPipelineBuilder pipeBuilder;
+    PipelineBuilder pipeBuilder;
     HullDetector hullDetector;
     HullTracker hullTracker;
 
@@ -34,12 +34,13 @@ void VehicleGui::display(const std::string& streamName,
 
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    pipeBuilder.addGrayscaleStep()
-        .addGaussianBlurStep()
-        .addMOG2BackgroundSubtractionStep()
-        .addThresholdStep()
-        .addDilationStep()
-        .addErosionStep();
+    pipeBuilder.addStep(StepType::Grayscale, StepParameters{GrayscaleParams{}})
+        .addStep(StepType::GaussianBlur, StepParameters{GaussianBlurParams{}})
+        .addStep(StepType::MOG2BackgroundSubtraction,
+                 StepParameters{MOG2BackgroundSubtractionParams{}})
+        .addStep(StepType::Threshold, StepParameters{ThresholdParams{}})
+        .addStep(StepType::Dilation, StepParameters{DilationParams{}})
+        .addStep(StepType::Erosion, StepParameters{ErosionParams{}});
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
@@ -53,7 +54,8 @@ void VehicleGui::display(const std::string& streamName,
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         warpedFrame.copyTo(processFrame);
-        pipeBuilder.process(processFrame);
+        // pipeBuilder.process(processFrame);
+        pipeBuilder.processDebugStack(processFrame);
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(processFrame, hulls);
