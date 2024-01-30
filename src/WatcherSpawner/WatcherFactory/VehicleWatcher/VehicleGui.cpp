@@ -3,6 +3,7 @@
 #include "HullDetector.h"
 #include "HullTracker.h"
 #include "PipelineBuilder.h"
+#include "PipelineDirector.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
 
@@ -16,6 +17,8 @@ void VehicleGui::display(const std::string& streamName,
     FPSHelper fpsHelper;
 
     PipelineBuilder pipeBuilder;
+    PipelineDirector pipeDirector;
+
     HullDetector hullDetector;
     HullTracker hullTracker;
 
@@ -34,13 +37,7 @@ void VehicleGui::display(const std::string& streamName,
 
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    pipeBuilder.addStep(StepType::Grayscale, StepParameters{GrayscaleParams{}})
-        .addStep(StepType::GaussianBlur, StepParameters{GaussianBlurParams{}})
-        .addStep(StepType::MOG2BackgroundSubtraction,
-                 StepParameters{MOG2BackgroundSubtractionParams{}})
-        .addStep(StepType::Threshold, StepParameters{ThresholdParams{}})
-        .addStep(StepType::Dilation, StepParameters{DilationParams{}})
-        .addStep(StepType::Erosion, StepParameters{ErosionParams{}});
+    pipeDirector.setupDefaultPipeline(pipeBuilder);
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);

@@ -1,6 +1,6 @@
 add_subdirectory(PreprocessSteps)
 
-add_library(PreprocessPipeline PipelineBuilder.cpp)
+add_library(PreprocessPipeline PipelineBuilder.cpp PipelineDirector.cpp)
 setup_currdir_opencv(PreprocessPipeline)
 
 target_include_directories(PreprocessPipeline
