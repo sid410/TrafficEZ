@@ -14,19 +14,24 @@ void GaussianBlurStep::process(cv::Mat& frame) const
 
 void GaussianBlurStep::updateParameters(const StepParameters& newParams)
 {
-    if(auto params = std::get_if<GaussianBlurParams>(&newParams.params))
-    {
-        kernelSize = params->kernelSize;
-        sigma = params->sigma;
-        checkGaussianKernelValidity(kernelSize);
-    }
-    else
+    auto params = std::get_if<GaussianBlurParams>(&newParams.params);
+    if(params == nullptr)
     {
         std::cerr << "Please provide a valid GaussianBlurParams, or check if "
                      "you are using the correct builder index.\n";
+        return;
     }
+
+    kernelSize = params->kernelSize;
+    sigma = params->sigma;
+    checkGaussianKernelValidity(kernelSize);
 }
 
+/**
+ * @brief Checks for the kernel size if it is odd or positive.
+ * If it is even, it will add 1. If it is negative, it will set to 1.
+ * @param kSize the kernel size to check.
+ */
 void GaussianBlurStep::checkGaussianKernelValidity(int kSize)
 {
     // Check that kernelSize is odd and positive

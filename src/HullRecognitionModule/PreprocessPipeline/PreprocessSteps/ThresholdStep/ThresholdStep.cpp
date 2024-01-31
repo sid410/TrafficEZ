@@ -15,15 +15,15 @@ void ThresholdStep::process(cv::Mat& frame) const
 
 void ThresholdStep::updateParameters(const StepParameters& newParams)
 {
-    if(auto params = std::get_if<ThresholdParams>(&newParams.params))
-    {
-        thresholdValue = params->thresholdValue;
-        maxValue = params->maxValue;
-        thresholdType = params->thresholdType;
-    }
-    else
+    auto params = std::get_if<ThresholdParams>(&newParams.params);
+    if(params == nullptr)
     {
         std::cerr << "Please provide a valid ThresholdParams, or check if "
                      "you are using the correct builder index.\n";
+        return;
     }
+
+    thresholdValue = params->thresholdValue;
+    maxValue = params->maxValue;
+    thresholdType = params->thresholdType;
 }

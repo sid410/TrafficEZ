@@ -25,6 +25,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
     // Uses cv::cvtColor to convert to cv::COLOR_BGR2GRAY
     case StepType::Grayscale:
         steps.emplace_back(std::make_unique<GrayscaleStep>());
+        stepTypes.push_back(type);
         break;
 
     // Uses cv::GaussianBlur
@@ -33,6 +34,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(
                 std::make_unique<GaussianBlurStep>(p->kernelSize, p->sigma));
+            stepTypes.push_back(type);
         }
         break;
 
@@ -48,6 +50,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
                 p->nMixtures,
                 p->detectShadows,
                 p->shadowValue));
+            stepTypes.push_back(type);
         }
         break;
 
@@ -57,6 +60,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(std::make_unique<ThresholdStep>(
                 p->thresholdValue, p->maxValue, p->thresholdType));
+            stepTypes.push_back(type);
         }
         break;
 
@@ -66,6 +70,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(std::make_unique<DilationStep>(
                 p->morphShape, p->kernelSize, p->iterations));
+            stepTypes.push_back(type);
         }
         break;
 
@@ -75,6 +80,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(std::make_unique<ErosionStep>(
                 p->morphShape, p->kernelSize, p->iterations));
+            stepTypes.push_back(type);
         }
         break;
 
@@ -82,7 +88,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
     default:
         std::cerr << "Unsupported step type provided in addStep.\n";
     }
-    stepTypes.push_back(type);
+
     return *this;
 }
 

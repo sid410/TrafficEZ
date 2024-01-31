@@ -13,16 +13,16 @@ void DilationStep::process(cv::Mat& frame) const
 
 void DilationStep::updateParameters(const StepParameters& newParams)
 {
-    if(auto params = std::get_if<DilationParams>(&newParams.params))
-    {
-        morphShape = params->morphShape;
-        kernelSize = params->kernelSize;
-        iterations = params->iterations;
-        dilateKernel = cv::getStructuringElement(morphShape, kernelSize);
-    }
-    else
+    auto params = std::get_if<DilationParams>(&newParams.params);
+    if(params == nullptr)
     {
         std::cerr << "Please provide a valid DilationParams, or check if "
                      "you are using the correct builder index.\n";
+        return;
     }
+
+    morphShape = params->morphShape;
+    kernelSize = params->kernelSize;
+    iterations = params->iterations;
+    dilateKernel = cv::getStructuringElement(morphShape, kernelSize);
 }

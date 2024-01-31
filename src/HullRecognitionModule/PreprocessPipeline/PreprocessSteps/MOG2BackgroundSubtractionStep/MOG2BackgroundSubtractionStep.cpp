@@ -31,19 +31,19 @@ void MOG2BackgroundSubtractionStep::process(cv::Mat& frame) const
 void MOG2BackgroundSubtractionStep::updateParameters(
     const StepParameters& newParams)
 {
-    if(auto params =
-           std::get_if<MOG2BackgroundSubtractionParams>(&newParams.params))
-    {
-        bgSubtractor->setHistory(params->history);
-        bgSubtractor->setVarThreshold(params->varThreshold);
-        bgSubtractor->setVarThresholdGen(params->varThresholdGen);
-        bgSubtractor->setNMixtures(params->nMixtures);
-        bgSubtractor->setDetectShadows(params->detectShadows);
-        bgSubtractor->setShadowValue(params->shadowValue);
-    }
-    else
+    auto params =
+        std::get_if<MOG2BackgroundSubtractionParams>(&newParams.params);
+    if(params == nullptr)
     {
         std::cerr << "Please provide a valid MOG2BackgroundSubtractionParams, "
                      "or check if you are using the correct builder index.\n";
+        return;
     }
+
+    bgSubtractor->setHistory(params->history);
+    bgSubtractor->setVarThreshold(params->varThreshold);
+    bgSubtractor->setVarThresholdGen(params->varThresholdGen);
+    bgSubtractor->setNMixtures(params->nMixtures);
+    bgSubtractor->setDetectShadows(params->detectShadows);
+    bgSubtractor->setShadowValue(params->shadowValue);
 }
