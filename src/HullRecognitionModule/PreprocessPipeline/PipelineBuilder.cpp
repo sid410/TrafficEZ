@@ -25,7 +25,6 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
     // Uses cv::cvtColor to convert to cv::COLOR_BGR2GRAY
     case StepType::Grayscale:
         steps.emplace_back(std::make_unique<GrayscaleStep>());
-        stepTypes.push_back(type);
         break;
 
     // Uses cv::GaussianBlur
@@ -34,7 +33,6 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(
                 std::make_unique<GaussianBlurStep>(p->kernelSize, p->sigma));
-            stepTypes.push_back(type);
         }
         break;
 
@@ -50,7 +48,6 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
                 p->nMixtures,
                 p->detectShadows,
                 p->shadowValue));
-            stepTypes.push_back(type);
         }
         break;
 
@@ -60,7 +57,6 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(std::make_unique<ThresholdStep>(
                 p->thresholdValue, p->maxValue, p->thresholdType));
-            stepTypes.push_back(type);
         }
         break;
 
@@ -70,7 +66,6 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(std::make_unique<DilationStep>(
                 p->morphShape, p->kernelSize, p->iterations));
-            stepTypes.push_back(type);
         }
         break;
 
@@ -80,7 +75,6 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
         {
             steps.emplace_back(std::make_unique<ErosionStep>(
                 p->morphShape, p->kernelSize, p->iterations));
-            stepTypes.push_back(type);
         }
         break;
 
@@ -93,21 +87,60 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
 }
 
 /**
- * @brief Updates the parameters of a specific preprocessing step at the given index.
- * @param index The index of the step in the pipeline to be updated.
+ * @brief Sets the parameters of a specific preprocessing step at the given index.
+ * @param stepIndex The index of the step in the pipeline to be updated.
  * @param params The new parameters for the step, as defined in StepParameters.
  */
-void PipelineBuilder::updateStepParameters(size_t index,
-                                           const StepParameters& params)
+void PipelineBuilder::setStepParameters(size_t stepIndex,
+                                        const StepParameters& params)
 {
-    if(index < steps.size())
+    if(stepIndex >= steps.size())
     {
-        steps[index]->updateParameters(params);
+        std::cerr << "Step index " << stepIndex << "out of range.\n";
+        return;
     }
-    else
+
+    steps[stepIndex]->setStepParameters(params);
+}
+
+void PipelineBuilder::updateStepParameterById(size_t stepIndex,
+                                              int paramId,
+                                              const std::any& value)
+{
+    if(stepIndex >= steps.size())
     {
-        std::cerr << "Cannot update! Step index " << index << "out of range.\n";
+        std::cerr << "Step index " << stepIndex << "out of range.\n";
+        return;
     }
+
+    steps[stepIndex]->updateParameterById(paramId, value);
+}
+
+size_t PipelineBuilder::getNumberOfSteps() const
+{
+    return steps.size();
+}
+
+StepType PipelineBuilder::getStepType(size_t stepIndex) const
+{
+    if(stepIndex >= steps.size())
+    {
+        std::cerr << "Step index " << stepIndex << " out of range.\n";
+        return StepType::Undefined;
+    }
+
+    return steps[stepIndex]->getType();
+}
+
+StepParameters PipelineBuilder::getStepCurrentParameters(size_t stepIndex) const
+{
+    if(stepIndex >= steps.size())
+    {
+        std::cerr << "Step index " << stepIndex << " out of range.\n";
+        return StepParameters{};
+    }
+
+    return steps[stepIndex]->getCurrentParameters();
 }
 
 /**

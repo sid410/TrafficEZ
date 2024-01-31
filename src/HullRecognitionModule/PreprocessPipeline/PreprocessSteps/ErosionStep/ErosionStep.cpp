@@ -11,7 +11,41 @@ void ErosionStep::process(cv::Mat& frame) const
     cv::erode(frame, frame, erodeKernel, cv::Point(-1, -1), iterations);
 }
 
-void ErosionStep::updateParameters(const StepParameters& newParams)
+void ErosionStep::updateParameterById(int paramId, const std::any& value)
+{
+    switch(paramId)
+    {
+    case 0: // morphShape
+        if(value.type() == typeid(int))
+        {
+            morphShape = std::any_cast<int>(value);
+            erodeKernel = cv::getStructuringElement(morphShape, kernelSize);
+        }
+        break;
+
+    case 1: // kernelSize
+        if(value.type() == typeid(int))
+        {
+            int size = std::any_cast<int>(value);
+            kernelSize = cv::Size(size, size);
+            erodeKernel = cv::getStructuringElement(morphShape, kernelSize);
+        }
+        break;
+
+    case 2: // iterations
+        if(value.type() == typeid(int))
+        {
+            iterations = std::any_cast<int>(value);
+        }
+        break;
+
+    default:
+        std::cerr << "Invalid parameter ID for ErosionStep.\n";
+        break;
+    }
+}
+
+void ErosionStep::setStepParameters(const StepParameters& newParams)
 {
     auto params = std::get_if<ErosionParams>(&newParams.params);
     if(params == nullptr)
@@ -25,4 +59,22 @@ void ErosionStep::updateParameters(const StepParameters& newParams)
     kernelSize = params->kernelSize;
     iterations = params->iterations;
     erodeKernel = cv::getStructuringElement(morphShape, kernelSize);
+}
+
+StepType ErosionStep::getType() const
+{
+    return StepType::Erosion;
+}
+
+StepParameters ErosionStep::getCurrentParameters() const
+{
+    ErosionParams params;
+    params.morphShape = morphShape;
+    params.kernelSize = kernelSize;
+    params.iterations = iterations;
+
+    StepParameters stepParams;
+    stepParams.params = params;
+
+    return stepParams;
 }

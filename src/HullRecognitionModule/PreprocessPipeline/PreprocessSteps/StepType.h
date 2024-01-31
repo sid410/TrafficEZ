@@ -9,6 +9,8 @@
  */
 enum class StepType
 {
+    Undefined,
+
     Grayscale,
     GaussianBlur,
     MOG2BackgroundSubtraction,
