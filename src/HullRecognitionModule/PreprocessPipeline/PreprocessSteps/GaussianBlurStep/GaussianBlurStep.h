@@ -25,7 +25,7 @@ private:
     int kernelSize;
     double sigma;
 
-    void checkGaussianKernelValidity(int kSize);
+    void checkGaussianKernelValidity(int checkSize);
 };
 
 #endif

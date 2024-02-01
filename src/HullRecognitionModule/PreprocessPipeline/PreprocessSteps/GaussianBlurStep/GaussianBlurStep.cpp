@@ -76,18 +76,18 @@ StepParameters GaussianBlurStep::getCurrentParameters() const
 /**
  * @brief Checks for the kernel size if it is odd or positive.
  * If it is even, it will add 1. If it is negative, it will set to 1.
- * @param kSize the kernel size to check.
+ * @param checkSize the kernel size to check.
  */
-void GaussianBlurStep::checkGaussianKernelValidity(int kSize)
+void GaussianBlurStep::checkGaussianKernelValidity(int checkSize)
 {
     // Check that kernelSize is odd and positive, otherwise add 1
-    if(kSize % 2 == 0 && kSize >= 0)
+    if(checkSize % 2 == 0 && checkSize >= 0)
     {
         kernelSize += 1;
     }
 
     // Check that kernelSize is positive, otherwise set to 1
-    if(kSize < 0)
+    if(checkSize < 0)
     {
         kernelSize = 1;
     }

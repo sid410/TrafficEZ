@@ -26,6 +26,8 @@ private:
     int morphShape;
     cv::Size kernelSize;
     int iterations;
+
+    void checkErosionKernelValidity(cv::Size checkSize);
 };
 
 #endif
