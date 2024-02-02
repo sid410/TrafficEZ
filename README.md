@@ -33,22 +33,20 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [x] able to switch strategy between Warp and Trim for TransformPerspective interface.
   - [x] read calibration info from yaml file.
 
-- [ ] CalibrateVideoStreamer (Only run once during calibration phase, assuming installed cameras don't move)
+- [x] CalibrateVideoStreamer (Only run once during calibration phase, assuming installed cameras don't move)
 
   - [x] Inherit from VideoStreamer: openVideoStream, constructStreamWindow, getNextFrame, readCalibrationPoints, initializePerspectiveTransform, warpFrame.
   - [x] setCalibrationPointsFromMouse: click four points (resettable if unhappy) to define the image transformation matrix for warping the perspective to bird's eye view.
   - [x] input the length and width of the total lanes.
   - [x] saveCalibrationPoints: save the corresponding {calibration_points, lanes_dimension} to a yaml file.
-  - [ ] show frame that can also be accessed remotely (SSH).
+  - [ ] (optional) show/stream frame that can also be accessed remotely (SSH).
   - [ ] (optional) add a line guide calculated from Hough line transform to snap to.
 
 - [ ] HullRecognitionModule
 
-  - [ ] switch between debug mode (with imshow) and release mode (no imshow).
-
   - [ ] create HullDetector + image processing builder
 
-    - [ ] read cv_params config file to load constants of CV pipeline (HullDetector settings interface).
+    - [ ] read/save cv_params config file to load constants of CV pipeline (HullDetector settings interface).
     - [x] pre-process frame using the builder pattern with the following steps:
       - [x] grayscale.
       - [x] gaussian blur.
@@ -56,8 +54,9 @@ Affiliation: USTP-RSPOT IIoT Lab
       - [x] threshold to filter out shadows.
       - [x] morphological operation (dilation then erosion, i.e. closing morph) with different kernels.
     - [x] find convex hull from contours.
+    - [x] create trackbar to adjust these parameters while showing all stacked frames as feedback.
 
-  - [ ] create HullTracker
+  - [x] create HullTracker
 
     - [x] match existing tracked hulls by comparing current and previous hulls info [centroid, area] that is calculated from contour/hull moments.
     - [x] add new tracked hulls with unique ID.
@@ -66,18 +65,14 @@ Affiliation: USTP-RSPOT IIoT Lab
     - [x] calculate accumulated hull area that crossed (px^2).
     - [x] calculate averaged speed of hulls that crossed (px/s).
 
-  - [ ] PreprocessPipelineBuilder, to find CV parameters to get best Hull tracking results.
-    - [x] use the builder pattern for PreprocessPipelineBuilder.
-    - [ ] create trackbar to adjust these parameters while showing all stacked frames as feedback.
-    - [ ] save the adjusted parameters to the cv_params config file.
-
 - [ ] TrafficDensityEstimator
-
+  - [ ] convert units from pixels to meters.
   - [ ] return traffic density based if the state message from parent was Green, RedSet, or RedGet (IMPORTANT: this is only applicaple for car traffic, still not sure how to calculate together with the pedestrian topic).
     - [ ] Green: return nothing but confirmation message.
     - [ ] RedSet: return density of previous green light.
     - [ ] RedGet: return density of current red light.
   - [ ] calculate density of previous green light:
+    - [ ] start sample and end sample to get the time.
     - [ ] get the accumulated total hull area that crossed finish line (define this line later, maybe 80% of the length?).
     - [ ] get the start and end time of green light, then divide by the accumulated total hull area to get average traffic flow.
     - [ ] get the average speed parallel to lane by calculating a moving average, for each frame, delta centroid divided by delta frame_time. Make sure to get the vector projection parallel to lane.
@@ -120,13 +115,12 @@ Affiliation: USTP-RSPOT IIoT Lab
 
 - [ ] (Optional) HullDetectionOptimizer: To automize the manually set PreprocessPipelineBuilder.
 
-- [ ] Think of a cleaner CMake build.
 - [ ] Setup branch protection for `release/`
 
 - [ ] Setup workflows
 
   - [ ] [Setup OpenCV action](https://github.com/Dovyski/setup-opencv-action).
-  - [ ] Build and test CMake project on multiple platforms.
+  - [ ] Build and test CMake project on Ubuntu 22.04.
 
 - [ ] Add test edge cases not covered by defaults
 - [ ] Check threads and CPU usage in release

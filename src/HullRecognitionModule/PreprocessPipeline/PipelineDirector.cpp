@@ -1,13 +1,10 @@
 #include "PipelineDirector.h"
 
 /**
-     * @brief Sets up the default pipeline configuration.
-     *
-     * Default pipeline is as follows: Grayscale -> GaussianBlur
-     * -> MOG2BackgroundSubtraction -> Threshold -> Dilation -> Erosion
-     *
-     * @param builder Reference to a PipelineBuilder instance.
-     */
+ * @brief Sets up the default pipeline configuration.
+ * @param builder Reference to a PipelineBuilder instance, which is used to
+ * sequentially add the processing steps to the pipeline.
+ */
 void PipelineDirector::setupDefaultPipeline(PipelineBuilder& builder)
 {
     builder.addStep(StepType::Grayscale, StepParameters{GrayscaleParams{}})

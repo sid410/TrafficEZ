@@ -21,6 +21,12 @@ PipelineTrackbar::~PipelineTrackbar()
     }
 }
 
+/**
+ * @brief This method dynamically creates a trackbar for each preprocessing step defined in
+ * the associated `PipelineBuilder` instance. It generates a visual representation of
+ * the processing pipeline, displaying step names and creating trackbars for their
+ * adjustable parameters.
+ */
 void PipelineTrackbar::initializeTrackbars()
 {
     size_t stepCount = pipelineBuilder.getNumberOfSteps();
@@ -42,10 +48,10 @@ void PipelineTrackbar::initializeTrackbars()
             stepName += "Grayscale";
             break;
 
-        case StepType::GaussianBlur: {
+        case StepType::GaussianBlur: { // encapsulated to limit scope
             auto& p = std::get<GaussianBlurParams>(initParam.params);
-            addTrackbar(i, "Kernel Size", 1, 31, 0, p.kernelSize);
-            addTrackbar(i, "Sigma", 1, 100, 1, p.sigma);
+            addTrackbar(i, "Kernel Size", 31, 0, p.kernelSize);
+            addTrackbar(i, "Sigma", 100, 1, p.sigma);
         }
             stepName += "Gaussian Blur";
             break;
@@ -53,41 +59,41 @@ void PipelineTrackbar::initializeTrackbars()
         case StepType::MOG2BackgroundSubtraction: {
             auto& p =
                 std::get<MOG2BackgroundSubtractionParams>(initParam.params);
-            addTrackbar(i, "History", 50, 500, 0, p.history);
-            addTrackbar(i, "Var Threshold", 2, 100, 1, p.varThreshold);
-            addTrackbar(i, "Var Threshold Gen", 1, 50, 2, p.varThresholdGen);
-            addTrackbar(i, "NMixtures", 1, 5, 3, p.nMixtures);
-            addTrackbar(i, "Detect Shadows", 0, 1, 4, p.detectShadows);
-            addTrackbar(i, "Shadow Value", 0, 255, 5, p.shadowValue);
+            addTrackbar(i, "History", 500, 0, p.history);
+            addTrackbar(i, "Var Threshold", 100, 1, p.varThreshold);
+            addTrackbar(i, "Var Threshold Gen", 50, 2, p.varThresholdGen);
+            addTrackbar(i, "NMixtures", 5, 3, p.nMixtures);
+            addTrackbar(i, "Detect Shadows", 1, 4, p.detectShadows);
+            addTrackbar(i, "Shadow Value", 255, 5, p.shadowValue);
         }
             stepName += "MOG2 Background Subtraction";
             break;
 
         case StepType::Threshold: {
             auto& p = std::get<ThresholdParams>(initParam.params);
-            addTrackbar(i, "Threshold Value", 0, 255, 0, p.thresholdValue);
-            addTrackbar(i, "Max Value", 0, 255, 1, p.maxValue);
-            addTrackbar(i, "Threshold Type", 0, 4, 2, p.thresholdType);
+            addTrackbar(i, "Threshold Value", 255, 0, p.thresholdValue);
+            addTrackbar(i, "Max Value", 255, 1, p.maxValue);
+            addTrackbar(i, "Threshold Type", 4, 2, p.thresholdType);
         }
             stepName += "Threshold";
             break;
 
         case StepType::Erosion: {
             auto& p = std::get<ErosionParams>(initParam.params);
-            addTrackbar(i, "Morph Shape", 0, 2, 0, p.morphShape);
+            addTrackbar(i, "Morph Shape", 2, 0, p.morphShape);
             // assuming kernel width and height is equal
-            addTrackbar(i, "Kernel Size", 1, 21, 1, p.kernelSize.width);
-            addTrackbar(i, "Iterations", 1, 10, 2, p.iterations);
+            addTrackbar(i, "Kernel Size", 21, 1, p.kernelSize.width);
+            addTrackbar(i, "Iterations", 10, 2, p.iterations);
         }
             stepName += "Erosion";
             break;
 
         case StepType::Dilation: {
             auto& p = std::get<DilationParams>(initParam.params);
-            addTrackbar(i, "Morph Shape", 0, 2, 0, p.morphShape);
+            addTrackbar(i, "Morph Shape", 2, 0, p.morphShape);
             // assuming kernel width and height is equal
-            addTrackbar(i, "Kernel Size", 1, 21, 1, p.kernelSize.width);
-            addTrackbar(i, "Iterations", 1, 10, 2, p.iterations);
+            addTrackbar(i, "Kernel Size", 21, 1, p.kernelSize.width);
+            addTrackbar(i, "Iterations", 10, 2, p.iterations);
         }
             stepName += "Dilation";
             break;
@@ -99,15 +105,26 @@ void PipelineTrackbar::initializeTrackbars()
                     cv::FONT_HERSHEY_SIMPLEX,
                     0.7,
                     cv::Scalar(0, 255, 0),
-                    2);
+                    1);
     }
 
     cv::imshow(windowName, displayPipelineInfo);
 }
 
+/**
+ * @brief Adds a trackbar to the window for controlling a parameter of a preprocessing step.
+ * Each trackbar is associated with a unique `TrackbarContext` to
+ * handle adjustments made through the trackbar's interface.
+ * @param stepIndex The index of the preprocessing step in the pipeline, used to identify
+ * which step the trackbar controls.
+ * @param paramName The name of the parameter this trackbar adjusts.
+ * @param maxValue The maximum value the trackbar can adjust the parameter to.
+ * @param paramId An identifier for the parameter within the step, used in callback
+ * functions to apply changes.
+ * @param initialValue The initial value for the parameter, set when the trackbar is created.
+ */
 void PipelineTrackbar::addTrackbar(size_t stepIndex,
                                    const std::string& paramName,
-                                   int minValue,
                                    int maxValue,
                                    int paramId,
                                    int initialValue)
@@ -131,6 +148,12 @@ void PipelineTrackbar::addTrackbar(size_t stepIndex,
     trackbarContexts.push_back(std::move(context));
 }
 
+/**
+ * @brief Callback function for trackbar adjustments.
+ * @param value The new value from the trackbar, representing the updated parameter value.
+ * @param userdata A pointer to user data provided when the trackbar was created. This
+ * should be cast to a `TrackbarContext*` to access `stepIndex` and `paramId`.
+ */
 void PipelineTrackbar::onTrackbarChange(int value, void* userdata)
 {
     auto* context = static_cast<TrackbarContext*>(userdata);

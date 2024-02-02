@@ -11,7 +11,7 @@
 /**
  * @brief Adds a preprocessing step to the pipeline.
  * This method creates and adds a specific type of preprocessing step
- * to the pipeline based on the provided StepType and parameters.
+ * to the pipeline based on the provided type and parameters.
  * @param type The type of preprocessing step to add, as defined in StepType.
  * @param params The parameters for the preprocessing step, as defined in StepParameters.
  * @return Reference to the modified PipelineBuilder object.
@@ -88,7 +88,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
 
 /**
  * @brief Sets the parameters of a specific preprocessing step at the given index.
- * @param stepIndex The index of the step in the pipeline to be updated.
+ * @param stepIndex The index of the step in the pipeline to be set.
  * @param params The new parameters for the step, as defined in StepParameters.
  */
 void PipelineBuilder::setStepParameters(size_t stepIndex,
@@ -103,6 +103,17 @@ void PipelineBuilder::setStepParameters(size_t stepIndex,
     steps[stepIndex]->setStepParameters(params);
 }
 
+/**
+ * @brief This method provides a way to adjust just one parameter of a step
+ * without needing to update all parameters of the step. It's useful
+ * for fine-tuning individual aspects of a step's behavior during runtime.
+ * @param stepIndex The index of the step in the pipeline to be updated.
+ * @param paramId An identifier for the specific parameter within the step to update.
+ * The meaning of this identifier is specific to the type of step being modified.
+ * @param value The new value to be assigned to the parameter identified by `paramId`.
+ * The type and value range of this parameter must be appropriate for the parameter
+ * being updated.
+ */
 void PipelineBuilder::updateStepParameterById(size_t stepIndex,
                                               int paramId,
                                               const std::any& value)
@@ -116,11 +127,22 @@ void PipelineBuilder::updateStepParameterById(size_t stepIndex,
     steps[stepIndex]->updateParameterById(paramId, value);
 }
 
+/**
+ * @brief Retrieves the current number of preprocessing steps in the pipeline.
+ * @return The total number of steps currently in the pipeline.
+ */
 size_t PipelineBuilder::getNumberOfSteps() const
 {
     return steps.size();
 }
 
+/**
+ * @brief Gets the type of a preprocessing step at a specified index.
+ * @param stepIndex Zero-based index of the step in the pipeline whose type
+ * is being queried.
+ * @return The type of the preprocessing step at the specified index, or
+ * StepType::Undefined if the index is invalid.
+ */
 StepType PipelineBuilder::getStepType(size_t stepIndex) const
 {
     if(stepIndex >= steps.size())
@@ -132,6 +154,14 @@ StepType PipelineBuilder::getStepType(size_t stepIndex) const
     return steps[stepIndex]->getType();
 }
 
+/**
+ * @brief Retrieves the current parameters of a preprocessing step at a given index.
+ * @param stepIndex Zero-based index of the step in the pipeline whose type
+ * is being queried.
+ * @return The current parameters of the step at the specified index, wrapped
+ * in a StepParameters object. If the step index is invalid, returns an empty
+ * StepParameters object.
+ */
 StepParameters PipelineBuilder::getStepCurrentParameters(size_t stepIndex) const
 {
     if(stepIndex >= steps.size())

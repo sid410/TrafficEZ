@@ -14,6 +14,9 @@
  * When this PipelineTrackbar object is destroyed, there is no way to
  * clean up dangling pointers, thus OpenCV callbacks would try to
  * access invalid memory.
+ * 
+ * @param builder Reference to the builder instance.
+ * @param streamName Name of the stream, for window cleanup.
  */
 class PipelineTrackbar
 {
@@ -39,7 +42,6 @@ private:
 
     void addTrackbar(size_t stepIndex,
                      const std::string& paramName,
-                     int minValue,
                      int maxValue,
                      int paramId,
                      int initialValue);
