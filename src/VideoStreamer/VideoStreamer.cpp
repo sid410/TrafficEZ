@@ -8,11 +8,16 @@ VideoStreamer::VideoStreamer()
     , readCalibSuccess(false)
     , laneLength(0)
     , laneWidth(0)
+    , streamWindowInstance("Uninitialized Stream")
 {}
 
 VideoStreamer::~VideoStreamer()
 {
     stream.release();
+    if(cv::getWindowProperty(streamWindowInstance, cv::WND_PROP_VISIBLE) >= 0)
+    {
+        cv::destroyWindow(streamWindowInstance);
+    }
 }
 
 /**
@@ -45,6 +50,18 @@ void VideoStreamer::constructStreamWindow(const cv::String& windowName)
 
     cv::namedWindow(windowName, cv::WINDOW_NORMAL);
     cv::resizeWindow(windowName, originalWidth, originalHeight);
+
+    streamWindowInstance = windowName;
+}
+
+/**
+ * @brief Resize an existing window based from a reference frame
+ * @param referenceFrame pass here a new frame size, e.g. the warped frame.
+ */
+void VideoStreamer::resizeStreamWindow(const cv::Mat& referenceFrame)
+{
+    cv::resizeWindow(
+        streamWindowInstance, referenceFrame.cols, referenceFrame.rows);
 }
 
 /**

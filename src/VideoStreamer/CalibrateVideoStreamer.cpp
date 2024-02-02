@@ -8,6 +8,7 @@ CalibrateVideoStreamer::CalibrateVideoStreamer()
     , pointsSetSuccessfully(false)
 {}
 
+// Already handle the cleanup in the VideoStreamer Destructor
 CalibrateVideoStreamer::~CalibrateVideoStreamer() {}
 
 /**

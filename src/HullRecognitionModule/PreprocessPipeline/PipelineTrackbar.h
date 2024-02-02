@@ -6,7 +6,9 @@
 class PipelineTrackbar
 {
 public:
-    explicit PipelineTrackbar(PipelineBuilder& builder);
+    explicit PipelineTrackbar(PipelineBuilder& builder,
+                              const std::string& streamName);
+    ~PipelineTrackbar();
 
 private:
     struct TrackbarContext
@@ -15,9 +17,10 @@ private:
         int paramId;
         PipelineTrackbar* pipelineTrackbar;
     };
-
-    PipelineBuilder& pipelineBuilder;
     std::vector<std::unique_ptr<TrackbarContext>> trackbarContexts;
+
+    std::string windowName;
+    PipelineBuilder& pipelineBuilder;
 
     void initializeTrackbars();
 

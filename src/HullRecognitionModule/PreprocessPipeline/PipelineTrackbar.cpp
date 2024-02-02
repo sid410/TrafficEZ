@@ -2,11 +2,21 @@
 #include <memory>
 #include <vector>
 
-PipelineTrackbar::PipelineTrackbar(PipelineBuilder& builder)
+PipelineTrackbar::PipelineTrackbar(PipelineBuilder& builder,
+                                   const std::string& streamName)
     : pipelineBuilder(builder)
+    , windowName(streamName + " Trackbars")
 {
-    cv::namedWindow("Trackbars", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
     initializeTrackbars();
+}
+
+PipelineTrackbar::~PipelineTrackbar()
+{
+    if(cv::getWindowProperty(windowName, cv::WND_PROP_VISIBLE) >= 0)
+    {
+        cv::destroyWindow(windowName);
+    }
 }
 
 void PipelineTrackbar::initializeTrackbars()
@@ -65,12 +75,13 @@ void PipelineTrackbar::addTrackbar(size_t stepIndex,
         TrackbarContext{stepIndex, paramId, this});
 
     cv::createTrackbar(trackbarName,
-                       "Trackbars",
+                       windowName,
                        nullptr,
                        maxValue,
                        &PipelineTrackbar::onTrackbarChange,
                        context.get());
 
+    // be careful with the lifetime of this callback context
     trackbarContexts.push_back(std::move(context));
 }
 
