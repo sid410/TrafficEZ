@@ -3,6 +3,18 @@
 
 #include "PipelineBuilder.h"
 
+/**
+ * @brief Class for controlling the parameters of each steps
+ * in the Pipeline and see the projected results in realtime
+ * through the builder's processDebugStack method. 
+ * 
+ * WARNING: This should only be used solely for debugging.
+ * There will be a segmentation fault that is difficult to workaround,
+ * due to OpenCV's way of implementing trackbar callbacks.
+ * When this PipelineTrackbar object is destroyed, there is no way to
+ * clean up dangling pointers, thus OpenCV callbacks would try to
+ * access invalid memory.
+ */
 class PipelineTrackbar
 {
 public:
@@ -22,6 +34,7 @@ private:
     std::string windowName;
     PipelineBuilder& pipelineBuilder;
 
+    cv::Mat displayPipelineInfo;
     void initializeTrackbars();
 
     void addTrackbar(size_t stepIndex,
