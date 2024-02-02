@@ -17,6 +17,7 @@ public:
                                  int paramId,
                                  const std::any& value);
 
+    void clearAllSteps();
     size_t getNumberOfSteps() const;
     StepType getStepType(size_t stepIndex) const;
     StepParameters getStepCurrentParameters(size_t stepIndex) const;

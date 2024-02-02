@@ -42,8 +42,10 @@ void VehicleGui::display(const std::string& streamName,
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
     pipeDirector.setupDefaultPipeline(pipeBuilder);
+    // pipeBuilder.clearAllSteps();
+    pipeDirector.savePipelineConfig(pipeBuilder, "debug_calib.yaml");
 
-    PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
+    // PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
@@ -62,15 +64,15 @@ void VehicleGui::display(const std::string& streamName,
         // pipeBuilder.process(processFrame);
         pipeBuilder.processDebugStack(processFrame);
 
-        std::vector<std::vector<cv::Point>> hulls;
-        hullDetector.getHulls(processFrame, hulls);
+        // std::vector<std::vector<cv::Point>> hulls;
+        // hullDetector.getHulls(processFrame, hulls);
 
-        hullTracker.update(hulls);
+        // hullTracker.update(hulls);
 
-        // draw information on frame, only for GUI
-        hullTracker.drawTrackedHulls(warpedFrame);
-        hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
-        hullDetector.drawLengthBoundaries(warpedFrame);
+        // // draw information on frame, only for GUI
+        // hullTracker.drawTrackedHulls(warpedFrame);
+        // hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
+        // hullDetector.drawLengthBoundaries(warpedFrame);
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);

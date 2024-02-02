@@ -10,6 +10,11 @@ class PipelineDirector
 {
 public:
     static void setupDefaultPipeline(PipelineBuilder& builder);
+    void savePipelineConfig(PipelineBuilder& builder,
+                            const cv::String& yamlFilename);
+
+private:
+    std::string stepTypeToString(StepType stepType);
 };
 
 #endif

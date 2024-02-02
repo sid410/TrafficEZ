@@ -78,20 +78,18 @@ void PipelineTrackbar::initializeTrackbars()
             stepName += "Threshold";
             break;
 
-        case StepType::Erosion: {
+        case StepType::Erosion: { // Assuming kernelSize width==height
             auto& p = std::get<ErosionParams>(initParam.params);
             addTrackbar(i, "Morph Shape", 2, 0, p.morphShape);
-            // assuming kernel width and height is equal
             addTrackbar(i, "Kernel Size", 21, 1, p.kernelSize.width);
             addTrackbar(i, "Iterations", 10, 2, p.iterations);
         }
             stepName += "Erosion";
             break;
 
-        case StepType::Dilation: {
+        case StepType::Dilation: { // Assuming kernelSize width==height
             auto& p = std::get<DilationParams>(initParam.params);
             addTrackbar(i, "Morph Shape", 2, 0, p.morphShape);
-            // assuming kernel width and height is equal
             addTrackbar(i, "Kernel Size", 21, 1, p.kernelSize.width);
             addTrackbar(i, "Iterations", 10, 2, p.iterations);
         }

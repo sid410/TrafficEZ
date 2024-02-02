@@ -128,6 +128,15 @@ void PipelineBuilder::updateStepParameterById(size_t stepIndex,
 }
 
 /**
+ * @brief Clearing all the added steps, basically a way to reset the builder 
+ * to start constructing a new pipeline.
+ */
+void PipelineBuilder::clearAllSteps()
+{
+    steps.clear();
+}
+
+/**
  * @brief Retrieves the current number of preprocessing steps in the pipeline.
  * @return The total number of steps currently in the pipeline.
  */
@@ -181,6 +190,9 @@ StepParameters PipelineBuilder::getStepCurrentParameters(size_t stepIndex) const
  */
 void PipelineBuilder::process(cv::Mat& frame)
 {
+    if(steps.size() < 1)
+        return; // do nothing if there are no steps.
+
     for(const auto& step : steps)
     {
         step->process(frame);
@@ -198,6 +210,9 @@ void PipelineBuilder::process(cv::Mat& frame)
  */
 void PipelineBuilder::processDebugStack(cv::Mat& frame, int hStackLength)
 {
+    if(steps.size() < 1)
+        return; // do nothing if there are no steps.
+
     std::vector<cv::Mat> stackedFrames;
     std::vector<cv::Mat> horizontalStacks;
 
