@@ -17,6 +17,7 @@ public:
 
     bool openVideoStream(const cv::String& streamName);
     void constructStreamWindow(const cv::String& windowName);
+    void resizeStreamWindow(const cv::Mat& referenceFrame);
 
     bool getNextFrame(cv::Mat& frame);
     bool readCalibrationData(const cv::String& yamlFilename);
@@ -38,6 +39,8 @@ protected:
 
 private:
     cv::VideoCapture stream;
+    cv::String streamWindowInstance;
+
     int originalWidth;
     int originalHeight;
 

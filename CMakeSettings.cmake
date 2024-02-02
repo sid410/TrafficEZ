@@ -58,10 +58,9 @@ function(setup_hullrecognition TARGET)
   setup_common_compile_options(${TARGET})
   target_include_directories(
     ${TARGET}
-    PUBLIC
-      ${CMAKE_SOURCE_DIR}/src/HullRecognitionModule/HullDetector
-      ${CMAKE_SOURCE_DIR}/src/HullRecognitionModule/HullTracker
-      ${CMAKE_SOURCE_DIR}/src/HullRecognitionModule/PreprocessPipelineBuilder)
+    PUBLIC ${CMAKE_SOURCE_DIR}/src/HullRecognitionModule/HullDetector
+           ${CMAKE_SOURCE_DIR}/src/HullRecognitionModule/HullTracker
+           ${CMAKE_SOURCE_DIR}/src/HullRecognitionModule/PreprocessPipeline)
   target_link_libraries(${TARGET} PRIVATE HullDetector HullTracker
-                                          PreprocessPipelineBuilder)
+                                          PreprocessPipeline)
 endfunction()

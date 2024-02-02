@@ -2,7 +2,9 @@
 #include "FPSHelper.h"
 #include "HullDetector.h"
 #include "HullTracker.h"
-#include "PreprocessPipelineBuilder.h"
+#include "PipelineBuilder.h"
+#include "PipelineDirector.h"
+#include "PipelineTrackbar.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
 
@@ -15,13 +17,17 @@ void VehicleGui::display(const std::string& streamName,
     WarpPerspective warpPerspective;
     FPSHelper fpsHelper;
 
-    PreprocessPipelineBuilder pipeBuilder;
+    PipelineBuilder pipeBuilder;
+    PipelineDirector pipeDirector;
+
     HullDetector hullDetector;
     HullTracker hullTracker;
 
     cv::Mat inputFrame;
     cv::Mat warpedFrame;
     cv::Mat processFrame;
+
+    cv::String streamWindow = streamName + " Vehicle GUI";
 
     if(!videoStreamer.openVideoStream(streamName))
         return;
@@ -32,17 +38,17 @@ void VehicleGui::display(const std::string& streamName,
     static int laneLength = videoStreamer.getLaneLength();
     static int laneWidth = videoStreamer.getLaneWidth();
 
+    videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    pipeBuilder.addGrayscaleStep()
-        .addGaussianBlurStep()
-        .addMOG2BackgroundSubtractionStep()
-        .addThresholdStep()
-        .addDilationStep()
-        .addErosionStep();
+    pipeDirector.setupDefaultPipeline(pipeBuilder);
+
+    PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
+    videoStreamer.resizeStreamWindow(warpedFrame);
+
     hullDetector.initDetectionBoundaries(warpedFrame);
     hullTracker.initBoundaryLine(hullDetector.getEndDetectionLine());
 
@@ -53,7 +59,8 @@ void VehicleGui::display(const std::string& streamName,
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         warpedFrame.copyTo(processFrame);
-        pipeBuilder.process(processFrame);
+        // pipeBuilder.process(processFrame);
+        pipeBuilder.processDebugStack(processFrame);
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(processFrame, hulls);
@@ -67,13 +74,13 @@ void VehicleGui::display(const std::string& streamName,
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);
-        cv::imshow("Vehicle Gui", warpedFrame);
+        cv::imshow(streamWindow, warpedFrame);
 
         // temporary, for estimating traffic flow
         // need a way to constantly cut to uniformly measure
-        frameCounter++;
-        if(frameCounter >= 1000)
-            break;
+        // std::cout << frameCounter++ << "\n";
+        // if(frameCounter >= 1000)
+        //     break;
 
         if(cv::waitKey(30) == 27)
             break;
@@ -83,6 +90,4 @@ void VehicleGui::display(const std::string& streamName,
     std::cout << "Total Area: " << hullTracker.getTotalHullArea() << " px^2\n";
     std::cout << "Total Speed: " << hullTracker.calculateAllAveragedSpeed()
               << " px/s\n";
-
-    cv::destroyAllWindows();
 }
