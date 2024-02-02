@@ -1,7 +1,9 @@
 #include "DilationStep.h"
 
 DilationStep::DilationStep(int morphShape, cv::Size kernelSize, int iterations)
-    : iterations(iterations)
+    : morphShape(morphShape)
+    , kernelSize(kernelSize)
+    , iterations(iterations)
 {
     checkDilationKernelValidity(kernelSize);
     dilateKernel = cv::getStructuringElement(morphShape, kernelSize);

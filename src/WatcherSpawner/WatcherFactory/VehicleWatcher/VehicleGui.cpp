@@ -42,19 +42,6 @@ void VehicleGui::display(const std::string& streamName,
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
     pipeDirector.setupDefaultPipeline(pipeBuilder);
-    // pipeBuilder
-    //     .addStep(StepType::GaussianBlur,
-    //              StepParameters{GaussianBlurParams{21, 1}})
-    //     .addStep(StepType::GaussianBlur,
-    //              StepParameters{GaussianBlurParams{21, 1}})
-    //     .addStep(StepType::GaussianBlur,
-    //              StepParameters{GaussianBlurParams{21, 1}})
-    //     .addStep(StepType::GaussianBlur,
-    //              StepParameters{GaussianBlurParams{21, 1}})
-    //     .addStep(StepType::GaussianBlur,
-    //              StepParameters{GaussianBlurParams{21, 1}})
-    //     .addStep(StepType::GaussianBlur,
-    //              StepParameters{GaussianBlurParams{21, 1}});
 
     PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
@@ -71,22 +58,22 @@ void VehicleGui::display(const std::string& streamName,
     // frame update loop
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
-        // warpedFrame.copyTo(processFrame);
+        warpedFrame.copyTo(processFrame);
         // pipeBuilder.process(processFrame);
-        pipeBuilder.processDebugStack(warpedFrame);
+        pipeBuilder.processDebugStack(processFrame);
 
-        // std::vector<std::vector<cv::Point>> hulls;
-        // hullDetector.getHulls(processFrame, hulls);
+        std::vector<std::vector<cv::Point>> hulls;
+        hullDetector.getHulls(processFrame, hulls);
 
-        // hullTracker.update(hulls);
+        hullTracker.update(hulls);
 
-        // // draw information on frame, only for GUI
-        // hullTracker.drawTrackedHulls(warpedFrame);
-        // hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
-        // hullDetector.drawLengthBoundaries(warpedFrame);
+        // draw information on frame, only for GUI
+        hullTracker.drawTrackedHulls(warpedFrame);
+        hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
+        hullDetector.drawLengthBoundaries(warpedFrame);
 
-        // fpsHelper.avgFps();
-        // fpsHelper.displayFps(warpedFrame);
+        fpsHelper.avgFps();
+        fpsHelper.displayFps(warpedFrame);
         cv::imshow(streamWindow, warpedFrame);
 
         // temporary, for estimating traffic flow
@@ -94,24 +81,6 @@ void VehicleGui::display(const std::string& streamName,
         // std::cout << frameCounter++ << "\n";
         // if(frameCounter >= 1000)
         //     break;
-
-        // if(frameCounter == 50)
-        //     pipeBuilder.updateStepParameterById(2, 1, 51);
-
-        // if(frameCounter == 100)
-        //     pipeBuilder.updateStepParameterById(2, 1, 1.0);
-
-        // if(frameCounter == 150)
-        //     pipeBuilder.updateStepParameterById(1, 1, 51.0);
-
-        // if(frameCounter == 200)
-        //     pipeBuilder.updateStepParameterById(1, 1, 1.0);
-
-        // if(frameCounter == 250)
-        //     pipeBuilder.updateStepParameterById(0, 1, 51.0);
-
-        // if(frameCounter == 300)
-        //     pipeBuilder.updateStepParameterById(0, 1, 1.0);
 
         if(cv::waitKey(30) == 27)
             break;

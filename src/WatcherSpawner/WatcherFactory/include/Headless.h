@@ -6,6 +6,8 @@
 class Headless
 {
 public:
+    virtual ~Headless() {}
+
     virtual void process(const std::string& streamName,
                          const std::string& calibName) const = 0;
 };

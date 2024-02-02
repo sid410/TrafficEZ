@@ -12,6 +12,8 @@ enum class RenderMode
 class Watcher
 {
 public:
+    virtual ~Watcher() {}
+
     virtual void spawn(RenderMode mode,
                        const std::string& streamName,
                        const std::string& calibName) const = 0;

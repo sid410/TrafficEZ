@@ -28,7 +28,8 @@ private:
                      const std::string& paramName,
                      int minValue,
                      int maxValue,
-                     int paramId);
+                     int paramId,
+                     int initialValue);
 
     static void onTrackbarChange(int value, void* userdata);
 };

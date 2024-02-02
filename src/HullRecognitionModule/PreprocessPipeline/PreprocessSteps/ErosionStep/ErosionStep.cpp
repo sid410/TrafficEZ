@@ -1,7 +1,9 @@
 #include "ErosionStep.h"
 
 ErosionStep::ErosionStep(int morphShape, cv::Size kernelSize, int iterations)
-    : iterations(iterations)
+    : morphShape(morphShape)
+    , kernelSize(kernelSize)
+    , iterations(iterations)
 {
     checkErosionKernelValidity(kernelSize);
     erodeKernel = cv::getStructuringElement(morphShape, kernelSize);
