@@ -18,8 +18,7 @@ PipelineBuilder& PipelineBuilder::addStep(StepType type,
     }
     else
     {
-        std::cerr << "Unsupported step type provided or parameters mismatch in "
-                     "addStep.\n";
+        std::cerr << "Unsupported step type provided or parameters mismatch.\n";
     }
     return *this;
 }

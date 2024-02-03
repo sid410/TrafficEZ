@@ -8,6 +8,7 @@ endforeach()
 
 add_library(StepFactory StepFactory.cpp)
 setup_currdir_opencv(StepFactory)
+setup_yaml_libstatic(StepFactory)
 
 target_include_directories(StepFactory PUBLIC ${STEP_INCLUDE_DIRS})
 

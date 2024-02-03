@@ -41,12 +41,9 @@ void VehicleGui::display(const std::string& streamName,
     videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    pipeDirector.setupDefaultPipeline(pipeBuilder);
-    // pipeBuilder.clearAllSteps();
-    // pipeDirector.savePipelineConfig(pipeBuilder, "debug_calib.yaml");
-    // pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
-
-    // PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
+    // load settings, and create trackbar
+    pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
+    PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
@@ -65,15 +62,15 @@ void VehicleGui::display(const std::string& streamName,
         // pipeBuilder.process(processFrame);
         pipeBuilder.processDebugStack(processFrame);
 
-        // std::vector<std::vector<cv::Point>> hulls;
-        // hullDetector.getHulls(processFrame, hulls);
+        std::vector<std::vector<cv::Point>> hulls;
+        hullDetector.getHulls(processFrame, hulls);
 
-        // hullTracker.update(hulls);
+        hullTracker.update(hulls);
 
-        // // draw information on frame, only for GUI
-        // hullTracker.drawTrackedHulls(warpedFrame);
-        // hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
-        // hullDetector.drawLengthBoundaries(warpedFrame);
+        // draw information on frame, only for GUI
+        hullTracker.drawTrackedHulls(warpedFrame);
+        hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
+        hullDetector.drawLengthBoundaries(warpedFrame);
 
         fpsHelper.avgFps();
         fpsHelper.displayFps(warpedFrame);
@@ -81,9 +78,9 @@ void VehicleGui::display(const std::string& streamName,
 
         // temporary, for estimating traffic flow
         // need a way to constantly cut to uniformly measure
-        // std::cout << frameCounter++ << "\n";
-        // if(frameCounter >= 1000)
-        //     break;
+        std::cout << frameCounter++ << "\n";
+        if(frameCounter >= 1000)
+            break;
 
         if(cv::waitKey(30) == 27)
             break;
