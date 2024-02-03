@@ -1,15 +1,7 @@
 #include "PipelineBuilder.h"
-#include "DilationStep.h"
-#include "ErosionStep.h"
-#include "GaussianBlurStep.h"
-#include "GrayscaleStep.h"
-#include "MOG2BackgroundSubtractionStep.h"
-#include "ThresholdStep.h"
-#include <memory>
-#include <vector>
 
 /**
- * @brief Adds a preprocessing step to the pipeline.
+ * @brief Adds a preprocessing step to the pipeline created from the StepFactory.
  * This method creates and adds a specific type of preprocessing step
  * to the pipeline based on the provided type and parameters.
  * @param type The type of preprocessing step to add, as defined in StepType.
@@ -19,70 +11,16 @@
 PipelineBuilder& PipelineBuilder::addStep(StepType type,
                                           const StepParameters& params)
 {
-    switch(type)
+    auto step = StepFactory::createStep(type, params);
+    if(step != nullptr)
     {
-
-    // Uses cv::cvtColor to convert to cv::COLOR_BGR2GRAY
-    case StepType::Grayscale:
-        steps.emplace_back(std::make_unique<GrayscaleStep>());
-        break;
-
-    // Uses cv::GaussianBlur
-    case StepType::GaussianBlur:
-        if(auto p = std::get_if<GaussianBlurParams>(&params.params))
-        {
-            steps.emplace_back(
-                std::make_unique<GaussianBlurStep>(p->kernelSize, p->sigma));
-        }
-        break;
-
-    // Uses cv::createBackgroundSubtractorMOG2
-    case StepType::MOG2BackgroundSubtraction:
-        if(auto p =
-               std::get_if<MOG2BackgroundSubtractionParams>(&params.params))
-        {
-            steps.emplace_back(std::make_unique<MOG2BackgroundSubtractionStep>(
-                p->history,
-                p->varThreshold,
-                p->varThresholdGen,
-                p->nMixtures,
-                p->detectShadows,
-                p->shadowValue));
-        }
-        break;
-
-    // Uses cv::threshold
-    case StepType::Threshold:
-        if(auto p = std::get_if<ThresholdParams>(&params.params))
-        {
-            steps.emplace_back(std::make_unique<ThresholdStep>(
-                p->thresholdValue, p->maxValue, p->thresholdType));
-        }
-        break;
-
-    // Uses cv::dilate
-    case StepType::Dilation:
-        if(auto p = std::get_if<DilationParams>(&params.params))
-        {
-            steps.emplace_back(std::make_unique<DilationStep>(
-                p->morphShape, p->kernelSize, p->iterations));
-        }
-        break;
-
-    // Uses cv::erode
-    case StepType::Erosion:
-        if(auto p = std::get_if<ErosionParams>(&params.params))
-        {
-            steps.emplace_back(std::make_unique<ErosionStep>(
-                p->morphShape, p->kernelSize, p->iterations));
-        }
-        break;
-
-    // For StepType not yet defined in the enum class
-    default:
-        std::cerr << "Unsupported step type provided in addStep.\n";
+        steps.emplace_back(std::move(step));
     }
-
+    else
+    {
+        std::cerr << "Unsupported step type provided or parameters mismatch in "
+                     "addStep.\n";
+    }
     return *this;
 }
 

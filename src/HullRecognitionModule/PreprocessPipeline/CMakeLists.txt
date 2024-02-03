@@ -8,4 +8,4 @@ setup_yaml_libstatic(PreprocessPipeline)
 target_include_directories(PreprocessPipeline
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/PreprocessSteps)
 
-target_link_libraries(PreprocessPipeline PRIVATE PreprocessSteps)
+target_link_libraries(PreprocessPipeline PRIVATE StepFactory)

@@ -1,7 +1,7 @@
 #ifndef PREPROCESS_PIPELINE_BUILDER_H
 #define PREPROCESS_PIPELINE_BUILDER_H
 
-#include "IPreprocessStep.h"
+#include "StepFactory.h"
 
 /**
  * @brief Class for building the steps required
