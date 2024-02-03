@@ -41,11 +41,12 @@ void VehicleGui::display(const std::string& streamName,
     videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    pipeDirector.setupDefaultPipeline(pipeBuilder);
+    // pipeDirector.setupDefaultPipeline(pipeBuilder);
     // pipeBuilder.clearAllSteps();
-    pipeDirector.savePipelineConfig(pipeBuilder, "debug_calib.yaml");
+    // pipeDirector.savePipelineConfig(pipeBuilder, "debug_calib.yaml");
+    pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
 
-    // PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
+    PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
