@@ -50,7 +50,7 @@ void VehicleGui::display(const std::string& streamName,
     videoStreamer.resizeStreamWindow(warpedFrame);
 
     hullDetector.initDetectionBoundaries(warpedFrame);
-    hullTracker.initBoundaryLine(hullDetector.getEndDetectionLine());
+    hullTracker.initExitBoundaryLine(hullDetector.getEndDetectionLine());
 
     // used for measuring the total time spent in the loop
     fpsHelper.startSample();

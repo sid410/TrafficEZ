@@ -27,7 +27,7 @@ HullTracker::HullTracker(double maxDiffDistance,
  * @brief Initializes the exit boundary line for hull tracking.
  * @param lineY Y-coordinate of the boundary line.
  */
-void HullTracker::initBoundaryLine(int lineY) const
+void HullTracker::initExitBoundaryLine(int lineY) const
 {
     boundaryLineY = lineY;
 }
