@@ -240,7 +240,7 @@ void HullTracker::drawTrackedHulls(cv::Mat& frame) const
 }
 
 /**
- * @brief Draws information about the lanes.
+ * @brief Draws information about the lanes (only for debugging).
  * @param frame The frame on which the lane information will be drawn.
  * @param laneLength The total length of the lanes.
  * @param laneWidth The total width of the lanes.

@@ -42,11 +42,11 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [ ] (optional) show/stream frame that can also be accessed remotely (SSH).
   - [ ] (optional) add a line guide calculated from Hough line transform to snap to.
 
-- [ ] HullRecognitionModule
+- [x] HullRecognitionModule
 
-  - [ ] create HullDetector + image processing builder
+  - [x] create HullDetector + image processing builder
 
-    - [ ] read/save cv_params config file to load constants of CV pipeline (HullDetector settings interface).
+    - [x] read/save cv_params config file to load constants of CV pipeline (HullDetector settings interface).
     - [x] pre-process frame using the builder pattern with the following steps:
       - [x] grayscale.
       - [x] gaussian blur.
