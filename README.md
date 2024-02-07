@@ -1,11 +1,5 @@
 # TrafficEZ
 
-Checklist in the project progress below are automatically updated in the [Public Repository](https://github.com/sid410/TrafficEZ-Updates) (everytime there is a push on dev/\* branch).
-
-**Warning:** Do not clone the public repo as it will periodically rebase and force push.
-
----
-
 Early development version.
 
 Author: Isidro Butaslac
@@ -122,10 +116,10 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [ ] [Setup OpenCV action](https://github.com/Dovyski/setup-opencv-action).
   - [ ] Build and test CMake project on Ubuntu 22.04.
   - [x] clang-format check
+  - [ ] doxygen auto publish to docs site
 
 - [ ] Add test edge cases not covered by defaults
 - [ ] Check threads and CPU usage in release
-- [ ] Automatic documentation with Doxygen
 
 ## Environments guide
 
