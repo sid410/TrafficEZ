@@ -115,12 +115,13 @@ Affiliation: USTP-RSPOT IIoT Lab
 
 - [ ] (Optional) HullDetectionOptimizer: To automize the manually set PreprocessPipelineBuilder.
 
-- [ ] Setup branch protection for `release/`
+- [x] Setup branch protection for `release/`
 
 - [ ] Setup workflows
 
   - [ ] [Setup OpenCV action](https://github.com/Dovyski/setup-opencv-action).
   - [ ] Build and test CMake project on Ubuntu 22.04.
+  - [x] clang-format check
 
 - [ ] Add test edge cases not covered by defaults
 - [ ] Check threads and CPU usage in release
