@@ -2,12 +2,20 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(
   TrafficEZ
-  VERSION 0.1.3
-  LANGUAGES C CXX)
+  VERSION 0.1.4
+  LANGUAGES CXX)
+
+include(${CMAKE_SOURCE_DIR}/CMakeSettings.cmake)
 
 # Need to have OpenCV installed locally If OpenCV is not in your environment
 # variables, do: set(OpenCV_DIR /path/to/opencv/build)
 find_package(OpenCV REQUIRED)
+if(NOT OpenCV_FOUND)
+  message(
+    FATAL_ERROR
+      "OpenCV not found. Please make sure it's installed and set OpenCV_DIR if necessary."
+  )
+endif()
 
 # Set the project name to be used globally
 string(CONCAT PROJECT_FULLSTRING "${PROJECT_NAME}" "-${PROJECT_VERSION_MAJOR}"
@@ -20,7 +28,7 @@ set(PROJECT_NAME_VER ${PROJECT_FULLSTRING})
 # (files with *.in extensions), update your editor settings, for example in vs
 # code: "files.associations": {"*.in": "cpp"}
 set(VER_CONFIG_H_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include/version_config.h)
-configure_file(include/version_config.h.in ${VER_CONFIG_H_PATH})
+configure_file(include/version_config.h.in ${VER_CONFIG_H_PATH} @ONLY)
 
 # Change the build name only on Windows OS
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -33,3 +41,4 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(util/yaml-cpp)
+add_subdirectory(util/FPSHelper)

@@ -14,8 +14,8 @@ void CalibrateGui::display(const std::string& streamName,
     cv::Mat inputFrame;
     cv::Mat previewFrame;
 
-    cv::String calibWindow = "Calibration Window";
-    cv::String previewWindow = "Preview Perspective";
+    cv::String calibWindow = streamName + " Calibration";
+    cv::String previewWindow = streamName + " Preview";
 
     bool previewToggle = false;
     bool perspectiveToggle = false;
@@ -44,7 +44,8 @@ void CalibrateGui::display(const std::string& streamName,
         {
         case 27: // 'Esc' key to exit by interruption
             std::cout << "Calibration interrupted.\n";
-            cv::destroyAllWindows();
+            if(cv::getWindowProperty(previewWindow, cv::WND_PROP_VISIBLE) >= 0)
+                cv::destroyWindow(previewWindow);
             return;
 
         case 'r': // 'r' key to reset points
@@ -54,7 +55,7 @@ void CalibrateGui::display(const std::string& streamName,
 
         case 's': // 's' key to save and exit successfully
         case 'S':
-            calibrateStreamer.saveCalibrationPoints(calibName);
+            calibrateStreamer.saveCalibrationData(calibName);
             break;
 
         case 'p': // 'p' key to preview between perspectives
@@ -81,5 +82,6 @@ void CalibrateGui::display(const std::string& streamName,
         }
     }
 
-    cv::destroyAllWindows();
+    if(cv::getWindowProperty(previewWindow, cv::WND_PROP_VISIBLE) >= 0)
+        cv::destroyWindow(previewWindow);
 }

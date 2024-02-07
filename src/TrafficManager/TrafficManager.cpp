@@ -27,7 +27,7 @@ void TrafficManager::start()
             spawner.spawnWatcher(WatcherType::CALIBRATE,
                                  RenderMode::GUI,
                                  "debug.mp4",
-                                 "calib_points.yaml");
+                                 "debug_calib.yaml");
         delete calibrateWatcherGui;
     }
     if(debugMode)
@@ -35,7 +35,7 @@ void TrafficManager::start()
         Watcher* vehicleWatcherGui = spawner.spawnWatcher(WatcherType::VEHICLE,
                                                           RenderMode::GUI,
                                                           "debug.mp4",
-                                                          "calib_points.yaml");
+                                                          "debug_calib.yaml");
         delete vehicleWatcherGui;
     }
 

@@ -31,51 +31,48 @@ Affiliation: USTP-RSPOT IIoT Lab
   - [x] trim and warp frame based on the calib_points yaml.
   - [x] return successfully read and initialized before anything can be changed to warped frame.
   - [x] able to switch strategy between Warp and Trim for TransformPerspective interface.
+  - [x] read calibration info from yaml file.
 
-- [ ] CalibrateVideoStreamer (Only run once during calibration phase, assuming installed cameras don't move)
+- [x] CalibrateVideoStreamer (Only run once during calibration phase, assuming installed cameras don't move)
 
   - [x] Inherit from VideoStreamer: openVideoStream, constructStreamWindow, getNextFrame, readCalibrationPoints, initializePerspectiveTransform, warpFrame.
-  - [ ] show frame that can also be accessed remotely (SSH).
   - [x] setCalibrationPointsFromMouse: click four points (resettable if unhappy) to define the image transformation matrix for warping the perspective to bird's eye view.
-  - [ ] input the length and width of these corresponding lane points.
-  - [ ] saveCalibrationPoints: save the corresponding {stream-name, four-calibration-points} dictionary to a lane_calib config file, together with the length and width of lane.
+  - [x] input the length and width of the total lanes.
+  - [x] saveCalibrationPoints: save the corresponding {calibration_points, lanes_dimension} to a yaml file.
+  - [ ] (optional) show/stream frame that can also be accessed remotely (SSH).
   - [ ] (optional) add a line guide calculated from Hough line transform to snap to.
 
-- [ ] HullRecognitionModule
+- [x] HullRecognitionModule
 
-  - [ ] switch between debug mode (with imshow) and release mode (no imshow).
+  - [x] create HullDetector + image processing builder
 
-  - [ ] create HullDetector
-
-    - [ ] read cv_params config file to load constants of CV pipeline (HullDetector settings interface).
+    - [x] read/save cv_params config file to load constants of CV pipeline (HullDetector settings interface).
     - [x] pre-process frame using the builder pattern with the following steps:
       - [x] grayscale.
       - [x] gaussian blur.
       - [x] MOG2 background subtraction.
       - [x] threshold to filter out shadows.
       - [x] morphological operation (dilation then erosion, i.e. closing morph) with different kernels.
-    - [x] find and draw contours.
+    - [x] find convex hull from contours.
+    - [x] create trackbar to adjust these parameters while showing all stacked frames as feedback.
 
-  - [ ] create HullTracker
+  - [x] create HullTracker
 
-    - [ ] get moments of hulls from HullDetector.
-    - [ ] match existing tracked hulls by comparing current and previous hulls info [centroid, area] that is calculated from contour/hull moments.
-    - [ ] add new tracked hulls with unique ID, but reset count every start of green light change.
-    - [ ] remove duplicates (same hull but assigned multiple IDs) and inactive tracked hulls.
-    - [ ] return reliable tracked hulls.
-
-  - [ ] create HullParametersBlender, to manually find CV parameters to get best Hull tracking results.
-    - [ ] inherit from HullDetector, but with adjustable parameters.
-    - [ ] create trackbar to adjust these parameters while showing all stacked frames as feedback.
-    - [ ] save the adjusted parameters to the cv_params config file.
+    - [x] match existing tracked hulls by comparing current and previous hulls info [centroid, area] that is calculated from contour/hull moments.
+    - [x] add new tracked hulls with unique ID.
+    - [x] remove duplicates (same hull but assigned multiple IDs) and inactive/stale tracked hulls.
+    - [x] count reliable tracked hulls that crossed boundary line.
+    - [x] calculate accumulated hull area that crossed (px^2).
+    - [x] calculate averaged speed of hulls that crossed (px/s).
 
 - [ ] TrafficDensityEstimator
-
+  - [ ] convert units from pixels to meters.
   - [ ] return traffic density based if the state message from parent was Green, RedSet, or RedGet (IMPORTANT: this is only applicaple for car traffic, still not sure how to calculate together with the pedestrian topic).
     - [ ] Green: return nothing but confirmation message.
     - [ ] RedSet: return density of previous green light.
     - [ ] RedGet: return density of current red light.
   - [ ] calculate density of previous green light:
+    - [ ] start sample and end sample to get the time.
     - [ ] get the accumulated total hull area that crossed finish line (define this line later, maybe 80% of the length?).
     - [ ] get the start and end time of green light, then divide by the accumulated total hull area to get average traffic flow.
     - [ ] get the average speed parallel to lane by calculating a moving average, for each frame, delta centroid divided by delta frame_time. Make sure to get the vector projection parallel to lane.
@@ -116,31 +113,31 @@ Affiliation: USTP-RSPOT IIoT Lab
 
 - [x] (Optional) FPSHelper: A helper class for easily display fps in either terminal or directly overlaid in frame. There are also methods for sampling the duration of how much time it takes to execute between lines of code.
 
-- [ ] (Optional) HullDetectionOptimizer: To automize the manually set HullParametersBlender.
+- [ ] (Optional) HullDetectionOptimizer: To automize the manually set PreprocessPipelineBuilder.
 
-- [ ] Setup CMake
-- [ ] Setup branch protection for `release/`
+- [x] Setup branch protection for `release/`
 
 - [ ] Setup workflows
 
   - [ ] [Setup OpenCV action](https://github.com/Dovyski/setup-opencv-action).
-  - [ ] Build and test CMake project on multiple platforms.
+  - [ ] Build and test CMake project on Ubuntu 22.04.
+  - [x] clang-format check
 
 - [ ] Add test edge cases not covered by defaults
 - [ ] Check threads and CPU usage in release
-- [ ] Documentation with Doxygen
+- [ ] Automatic documentation with Doxygen
 
 ## Environments guide
 
-- Write in **C++11** to conform to OpenCV coding style.
-- Require **OpenCV 4.8.1** version (latest as of 2023/12/1) or above.
-- Code should be cross-platform, but prioritize build on **Ubuntu 22.04.3 LTS** (headless server to be deployed).
+- Require **OpenCV 4.9.0** version or above.
+- Write in **C++11** to conform to OpenCV coding style, but use **C++17** configuration to avoid intellisense errors.
+- Code should be built on **Ubuntu 22.04.3 LTS x86_64** (headless server to be deployed).
 - Use **CMake 3.22.1** or above (latest stable version from apt in the above Ubuntu version).
 - For Linux toolchain, use the following versions or above:
   - GNU Make 4.3
   - gcc, g++ version 11.4.0
   - gdb version 12.1
-- For Windows, maybe try the following, in descending priority:
+- For Windows, maybe try the following, in descending priority. But make sure it will pass the checks for build on Ubuntu:
   - Ninja
   - MSYS Makefiles
   - MinGW Makefiles
@@ -186,7 +183,7 @@ dir names:
 - Text files: snake_case except `CMakeLists.txt`
 - Test files: start with `test_` then snake_case
 - Resource files: snake_case
-- Release builds: TrafficEZ-M.m.p-Linux64 or TrafficEZ-M.m.p-Win64.exe
+- Release build name: TrafficEZ-M.m.p
 
 ## Styling/Formatting conventions
 

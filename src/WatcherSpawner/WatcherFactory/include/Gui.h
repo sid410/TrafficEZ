@@ -6,6 +6,8 @@
 class Gui
 {
 public:
+    virtual ~Gui() {}
+
     virtual void display(const std::string& streamName,
                          const std::string& calibName) const = 0;
 };

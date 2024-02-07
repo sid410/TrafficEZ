@@ -3,7 +3,6 @@
 
 #include "TransformPerspective.h"
 #include <opencv2/opencv.hpp>
-#include <yaml-cpp/yaml.h>
 
 /**
  * @brief Class for reading/getting frames from a stream,
@@ -18,9 +17,13 @@ public:
 
     bool openVideoStream(const cv::String& streamName);
     void constructStreamWindow(const cv::String& windowName);
+    void resizeStreamWindow(const cv::Mat& referenceFrame);
 
     bool getNextFrame(cv::Mat& frame);
-    bool readCalibrationPoints(const cv::String& filename);
+    bool readCalibrationData(const cv::String& yamlFilename);
+
+    double getLaneLength() const;
+    double getLaneWidth() const;
 
     void initializePerspectiveTransform(cv::Mat& frame,
                                         TransformPerspective& perspective);
@@ -29,15 +32,20 @@ public:
                        TransformPerspective& perspective);
 
 protected:
-    bool readCalibSuccess; // used also in the child class
+    bool readCalibSuccess; // used also in CalibrateVideoStreamer
 
     cv::Mat roiMatrix;
     std::vector<cv::Point2f> roiPoints;
 
 private:
     cv::VideoCapture stream;
+    cv::String streamWindowInstance;
+
     int originalWidth;
     int originalHeight;
+
+    double laneLength;
+    double laneWidth;
 
     bool roiMatrixInitialized;
 };
