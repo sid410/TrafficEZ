@@ -90,11 +90,10 @@ void StepFactory::serializeStepParameters(const StepParameters& params,
             using T = std::decay_t<decltype(arg)>;
             YAML::Node paramsNode = stepNode["parameters"];
 
-            if constexpr(std::is_same_v<T, GrayscaleParams>)
-            {
-            }
+            // no parameters for grayscale
+            // if constexpr(std::is_same_v<T, GrayscaleParams>)
 
-            else if constexpr(std::is_same_v<T, GaussianBlurParams>)
+            if constexpr(std::is_same_v<T, GaussianBlurParams>)
             {
                 paramsNode["kernelSize"] = arg.kernelSize;
                 paramsNode["sigma"] = arg.sigma;
