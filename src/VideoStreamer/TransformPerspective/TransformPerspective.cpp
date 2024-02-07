@@ -8,11 +8,10 @@
  * 2 - bottom left;
  * 3 - bottom right;
  */
-void TransformPerspective::sortQuadPoints(
-    std::vector<cv::Point2f>& unsortedPoints,
-    std::vector<cv::Point2f>& sortedPoints)
+void TransformPerspective::sortQuadPoints(std::vector<cv::Point2f>& unsortedPts,
+                                          std::vector<cv::Point2f>& sortedPts)
 {
-    if(unsortedPoints.size() != 4)
+    if(unsortedPts.size() != 4)
     {
         std::cerr << "Error: Exactly 4 points are required for perspective "
                      "transformation.\n";
@@ -20,16 +19,16 @@ void TransformPerspective::sortQuadPoints(
     }
 
     // Sort the points based on y-coordinates
-    std::sort(unsortedPoints.begin(),
-              unsortedPoints.end(),
+    std::sort(unsortedPts.begin(),
+              unsortedPts.end(),
               [](cv::Point2f a, cv::Point2f b) { return a.y < b.y; });
 
     // Split the sorted points into top and bottom
     std::vector<cv::Point2f> topPoints, bottomPoints;
-    topPoints.push_back(unsortedPoints[0]);
-    topPoints.push_back(unsortedPoints[1]);
-    bottomPoints.push_back(unsortedPoints[2]);
-    bottomPoints.push_back(unsortedPoints[3]);
+    topPoints.push_back(unsortedPts[0]);
+    topPoints.push_back(unsortedPts[1]);
+    bottomPoints.push_back(unsortedPts[2]);
+    bottomPoints.push_back(unsortedPts[3]);
 
     // Sort the top and bottom points based on x-coordinates
     std::sort(topPoints.begin(),
@@ -40,6 +39,5 @@ void TransformPerspective::sortQuadPoints(
               [](cv::Point2f a, cv::Point2f b) { return a.x < b.x; });
 
     // Combine the top and bottom points
-    sortedPoints = {
-        topPoints[0], topPoints[1], bottomPoints[0], bottomPoints[1]};
+    sortedPts = {topPoints[0], topPoints[1], bottomPoints[0], bottomPoints[1]};
 }
