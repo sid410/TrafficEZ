@@ -9,6 +9,13 @@
 /[Rr]esource/
 /[Rr]esources/
 
+# doc folders
+/[Dd]oc/
+/[Dd]ocs/
+
+# generated Doxyfile from template
+Doxyfile
+
 ### C++ related ignores ###
 # Prerequisites
 *.d

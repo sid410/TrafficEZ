@@ -28,7 +28,11 @@ set(PROJECT_NAME_VER ${PROJECT_FULLSTRING})
 # (files with *.in extensions), update your editor settings, for example in vs
 # code: "files.associations": {"*.in": "cpp"}
 set(VER_CONFIG_H_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include/version_config.h)
-configure_file(include/version_config.h.in ${VER_CONFIG_H_PATH} @ONLY)
+configure_file(template/version_config.h.in ${VER_CONFIG_H_PATH} @ONLY)
+
+# Configure the Doxyfile (update the template when making changes, not directly)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/template/Doxyfile.in
+               ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile @ONLY)
 
 # Change the build name only on Windows OS
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")

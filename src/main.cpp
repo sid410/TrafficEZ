@@ -9,8 +9,6 @@
  *
  * This is where you parse and pass the arguments,
  * and create the TrafficManager object.
- *
- * @return Exit successfully after instantiating TrafficManager.
  */
 int main(int argc, char* argv[])
 {
