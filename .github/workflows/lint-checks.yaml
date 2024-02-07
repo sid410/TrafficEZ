@@ -1,0 +1,59 @@
+name: Code Quality Lint Checks
+
+on:
+  push:
+    branches:
+      - 'release/**'
+      - 'dev/**'
+  pull_request:
+    branches:
+      - 'release/**'
+      - 'dev/**'
+
+jobs:
+  check-clang-formatting:
+    name: Lint check clang formatting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run clang-format style check for C/C++/Protobuf programs.
+      uses: jidicula/clang-format-action@v4.11.0
+      with:
+        clang-format-version: '14'
+        check-path: 'src'
+
+  check-header-methods:
+    name: Lint check header methods
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Check .h files public before private
+        run: python ./test/lint/scan_header_members.py ./src
+
+  # Even though there are a lot of steps that overlap with the header methods check above,
+  # I still separate these checks so that it's easier to see where it failed in actions.
+  check-cmake-formatting:
+    name: Lint check CMakeLists formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install cmake-format
+        run: pip install cmake-format
+
+      - name: Check CMake files format
+        run: |
+          find . \( -name CMakeLists.txt -o -name CMakeSettings.cmake \) -exec cmake-format --check {} +
+        continue-on-error: false
