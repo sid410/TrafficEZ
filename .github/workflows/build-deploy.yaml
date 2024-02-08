@@ -1,0 +1,62 @@
+name: Build and Deploy Release/Documentation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install CMake, Doxygen, and Graphviz
+      run: sudo apt-get update && sudo apt-get install -y cmake doxygen graphviz
+
+    # We need to add these manually to make the opencv action below work
+    - name: Add Missing APT Keys
+      run: |
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+        sudo apt-get update
+
+    - name: Setup opencv
+      uses: Dovyski/setup-opencv-action@v1.1
+      with:
+        opencv-version: '4.9.0'
+        opencv-extra-modules: false
+        install-deps: false
+
+    - name: Configure the Project for Release
+      run: |
+        cmake -DCMAKE_BUILD_TYPE:STRING=Release \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE \
+              -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc \
+              -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++ \
+              -S ${{ github.workspace }} \
+              -B ${{ github.workspace }}/build \
+              -G "Unix Makefiles"
+
+    - name: Build the Project
+      run: |
+        cmake --build ${{ github.workspace }}/build --config Release --target all -j 2
+
+    # Add tests after build
+    # Also add more steps for publishing release / docker push
+    - name: Generate Documentation
+      run: doxygen Doxyfile
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.event_name == 'push'
+      env:
+        PERSONAL_TOKEN: ${{ secrets.DOCUMENTATION_PAT }}
+        EXTERNAL_REPOSITORY: imb410/TrafficEZ-Documentation
+        PUBLISH_BRANCH: gh-pages
+        PUBLISH_DIR: ./doc/html
+        ALLOW_EMPTY_COMMIT: true
+        KEEP_FILES: false
