@@ -53,10 +53,11 @@ jobs:
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: github.event_name == 'push'
-      env:
-        PERSONAL_TOKEN: ${{ secrets.DOCUMENTATION_PAT }}
-        EXTERNAL_REPOSITORY: imb410/TrafficEZ-Documentation
-        PUBLISH_BRANCH: gh-pages
-        PUBLISH_DIR: ./doc/html
-        ALLOW_EMPTY_COMMIT: true
-        KEEP_FILES: false
+      with:
+        personal_token: ${{ secrets.DOCUMENTATION_PAT }}
+        external_repository: imb410/TrafficEZ-Documentation
+        publish_branch: gh-pages
+        publish_dir: ./doc/html
+        allow_empty_commit: true
+        keep_files: false
+    
