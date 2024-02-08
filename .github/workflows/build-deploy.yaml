@@ -17,10 +17,18 @@ jobs:
     - name: Install CMake and Doxygen
       run: sudo apt-get update && sudo apt-get install -y cmake doxygen
 
+    # We need to add these manually to make the opencv action below work
+    - name: Add Missing APT Keys
+      run: |
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+        sudo apt-get update
+
     - name: Setup opencv
       uses: Dovyski/setup-opencv-action@v1.1
       with:
         opencv-version: '4.9.0'
+        opencv-extra-modules: false
 
     - name: Configure the Project for Release
       run: |
