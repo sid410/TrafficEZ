@@ -1,4 +1,4 @@
-name: Build and Deploy Release/Documentation
+name: Build and Deploy for Release and Documentation
 
 on:
   push:
