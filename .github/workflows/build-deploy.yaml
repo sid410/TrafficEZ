@@ -17,6 +17,11 @@ jobs:
     - name: Install CMake and Doxygen
       run: sudo apt-get update && sudo apt-get install -y cmake doxygen
 
+    - name: Setup opencv
+      uses: Dovyski/setup-opencv-action@v1.1
+      with:
+        opencv-version: '4.9.0'
+
     - name: Configure the Project for Release
       run: |
         cmake -DCMAKE_BUILD_TYPE:STRING=Release \
@@ -31,7 +36,8 @@ jobs:
       run: |
         cmake --build ${{ github.workspace }}/build --config Release --target all -j 2
 
-    # Add here later more steps for publishing release / docker push
+    # Add tests after build
+    # Also add more steps for publishing release / docker push
     - name: Generate Documentation
       run: doxygen Doxyfile
 
