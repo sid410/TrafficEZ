@@ -3,11 +3,11 @@ name: Code Quality Lint Checks
 on:
   push:
     branches:
-      - 'release/**'
+      - 'main'
       - 'dev/**'
   pull_request:
     branches:
-      - 'release/**'
+      - 'main'
       - 'dev/**'
 
 jobs:
