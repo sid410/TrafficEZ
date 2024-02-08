@@ -14,8 +14,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install CMake and Doxygen
-      run: sudo apt-get update && sudo apt-get install -y cmake doxygen
+    - name: Install CMake, Doxygen, and Graphviz
+      run: sudo apt-get update && sudo apt-get install -y cmake doxygen graphviz
 
     # We need to add these manually to make the opencv action below work
     - name: Add Missing APT Keys
