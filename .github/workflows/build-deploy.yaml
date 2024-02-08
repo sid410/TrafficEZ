@@ -29,6 +29,7 @@ jobs:
       with:
         opencv-version: '4.9.0'
         opencv-extra-modules: false
+        install-deps: false
 
     - name: Configure the Project for Release
       run: |
