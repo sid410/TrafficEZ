@@ -1,6 +1,6 @@
 #include "OnnxModelBase.h"
-#include <iostream>
 #include "YoloUtils.h"
+#include <iostream>
 
 /**
  * @brief Base class for any onnx model regarding the target.
@@ -15,7 +15,9 @@
  * @param[in] logid Log identifier.
  * @param[in] provider Provider (e.g., "CPU" or "CUDA"). (NOTE: for now only CPU is supported)
  */
-OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const char *provider)
+OnnxModelBase::OnnxModelBase(const char* modelPath,
+                             const char* logid,
+                             const char* provider)
     : modelPath_(modelPath)
 {
 
@@ -25,14 +27,18 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
     Ort::SessionOptions sessionOptions = Ort::SessionOptions();
 
     std::vector<std::string> availableProviders = Ort::GetAvailableProviders();
-    auto cudaAvailable = std::find(availableProviders.begin(), availableProviders.end(), "CUDAExecutionProvider");
+    auto cudaAvailable = std::find(availableProviders.begin(),
+                                   availableProviders.end(),
+                                   "CUDAExecutionProvider");
     OrtCUDAProviderOptions cudaOption;
 
-    if (provider == OnnxProviders::CUDA.c_str())
+    if(provider == OnnxProviders::CUDA.c_str())
     {
-        if (cudaAvailable == availableProviders.end())
+        if(cudaAvailable == availableProviders.end())
         {
-            std::cout << "CUDA is not supported by your ONNXRuntime build. Fallback to CPU." << std::endl;
+            std::cout << "CUDA is not supported by your ONNXRuntime build. "
+                         "Fallback to CPU."
+                      << std::endl;
         }
         else
         {
@@ -40,13 +46,14 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
         }
     }
 
-    else if (provider == OnnxProviders::CPU.c_str())
+    else if(provider == OnnxProviders::CPU.c_str())
     {
         // "cpu" by default
     }
     else
     {
-        throw std::runtime_error("NotImplemented provider=" + std::string(provider));
+        throw std::runtime_error("NotImplemented provider=" +
+                                 std::string(provider));
     }
 
     // std::cout << "Inference device: " << std::string(provider) << std::endl;
@@ -55,10 +62,11 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
     //  ----------------
     //  init input names
     inputNodeNames;
-    std::vector<Ort::AllocatedStringPtr> inputNodeNameAllocatedStrings; // <-- newly added
+    std::vector<Ort::AllocatedStringPtr>
+        inputNodeNameAllocatedStrings; // <-- newly added
     Ort::AllocatorWithDefaultOptions allocator;
     auto inputNodesNum = session.GetInputCount();
-    for (int i = 0; i < inputNodesNum; i++)
+    for(int i = 0; i < inputNodesNum; i++)
     {
         auto input_name = session.GetInputNameAllocated(i, allocator);
         inputNodeNameAllocatedStrings.push_back(std::move(input_name));
@@ -69,11 +77,13 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
     // init output names
     outputNodeNames;
     auto outputNodesNum = session.GetOutputCount();
-    std::vector<Ort::AllocatedStringPtr> outputNodeNameAllocatedStrings; // <-- newly added
+    std::vector<Ort::AllocatedStringPtr>
+        outputNodeNameAllocatedStrings; // <-- newly added
     Ort::AllocatorWithDefaultOptions output_names_allocator;
-    for (int i = 0; i < outputNodesNum; i++)
+    for(int i = 0; i < outputNodesNum; i++)
     {
-        auto output_name = session.GetOutputNameAllocated(i, output_names_allocator);
+        auto output_name =
+            session.GetOutputNameAllocated(i, output_names_allocator);
         outputNodeNameAllocatedStrings.push_back(std::move(output_name));
         outputNodeNames.push_back(outputNodeNameAllocatedStrings.back().get());
     }
@@ -83,11 +93,12 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
     model_metadata = session.GetModelMetadata();
     Ort::AllocatorWithDefaultOptions metadata_allocator;
 
-    std::vector<Ort::AllocatedStringPtr> metadataAllocatedKeys = model_metadata.GetCustomMetadataMapKeysAllocated(metadata_allocator);
+    std::vector<Ort::AllocatedStringPtr> metadataAllocatedKeys =
+        model_metadata.GetCustomMetadataMapKeysAllocated(metadata_allocator);
     std::vector<std::string> metadata_keys;
     metadata_keys.reserve(metadataAllocatedKeys.size());
 
-    for (const Ort::AllocatedStringPtr &allocatedString : metadataAllocatedKeys)
+    for(const Ort::AllocatedStringPtr& allocatedString : metadataAllocatedKeys)
     {
         metadata_keys.emplace_back(allocatedString.get());
     }
@@ -96,10 +107,12 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
     // initialize metadata as the dict
     // even though we know exactly what metadata we intend to use
     // base onnx class should not have any ultralytics yolo-specific attributes like stride, task etc, so keep it clean as much as possible
-    for (const std::string &key : metadata_keys)
+    for(const std::string& key : metadata_keys)
     {
-        Ort::AllocatedStringPtr metadata_value = model_metadata.LookupCustomMetadataMapAllocated(key.c_str(), metadata_allocator);
-        if (metadata_value != nullptr)
+        Ort::AllocatedStringPtr metadata_value =
+            model_metadata.LookupCustomMetadataMapAllocated(key.c_str(),
+                                                            metadata_allocator);
+        if(metadata_value != nullptr)
         {
             auto raw_metadata_value = metadata_value.get();
             metadata[key] = std::string(raw_metadata_value);
@@ -107,58 +120,59 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
     }
 
     // initialize cstr
-    for (const std::string &name : outputNodeNames)
+    for(const std::string& name : outputNodeNames)
     {
         outputNamesCStr.push_back(name.c_str());
     }
 
-    for (const std::string &name : inputNodeNames)
+    for(const std::string& name : inputNodeNames)
     {
         inputNamesCStr.push_back(name.c_str());
     }
 }
 
-const std::vector<std::string> &OnnxModelBase::getInputNames()
+const std::vector<std::string>& OnnxModelBase::getInputNames()
 {
     return inputNodeNames;
 }
 
-const std::vector<std::string> &OnnxModelBase::getOutputNames()
+const std::vector<std::string>& OnnxModelBase::getOutputNames()
 {
     return outputNodeNames;
 }
 
-const Ort::ModelMetadata &OnnxModelBase::getModelMetadata()
+const Ort::ModelMetadata& OnnxModelBase::getModelMetadata()
 {
     return model_metadata;
 }
 
-const std::unordered_map<std::string, std::string> &OnnxModelBase::getMetadata()
+const std::unordered_map<std::string, std::string>& OnnxModelBase::getMetadata()
 {
     return metadata;
 }
 
-const Ort::Session &OnnxModelBase::getSession()
+const Ort::Session& OnnxModelBase::getSession()
 {
     return session;
 }
 
-const char *OnnxModelBase::getModelPath()
+const char* OnnxModelBase::getModelPath()
 {
     return modelPath_;
 }
 
-const std::vector<const char *> OnnxModelBase::getOutputNamesCStr()
+const std::vector<const char*> OnnxModelBase::getOutputNamesCStr()
 {
     return outputNamesCStr;
 }
 
-const std::vector<const char *> OnnxModelBase::getInputNamesCStr()
+const std::vector<const char*> OnnxModelBase::getInputNamesCStr()
 {
     return inputNamesCStr;
 }
 
-std::vector<Ort::Value> OnnxModelBase::forward(std::vector<Ort::Value> &inputTensors)
+std::vector<Ort::Value>
+OnnxModelBase::forward(std::vector<Ort::Value>& inputTensors)
 {
     return session.Run(Ort::RunOptions{nullptr},
                        inputNamesCStr.data(),

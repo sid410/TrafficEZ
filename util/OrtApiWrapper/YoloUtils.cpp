@@ -1,7 +1,7 @@
 #include "YoloUtils.h"
 #include <stdexcept>
 
-std::vector<std::string> YoloUtils::parseVectorString(const std::string &input)
+std::vector<std::string> YoloUtils::parseVectorString(const std::string& input)
 {
     /* Main purpose of this function is to parse `imgsz` key value of model metadata
      *  and from [height, width] get height, width values in the vector of strings
@@ -17,7 +17,7 @@ std::vector<std::string> YoloUtils::parseVectorString(const std::string &input)
     std::sregex_iterator it(input.begin(), input.end(), number_pattern);
     std::sregex_iterator end;
 
-    while (it != end)
+    while(it != end)
     {
         result.push_back(it->str());
         ++it;
@@ -26,23 +26,25 @@ std::vector<std::string> YoloUtils::parseVectorString(const std::string &input)
     return result;
 }
 
-std::vector<int> YoloUtils::convertStringVectorToInts(const std::vector<std::string> &input)
+std::vector<int>
+YoloUtils::convertStringVectorToInts(const std::vector<std::string>& input)
 {
     std::vector<int> result;
 
-    for (const std::string &str : input)
+    for(const std::string& str : input)
     {
         try
         {
             int value = std::stoi(str);
             result.push_back(value);
         }
-        catch (const std::invalid_argument &e)
+        catch(const std::invalid_argument& e)
         {
             // raise explicit exception
-            throw std::invalid_argument("Bad argument (cannot cast): value=" + str);
+            throw std::invalid_argument("Bad argument (cannot cast): value=" +
+                                        str);
         }
-        catch (const std::out_of_range &e)
+        catch(const std::out_of_range& e)
         {
             // check bounds
             throw std::out_of_range("Value out of range: " + str);
@@ -52,21 +54,27 @@ std::vector<int> YoloUtils::convertStringVectorToInts(const std::vector<std::str
     return result;
 }
 
-std::unordered_map<int, std::string> YoloUtils::parseNames(const std::string &input)
+std::unordered_map<int, std::string>
+YoloUtils::parseNames(const std::string& input)
 {
     std::unordered_map<int, std::string> result;
 
     std::string cleanedInput = input;
-    cleanedInput.erase(std::remove(cleanedInput.begin(), cleanedInput.end(), '{'), cleanedInput.end());
-    cleanedInput.erase(std::remove(cleanedInput.begin(), cleanedInput.end(), '}'), cleanedInput.end());
+    cleanedInput.erase(
+        std::remove(cleanedInput.begin(), cleanedInput.end(), '{'),
+        cleanedInput.end());
+    cleanedInput.erase(
+        std::remove(cleanedInput.begin(), cleanedInput.end(), '}'),
+        cleanedInput.end());
 
     std::istringstream elementStream(cleanedInput);
     std::string element;
-    while (std::getline(elementStream, element, ','))
+    while(std::getline(elementStream, element, ','))
     {
         std::istringstream keyValueStream(element);
         std::string keyStr, value;
-        if (std::getline(keyValueStream, keyStr, ':') && std::getline(keyValueStream, value))
+        if(std::getline(keyValueStream, keyStr, ':') &&
+           std::getline(keyValueStream, value))
         {
             int key = std::stoi(keyStr);
             result[key] = value;
@@ -76,10 +84,10 @@ std::unordered_map<int, std::string> YoloUtils::parseNames(const std::string &in
     return result;
 }
 
-int64_t YoloUtils::vector_product(const std::vector<int64_t> &vec)
+int64_t YoloUtils::vector_product(const std::vector<int64_t>& vec)
 {
     int64_t result = 1;
-    for (int64_t value : vec)
+    for(int64_t value : vec)
     {
         result *= value;
     }
@@ -89,48 +97,53 @@ int64_t YoloUtils::vector_product(const std::vector<int64_t> &vec)
 /**
  * \brief padding value when letterbox changes image size ratio
  */
-const int &DEFAULT_LETTERBOX_PAD_VALUE = 114;
+const int& DEFAULT_LETTERBOX_PAD_VALUE = 114;
 
-void YoloUtils::letterbox(const cv::Mat &image,
-                          cv::Mat &outImage,
-                          const cv::Size &newShape,
+void YoloUtils::letterbox(const cv::Mat& image,
+                          cv::Mat& outImage,
+                          const cv::Size& newShape,
                           cv::Scalar_<double> color,
                           bool auto_,
                           bool scaleFill,
-                          bool scaleUp, int stride)
+                          bool scaleUp,
+                          int stride)
 {
     cv::Size shape = image.size();
-    float r = std::min(static_cast<float>(newShape.height) / static_cast<float>(shape.height),
-                       static_cast<float>(newShape.width) / static_cast<float>(shape.width));
-    if (!scaleUp)
+    float r = std::min(
+        static_cast<float>(newShape.height) / static_cast<float>(shape.height),
+        static_cast<float>(newShape.width) / static_cast<float>(shape.width));
+    if(!scaleUp)
         r = std::min(r, 1.0f);
 
     float ratio[2]{r, r};
-    int newUnpad[2]{static_cast<int>(std::round(static_cast<float>(shape.width) * r)),
-                    static_cast<int>(std::round(static_cast<float>(shape.height) * r))};
+    int newUnpad[2]{
+        static_cast<int>(std::round(static_cast<float>(shape.width) * r)),
+        static_cast<int>(std::round(static_cast<float>(shape.height) * r))};
 
     auto dw = static_cast<float>(newShape.width - newUnpad[0]);
     auto dh = static_cast<float>(newShape.height - newUnpad[1]);
 
-    if (auto_)
+    if(auto_)
     {
         dw = static_cast<float>((static_cast<int>(dw) % stride));
         dh = static_cast<float>((static_cast<int>(dh) % stride));
     }
-    else if (scaleFill)
+    else if(scaleFill)
     {
         dw = 0.0f;
         dh = 0.0f;
         newUnpad[0] = newShape.width;
         newUnpad[1] = newShape.height;
-        ratio[0] = static_cast<float>(newShape.width) / static_cast<float>(shape.width);
-        ratio[1] = static_cast<float>(newShape.height) / static_cast<float>(shape.height);
+        ratio[0] = static_cast<float>(newShape.width) /
+                   static_cast<float>(shape.width);
+        ratio[1] = static_cast<float>(newShape.height) /
+                   static_cast<float>(shape.height);
     }
 
     dw /= 2.0f;
     dh /= 2.0f;
 
-    if (shape.width != newUnpad[0] || shape.height != newUnpad[1])
+    if(shape.width != newUnpad[0] || shape.height != newUnpad[1])
     {
         cv::resize(image, outImage, cv::Size(newUnpad[0], newUnpad[1]));
     }
@@ -144,20 +157,32 @@ void YoloUtils::letterbox(const cv::Mat &image,
     int left = static_cast<int>(std::round(dw - 0.1f));
     int right = static_cast<int>(std::round(dw + 0.1f));
 
-    if (color == cv::Scalar())
+    if(color == cv::Scalar())
     {
-        color = cv::Scalar(DEFAULT_LETTERBOX_PAD_VALUE, DEFAULT_LETTERBOX_PAD_VALUE, DEFAULT_LETTERBOX_PAD_VALUE);
+        color = cv::Scalar(DEFAULT_LETTERBOX_PAD_VALUE,
+                           DEFAULT_LETTERBOX_PAD_VALUE,
+                           DEFAULT_LETTERBOX_PAD_VALUE);
     }
 
-    cv::copyMakeBorder(outImage, outImage, top, bottom, left, right, cv::BORDER_CONSTANT, color);
+    cv::copyMakeBorder(outImage,
+                       outImage,
+                       top,
+                       bottom,
+                       left,
+                       right,
+                       cv::BORDER_CONSTANT,
+                       color);
 }
 
-void YoloUtils::scaleImage(cv::Mat &scaled_mask, const cv::Mat &resized_mask, const cv::Size &im0_shape, const std::pair<float, cv::Point2f> &ratio_pad)
+void YoloUtils::scaleImage(cv::Mat& scaled_mask,
+                           const cv::Mat& resized_mask,
+                           const cv::Size& im0_shape,
+                           const std::pair<float, cv::Point2f>& ratio_pad)
 {
     cv::Size im1_shape = resized_mask.size();
 
     // Check if resizing is needed
-    if (im1_shape == im0_shape)
+    if(im1_shape == im0_shape)
     {
         scaled_mask = resized_mask.clone();
         return;
@@ -165,10 +190,12 @@ void YoloUtils::scaleImage(cv::Mat &scaled_mask, const cv::Mat &resized_mask, co
 
     float gain, pad_x, pad_y;
 
-    if (ratio_pad.first < 0.0f)
+    if(ratio_pad.first < 0.0f)
     {
-        gain = std::min(static_cast<float>(im1_shape.height) / static_cast<float>(im0_shape.height),
-                        static_cast<float>(im1_shape.width) / static_cast<float>(im0_shape.width));
+        gain = std::min(static_cast<float>(im1_shape.height) /
+                            static_cast<float>(im0_shape.height),
+                        static_cast<float>(im1_shape.width) /
+                            static_cast<float>(im0_shape.width));
         pad_x = (im1_shape.width - im0_shape.width * gain) / 2.0f;
         pad_y = (im1_shape.height - im0_shape.height * gain) / 2.0f;
     }
@@ -190,7 +217,7 @@ void YoloUtils::scaleImage(cv::Mat &scaled_mask, const cv::Mat &resized_mask, co
     cv::resize(clipped_mask, scaled_mask, im0_shape);
 }
 
-void YoloUtils::clip_boxes(cv::Rect &box, const cv::Size &shape)
+void YoloUtils::clip_boxes(cv::Rect& box, const cv::Size& shape)
 {
     box.x = std::max(0, std::min(box.x, shape.width));
     box.y = std::max(0, std::min(box.y, shape.height));
@@ -198,41 +225,52 @@ void YoloUtils::clip_boxes(cv::Rect &box, const cv::Size &shape)
     box.height = std::max(0, std::min(box.height, shape.height - box.y));
 }
 
-void YoloUtils::clip_boxes(cv::Rect_<float> &box, const cv::Size &shape)
+void YoloUtils::clip_boxes(cv::Rect_<float>& box, const cv::Size& shape)
 {
     box.x = std::max(0.0f, std::min(box.x, static_cast<float>(shape.width)));
     box.y = std::max(0.0f, std::min(box.y, static_cast<float>(shape.height)));
-    box.width = std::max(0.0f, std::min(box.width, static_cast<float>(shape.width - box.x)));
-    box.height = std::max(0.0f, std::min(box.height, static_cast<float>(shape.height - box.y)));
+    box.width = std::max(
+        0.0f, std::min(box.width, static_cast<float>(shape.width - box.x)));
+    box.height = std::max(
+        0.0f, std::min(box.height, static_cast<float>(shape.height - box.y)));
 }
 
-void YoloUtils::clip_boxes(std::vector<cv::Rect> &boxes, const cv::Size &shape)
+void YoloUtils::clip_boxes(std::vector<cv::Rect>& boxes, const cv::Size& shape)
 {
-    for (cv::Rect &box : boxes)
+    for(cv::Rect& box : boxes)
     {
         clip_boxes(box, shape);
     }
 }
 
-void YoloUtils::clip_boxes(std::vector<cv::Rect_<float>> &boxes, const cv::Size &shape)
+void YoloUtils::clip_boxes(std::vector<cv::Rect_<float>>& boxes,
+                           const cv::Size& shape)
 {
-    for (cv::Rect_<float> &box : boxes)
+    for(cv::Rect_<float>& box : boxes)
     {
         clip_boxes(box, shape);
     }
 }
 
 // source: ultralytics/utils/ops.py scale_boxes lines 99+ (ultralytics==8.0.160)
-cv::Rect_<float> YoloUtils::scale_boxes(const cv::Size &img1_shape, cv::Rect_<float> &box, const cv::Size &img0_shape, std::pair<float, cv::Point2f> ratio_pad, bool padding)
+cv::Rect_<float> YoloUtils::scale_boxes(const cv::Size& img1_shape,
+                                        cv::Rect_<float>& box,
+                                        const cv::Size& img0_shape,
+                                        std::pair<float, cv::Point2f> ratio_pad,
+                                        bool padding)
 {
     float gain, pad_x, pad_y;
 
-    if (ratio_pad.first < 0.0f)
+    if(ratio_pad.first < 0.0f)
     {
-        gain = std::min(static_cast<float>(img1_shape.height) / static_cast<float>(img0_shape.height),
-                        static_cast<float>(img1_shape.width) / static_cast<float>(img0_shape.width));
-        pad_x = roundf((img1_shape.width - img0_shape.width * gain) / 2.0f - 0.1f);
-        pad_y = roundf((img1_shape.height - img0_shape.height * gain) / 2.0f - 0.1f);
+        gain = std::min(static_cast<float>(img1_shape.height) /
+                            static_cast<float>(img0_shape.height),
+                        static_cast<float>(img1_shape.width) /
+                            static_cast<float>(img0_shape.width));
+        pad_x =
+            roundf((img1_shape.width - img0_shape.width * gain) / 2.0f - 0.1f);
+        pad_y = roundf((img1_shape.height - img0_shape.height * gain) / 2.0f -
+                       0.1f);
     }
     else
     {
@@ -243,7 +281,7 @@ cv::Rect_<float> YoloUtils::scale_boxes(const cv::Size &img1_shape, cv::Rect_<fl
 
     cv::Rect_<float> scaledCoords(box);
 
-    if (padding)
+    if(padding)
     {
         scaledCoords.x -= pad_x;
         scaledCoords.y -= pad_y;

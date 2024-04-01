@@ -14,30 +14,33 @@
 class OnnxModelBase
 {
 public:
-    OnnxModelBase(const char *modelPath, const char *logid, const char *provider);
+    OnnxModelBase(const char* modelPath,
+                  const char* logid,
+                  const char* provider);
 
-    virtual const std::vector<std::string> &getInputNames();
-    virtual const std::vector<std::string> &getOutputNames();
-    virtual const std::vector<const char *> getOutputNamesCStr();
-    virtual const std::vector<const char *> getInputNamesCStr();
-    virtual const Ort::ModelMetadata &getModelMetadata();
-    virtual const std::unordered_map<std::string, std::string> &getMetadata();
-    virtual const char *getModelPath();
-    virtual const Ort::Session &getSession();
+    virtual const std::vector<std::string>& getInputNames();
+    virtual const std::vector<std::string>& getOutputNames();
+    virtual const std::vector<const char*> getOutputNamesCStr();
+    virtual const std::vector<const char*> getInputNamesCStr();
+    virtual const Ort::ModelMetadata& getModelMetadata();
+    virtual const std::unordered_map<std::string, std::string>& getMetadata();
+    virtual const char* getModelPath();
+    virtual const Ort::Session& getSession();
 
-    virtual std::vector<Ort::Value> forward(std::vector<Ort::Value> &inputTensors);
+    virtual std::vector<Ort::Value>
+    forward(std::vector<Ort::Value>& inputTensors);
     Ort::Session session{nullptr};
 
 protected:
-    const char *modelPath_;
+    const char* modelPath_;
     Ort::Env env{nullptr};
 
     std::vector<std::string> inputNodeNames;
     std::vector<std::string> outputNodeNames;
     Ort::ModelMetadata model_metadata{nullptr};
     std::unordered_map<std::string, std::string> metadata;
-    std::vector<const char *> outputNamesCStr;
-    std::vector<const char *> inputNamesCStr;
+    std::vector<const char*> outputNamesCStr;
+    std::vector<const char*> inputNamesCStr;
 };
 
 #endif
