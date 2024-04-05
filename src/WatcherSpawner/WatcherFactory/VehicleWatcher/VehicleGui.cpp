@@ -2,16 +2,20 @@
 #include "FPSHelper.h"
 #include "HullDetector.h"
 #include "HullTracker.h"
+#include "PersonSegmentationStrategy.h"
 #include "PipelineBuilder.h"
 #include "PipelineDirector.h"
 #include "PipelineTrackbar.h"
+#include "SegmentationMask.h"
+#include "VehicleSegmentationStrategy.h"
 #include "VideoStreamer.h"
 #include "WarpPerspective.h"
 
 void VehicleGui::display(const std::string& streamName,
                          const std::string& calibName) const
 {
-    int frameCounter = 0; // temporary, for estimating traffic flow
+    // int frameCounter = 0; // temporary, for estimating traffic flow
+    const std::string modelYolo = "yolov8n-seg.onnx";
 
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
@@ -43,7 +47,7 @@ void VehicleGui::display(const std::string& streamName,
 
     // load settings, and create trackbar
     pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
-    PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
+    // PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
     // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
@@ -59,8 +63,8 @@ void VehicleGui::display(const std::string& streamName,
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         warpedFrame.copyTo(processFrame);
-        // pipeBuilder.process(processFrame);
-        pipeBuilder.processDebugStack(processFrame);
+        pipeBuilder.process(processFrame);
+        // pipeBuilder.processDebugStack(processFrame);
 
         std::vector<std::vector<cv::Point>> hulls;
         hullDetector.getHulls(processFrame, hulls);
@@ -78,9 +82,9 @@ void VehicleGui::display(const std::string& streamName,
 
         // temporary, for estimating traffic flow
         // need a way to constantly cut to uniformly measure
-        std::cout << frameCounter++ << "\n";
-        if(frameCounter >= 1000)
-            break;
+        // std::cout << frameCounter++ << "\n";
+        // if(frameCounter >= 1000)
+        //     break;
 
         if(cv::waitKey(30) == 27)
             break;
@@ -90,4 +94,22 @@ void VehicleGui::display(const std::string& streamName,
     std::cout << "Total Area: " << hullTracker.getTotalHullArea() << " px^2\n";
     std::cout << "Total Speed: " << hullTracker.calculateAllAveragedSpeed()
               << " px/s\n";
+
+    // Segmentation part
+    videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
+
+    std::unique_ptr<ISegmentationStrategy> strategy =
+        std::make_unique<VehicleSegmentationStrategy>();
+
+    SegmentationMask segmentation(modelYolo, std::move(strategy));
+
+    // choose which to display, mask only or highlight overlay
+    cv::Mat mask = segmentation.generateMask(inputFrame);
+    cv::Mat highlight = segmentation.processResultsDebug(inputFrame, mask);
+
+    cv::Mat warpedMask =
+        videoStreamer.applyPerspective(highlight, warpPerspective);
+
+    cv::imshow(streamWindow, warpedMask);
+    cv::waitKey(0);
 }

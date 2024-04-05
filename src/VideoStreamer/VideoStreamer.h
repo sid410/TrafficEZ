@@ -31,6 +31,9 @@ public:
                        cv::Mat& roiFrame,
                        TransformPerspective& perspective);
 
+    cv::Mat applyPerspective(cv::Mat inputFrame,
+                             TransformPerspective& perspective);
+
 protected:
     bool readCalibSuccess; // used also in CalibrateVideoStreamer
 

@@ -1,7 +1,7 @@
-#include "PersonDetectionStrategy.h"
+#include "PersonSegmentationStrategy.h"
 
-std::vector<YoloResults>
-PersonDetectionStrategy::filterResults(const std::vector<YoloResults>& results)
+std::vector<YoloResults> PersonSegmentationStrategy::filterResults(
+    const std::vector<YoloResults>& results)
 {
     std::vector<YoloResults> filtered;
 

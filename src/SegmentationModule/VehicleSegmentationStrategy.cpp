@@ -1,7 +1,7 @@
-#include "VehicleDetectionStrategy.h"
+#include "VehicleSegmentationStrategy.h"
 
-std::vector<YoloResults>
-VehicleDetectionStrategy::filterResults(const std::vector<YoloResults>& results)
+std::vector<YoloResults> VehicleSegmentationStrategy::filterResults(
+    const std::vector<YoloResults>& results)
 {
     std::vector<YoloResults> filtered;
     std::unordered_set<int> allowedClasses = {1, 2, 3, 5, 6, 7};

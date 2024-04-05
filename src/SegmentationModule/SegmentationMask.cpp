@@ -2,9 +2,10 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-SegmentationMask::SegmentationMask(const std::string& modelPath,
-                                   std::unique_ptr<IDetectionStrategy> strategy)
-    : detectionStrategy(std::move(strategy))
+SegmentationMask::SegmentationMask(
+    const std::string& modelPath,
+    std::unique_ptr<ISegmentationStrategy> strategy)
+    : segmentationStrategy(std::move(strategy))
 {
     initializeModel(modelPath);
 }
@@ -38,7 +39,7 @@ cv::Mat SegmentationMask::generateMask(const cv::Mat& img)
                                        mask_threshold,
                                        conversion_code);
 
-    auto filteredResults = detectionStrategy->filterResults(results);
+    auto filteredResults = segmentationStrategy->filterResults(results);
 
     return processResults(img, filteredResults);
 }

@@ -233,3 +233,17 @@ bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
     perspective.apply(frame, roiFrame, roiMatrix);
     return true;
 }
+
+cv::Mat VideoStreamer::applyPerspective(cv::Mat inputFrame,
+                                        TransformPerspective& perspective)
+{
+    if(!roiMatrixInitialized)
+    {
+        std::cerr << "Error: Failed to initialize.\n";
+    }
+
+    cv::Mat outputFrame;
+    perspective.apply(inputFrame, outputFrame, roiMatrix);
+
+    return outputFrame;
+}
