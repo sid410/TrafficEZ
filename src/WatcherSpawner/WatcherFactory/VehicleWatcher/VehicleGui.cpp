@@ -107,8 +107,10 @@ void VehicleGui::display(const std::string& streamName,
     cv::Mat mask = segmentation.generateMask(inputFrame);
     cv::Mat highlight = segmentation.processResultsDebug(inputFrame, mask);
 
-    cv::Mat warpedMask =
-        videoStreamer.applyPerspective(highlight, warpPerspective);
+    cv::Mat warpedMask = videoStreamer.applyPerspective(mask, warpPerspective);
+
+    std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
+              << " px^2\n";
 
     cv::imshow(streamWindow, warpedMask);
     cv::waitKey(0);

@@ -74,3 +74,33 @@ cv::Mat SegmentationMask::processResultsDebug(const cv::Mat& img,
 
     return highlightedImg;
 }
+
+float SegmentationMask::getTotalWhiteArea(const cv::Mat& mask)
+{
+    // Convert to binary if not already
+    cv::Mat binaryMask;
+    if(mask.channels() > 1)
+    {
+        cv::cvtColor(mask, binaryMask, cv::COLOR_BGR2GRAY);
+    }
+    else
+    {
+        binaryMask = mask.clone();
+    }
+
+    cv::threshold(binaryMask, binaryMask, 127, 255, cv::THRESH_BINARY);
+
+    // Find all white contours
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(
+        binaryMask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // Calculate the total area of the contours
+    float totalArea = 0.0;
+    for(const auto& contour : contours)
+    {
+        totalArea += cv::contourArea(contour);
+    }
+
+    return totalArea;
+}
