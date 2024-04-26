@@ -4,7 +4,7 @@
 #include "WarpPerspective.h"
 
 void CalibrateGui::display(const std::string& streamName,
-                           const std::string& calibName) const
+                           const std::string& calibName)
 {
     CalibrateVideoStreamer calibrateStreamer;
     TransformPerspective* transformPerspective; // to point between warp/trim

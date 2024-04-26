@@ -9,8 +9,10 @@
 class SegmentationMask
 {
 public:
-    SegmentationMask(const std::string& modelPath,
-                     std::unique_ptr<ISegmentationStrategy> strategy);
+    SegmentationMask();
+
+    void initializeModel(const std::string& modelPath,
+                         std::unique_ptr<ISegmentationStrategy> strategy);
 
     cv::Mat generateMask(const cv::Mat& img);
 
@@ -21,9 +23,9 @@ public:
     float getTotalWhiteArea(const cv::Mat& mask);
 
 private:
+    bool isModelInitialized;
     std::unique_ptr<AutoBackendOnnx> model;
     std::unique_ptr<ISegmentationStrategy> segmentationStrategy;
-    void initializeModel(const std::string& modelPath);
 };
 
 #endif

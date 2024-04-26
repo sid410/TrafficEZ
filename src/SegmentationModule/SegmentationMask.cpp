@@ -2,16 +2,18 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-SegmentationMask::SegmentationMask(
-    const std::string& modelPath,
-    std::unique_ptr<ISegmentationStrategy> strategy)
-    : segmentationStrategy(std::move(strategy))
+SegmentationMask::SegmentationMask()
 {
-    initializeModel(modelPath);
+    isModelInitialized = false;
 }
 
-void SegmentationMask::initializeModel(const std::string& modelPath)
+void SegmentationMask::initializeModel(
+    const std::string& modelPath,
+    std::unique_ptr<ISegmentationStrategy> strategy)
 {
+    // set to either vehicle or person strategy
+    segmentationStrategy = std::move(strategy);
+
     // Ensure OnnxProviders::CPU is correctly defined
     const char* onnx_provider = OnnxProviders::CPU.c_str();
 
@@ -19,10 +21,17 @@ void SegmentationMask::initializeModel(const std::string& modelPath)
 
     model = std::make_unique<AutoBackendOnnx>(
         modelPath.c_str(), onnx_logid, onnx_provider);
+
+    isModelInitialized = true;
 }
 
 cv::Mat SegmentationMask::generateMask(const cv::Mat& img)
 {
+    if(!isModelInitialized)
+    {
+        std::cerr << "Failed to initialize model.\n";
+    }
+
     cv::Mat converted_img;
     cv::cvtColor(img, converted_img, cv::COLOR_BGR2RGB);
 

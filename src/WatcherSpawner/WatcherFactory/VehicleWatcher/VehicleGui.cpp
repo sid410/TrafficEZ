@@ -1,117 +1,94 @@
 #include "VehicleGui.h"
-#include "FPSHelper.h"
-#include "HullDetector.h"
-#include "HullTracker.h"
-#include "PersonSegmentationStrategy.h"
-#include "PipelineBuilder.h"
-#include "PipelineDirector.h"
-#include "PipelineTrackbar.h"
-#include "SegmentationMask.h"
-#include "VehicleSegmentationStrategy.h"
-#include "VideoStreamer.h"
-#include "WarpPerspective.h"
 
 void VehicleGui::display(const std::string& streamName,
-                         const std::string& calibName) const
+                         const std::string& calibName)
 {
-    // int frameCounter = 0; // temporary, for estimating traffic flow
-    const std::string modelYolo = "yolov8n-seg.onnx";
+    initialize(streamName, calibName);
 
-    VideoStreamer videoStreamer;
-    WarpPerspective warpPerspective;
-    FPSHelper fpsHelper;
+    TrafficState currentTrafficState = TrafficState::GREEN_LIGHT;
 
-    PipelineBuilder pipeBuilder;
-    PipelineDirector pipeDirector;
+    while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+    {
+        processTrackingState();
 
-    HullDetector hullDetector;
-    HullTracker hullTracker;
+        if(cv::waitKey(30) == 27)
+        {
+            std::cout << "Total time: " << fpsHelper.endSample() / 1000
+                      << " s\n";
+            std::cout << "Total Area: " << hullTracker.getTotalHullArea()
+                      << " px^2\n";
+            std::cout << "Total Speed: "
+                      << hullTracker.calculateAllAveragedSpeed() << " px/s\n";
+            break;
+        }
+    }
 
-    cv::Mat inputFrame;
-    cv::Mat warpedFrame;
-    cv::Mat processFrame;
+    processSegmentationState();
 
-    cv::String streamWindow = streamName + " Vehicle GUI";
+    std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
+              << " px^2\n";
 
-    if(!videoStreamer.openVideoStream(streamName))
+    cv::waitKey(0);
+}
+
+void VehicleGui::initialize(const std::string& streamName,
+                            const std::string& calibName)
+{
+    if(!videoStreamer.openVideoStream(streamName) ||
+       !videoStreamer.readCalibrationData(calibName))
+    {
+        std::cerr << "Failed to initialize video stream or calibration data.\n";
         return;
+    }
 
-    if(!videoStreamer.readCalibrationData(calibName))
-        return;
+    streamWindow = streamName + " Vehicle GUI";
 
-    static int laneLength = videoStreamer.getLaneLength();
-    static int laneWidth = videoStreamer.getLaneWidth();
+    modelYolo = "yolov8n-seg.onnx";
+
+    laneLength = videoStreamer.getLaneLength();
+    laneWidth = videoStreamer.getLaneWidth();
 
     videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    // load settings, and create trackbar
     pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
-    // PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
-    // for initialization of detector and tracker
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
     videoStreamer.resizeStreamWindow(warpedFrame);
 
     hullDetector.initDetectionBoundaries(warpedFrame);
     hullTracker.initExitBoundaryLine(hullDetector.getEndDetectionLine());
 
-    // used for measuring the total time spent in the loop
-    fpsHelper.startSample();
-
-    // frame update loop
-    while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
-    {
-        warpedFrame.copyTo(processFrame);
-        pipeBuilder.process(processFrame);
-        // pipeBuilder.processDebugStack(processFrame);
-
-        std::vector<std::vector<cv::Point>> hulls;
-        hullDetector.getHulls(processFrame, hulls);
-
-        hullTracker.update(hulls);
-
-        // draw information on frame, only for GUI
-        hullTracker.drawTrackedHulls(warpedFrame);
-        hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
-        hullDetector.drawLengthBoundaries(warpedFrame);
-
-        fpsHelper.avgFps();
-        fpsHelper.displayFps(warpedFrame);
-        cv::imshow(streamWindow, warpedFrame);
-
-        // temporary, for estimating traffic flow
-        // need a way to constantly cut to uniformly measure
-        // std::cout << frameCounter++ << "\n";
-        // if(frameCounter >= 1000)
-        //     break;
-
-        if(cv::waitKey(30) == 27)
-            break;
-    }
-
-    std::cout << "Total time: " << fpsHelper.endSample() / 1000 << " s\n";
-    std::cout << "Total Area: " << hullTracker.getTotalHullArea() << " px^2\n";
-    std::cout << "Total Speed: " << hullTracker.calculateAllAveragedSpeed()
-              << " px/s\n";
-
-    // Segmentation part
-    videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
-
     std::unique_ptr<ISegmentationStrategy> strategy =
         std::make_unique<VehicleSegmentationStrategy>();
+    segmentation.initializeModel(modelYolo, std::move(strategy));
 
-    SegmentationMask segmentation(modelYolo, std::move(strategy));
+    fpsHelper.startSample();
+}
 
-    // choose which to display, mask only or highlight overlay
-    cv::Mat mask = segmentation.generateMask(inputFrame);
-    cv::Mat highlight = segmentation.processResultsDebug(inputFrame, mask);
+void VehicleGui::processTrackingState()
+{
+    warpedFrame.copyTo(processFrame);
+    pipeBuilder.process(processFrame);
 
-    cv::Mat warpedMask = videoStreamer.applyPerspective(mask, warpPerspective);
+    std::vector<std::vector<cv::Point>> hulls;
+    hullDetector.getHulls(processFrame, hulls);
+    hullTracker.update(hulls);
 
-    std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
-              << " px^2\n";
+    hullTracker.drawTrackedHulls(warpedFrame);
+    hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
+    hullDetector.drawLengthBoundaries(warpedFrame);
+
+    fpsHelper.avgFps();
+    fpsHelper.displayFps(warpedFrame);
+
+    cv::imshow(streamWindow, warpedFrame);
+}
+
+void VehicleGui::processSegmentationState()
+{
+    cv::Mat segMask = segmentation.generateMask(inputFrame);
+    warpedMask = videoStreamer.applyPerspective(segMask, warpPerspective);
 
     cv::imshow(streamWindow, warpedMask);
-    cv::waitKey(0);
 }

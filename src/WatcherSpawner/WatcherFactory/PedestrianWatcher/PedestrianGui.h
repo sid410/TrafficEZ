@@ -7,7 +7,7 @@ class PedestrianGui : public Gui
 {
 public:
     void display(const std::string& streamName,
-                 const std::string& calibName) const override;
+                 const std::string& calibName) override;
 };
 
 #endif
