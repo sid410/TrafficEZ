@@ -5,13 +5,23 @@ void VehicleGui::display(const std::string& streamName,
 {
     initialize(streamName, calibName);
 
-    TrafficState currentTrafficState = TrafficState::GREEN_LIGHT;
+    currentTrafficState = TrafficState::GREEN_LIGHT;
 
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
-        processTrackingState();
+        if(currentTrafficState == TrafficState::GREEN_LIGHT)
+        {
+            processTrackingState();
+        }
+        else if(currentTrafficState == TrafficState::RED_LIGHT)
+        {
+            processSegmentationState();
+            // cv::waitKey(0);
+        }
 
-        if(cv::waitKey(30) == 27)
+        int key = cv::waitKey(1);
+
+        if(key == 27)
         {
             std::cout << "Total time: " << fpsHelper.endSample() / 1000
                       << " s\n";
@@ -21,14 +31,24 @@ void VehicleGui::display(const std::string& streamName,
                       << hullTracker.calculateAllAveragedSpeed() << " px/s\n";
             break;
         }
-    }
 
-    processSegmentationState();
+        // '1' button
+        else if(key == 49)
+        {
+            if(currentTrafficState == TrafficState::GREEN_LIGHT)
+                setCurrentTrafficState(TrafficState::RED_LIGHT);
+            else
+                setCurrentTrafficState(TrafficState::GREEN_LIGHT);
+        }
+    }
 
     std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
               << " px^2\n";
+}
 
-    cv::waitKey(0);
+void VehicleGui::setCurrentTrafficState(TrafficState state)
+{
+    currentTrafficState = state;
 }
 
 void VehicleGui::initialize(const std::string& streamName,
@@ -89,6 +109,9 @@ void VehicleGui::processSegmentationState()
 {
     cv::Mat segMask = segmentation.generateMask(inputFrame);
     warpedMask = videoStreamer.applyPerspective(segMask, warpPerspective);
+
+    fpsHelper.avgFps();
+    fpsHelper.displayFps(warpedMask);
 
     cv::imshow(streamWindow, warpedMask);
 }

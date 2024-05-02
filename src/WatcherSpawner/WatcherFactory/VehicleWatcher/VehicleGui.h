@@ -21,10 +21,15 @@ public:
     void display(const std::string& streamName,
                  const std::string& calibName) override;
 
+    void setCurrentTrafficState(TrafficState state);
+
 private:
+    TrafficState currentTrafficState;
+
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
     FPSHelper fpsHelper;
+
     PipelineBuilder pipeBuilder;
     PipelineDirector pipeDirector;
     HullDetector hullDetector;
