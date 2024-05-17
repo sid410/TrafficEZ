@@ -5,15 +5,15 @@ void VehicleGui::display(const std::string& streamName,
 {
     initialize(streamName, calibName);
 
-    currentTrafficState = TrafficState::GREEN_LIGHT;
+    currentTrafficState = TrafficState::GREEN_PHASE;
 
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
-        if(currentTrafficState == TrafficState::GREEN_LIGHT)
+        if(currentTrafficState == TrafficState::GREEN_PHASE)
         {
             processTrackingState();
         }
-        else if(currentTrafficState == TrafficState::RED_LIGHT)
+        else if(currentTrafficState == TrafficState::RED_PHASE)
         {
             processSegmentationState();
             // cv::waitKey(0);
@@ -35,10 +35,10 @@ void VehicleGui::display(const std::string& streamName,
         // '1' button
         else if(key == 49)
         {
-            if(currentTrafficState == TrafficState::GREEN_LIGHT)
-                setCurrentTrafficState(TrafficState::RED_LIGHT);
+            if(currentTrafficState == TrafficState::GREEN_PHASE)
+                setCurrentTrafficState(TrafficState::RED_PHASE);
             else
-                setCurrentTrafficState(TrafficState::GREEN_LIGHT);
+                setCurrentTrafficState(TrafficState::GREEN_PHASE);
         }
     }
 

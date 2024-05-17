@@ -3,8 +3,8 @@
 
 enum class TrafficState
 {
-    GREEN_LIGHT,
-    RED_LIGHT
+    GREEN_PHASE,
+    RED_PHASE
 };
 
 #endif
