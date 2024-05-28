@@ -1,4 +1,6 @@
 #include "VehicleGui.h"
+#include <iostream>
+#include <unistd.h>
 
 void VehicleGui::display(const std::string& streamName,
                          const std::string& calibName)
@@ -29,6 +31,9 @@ void VehicleGui::display(const std::string& streamName,
                       << " px^2\n";
             std::cout << "Total Speed: "
                       << hullTracker.calculateAllAveragedSpeed() << " px/s\n";
+
+            sendDataToParent();
+
             break;
         }
 
@@ -44,6 +49,16 @@ void VehicleGui::display(const std::string& streamName,
 
     std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
               << " px^2\n";
+}
+
+void VehicleGui::sendDataToParent()
+{
+    std::string data =
+        "Total Area: " + std::to_string(hullTracker.getTotalHullArea()) +
+        " px^2, Total Speed: " +
+        std::to_string(hullTracker.calculateAllAveragedSpeed()) + " px/s\n";
+
+    write(writePipe, data.c_str(), data.size() + 1);
 }
 
 void VehicleGui::setCurrentTrafficState(TrafficState state)

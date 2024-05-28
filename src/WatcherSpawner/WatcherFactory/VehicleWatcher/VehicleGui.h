@@ -23,8 +23,16 @@ public:
 
     void setCurrentTrafficState(TrafficState state);
 
+    void setWritePipe(int writePipe)
+    {
+        this->writePipe = writePipe;
+    }
+
 private:
     TrafficState currentTrafficState;
+
+    int writePipe;
+    void sendDataToParent();
 
     VideoStreamer videoStreamer;
     WarpPerspective warpPerspective;
