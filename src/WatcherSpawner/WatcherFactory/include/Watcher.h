@@ -16,7 +16,7 @@ public:
 
     virtual void spawn(RenderMode mode,
                        const std::string& streamName,
-                       const std::string& calibName) const = 0;
+                       const std::string& calibName) = 0;
 };
 
 #endif

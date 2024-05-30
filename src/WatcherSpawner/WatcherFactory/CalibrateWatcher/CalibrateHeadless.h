@@ -7,7 +7,7 @@ class CalibrateHeadless : public Headless
 {
 public:
     void process(const std::string& streamName,
-                 const std::string& calibName) const override;
+                 const std::string& calibName) override;
 };
 
 #endif

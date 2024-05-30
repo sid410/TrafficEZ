@@ -8,7 +8,7 @@ class VehicleWatcher : public Watcher
 public:
     void spawn(RenderMode mode,
                const std::string& streamName,
-               const std::string& calibName) const override;
+               const std::string& calibName) override;
 };
 
 #endif

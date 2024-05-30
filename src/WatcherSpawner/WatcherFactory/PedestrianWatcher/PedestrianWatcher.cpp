@@ -4,7 +4,7 @@
 
 void PedestrianWatcher::spawn(RenderMode mode,
                               const std::string& streamName,
-                              const std::string& calibName) const
+                              const std::string& calibName)
 {
     if(mode == RenderMode::GUI)
     {

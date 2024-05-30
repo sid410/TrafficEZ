@@ -39,5 +39,11 @@ void TrafficManager::start()
         delete vehicleWatcherGui;
     }
 
+    Watcher* vehicleWatcherHeadless = spawner.spawnWatcher(WatcherType::VEHICLE,
+                                                           RenderMode::HEADLESS,
+                                                           "debug.mp4",
+                                                           "debug_calib.yaml");
+    delete vehicleWatcherHeadless;
+
     std::cout << "TrafficManager ended.\n";
 }
