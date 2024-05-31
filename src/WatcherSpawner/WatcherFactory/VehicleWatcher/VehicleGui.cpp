@@ -5,8 +5,6 @@ void VehicleGui::display(const std::string& streamName,
 {
     initialize(streamName, calibName);
 
-    currentTrafficState = TrafficState::GREEN_PHASE;
-
     while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         if(currentTrafficState == TrafficState::GREEN_PHASE)
@@ -44,11 +42,6 @@ void VehicleGui::display(const std::string& streamName,
 
     std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
               << " px^2\n";
-}
-
-void VehicleGui::setCurrentTrafficState(TrafficState state)
-{
-    currentTrafficState = state;
 }
 
 void VehicleGui::initialize(const std::string& streamName,

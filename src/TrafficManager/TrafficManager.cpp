@@ -36,6 +36,9 @@ void TrafficManager::start()
                                                           RenderMode::GUI,
                                                           "debug.mp4",
                                                           "debug_calib.yaml");
+
+        vehicleWatcherGui->setCurrentTrafficState(TrafficState::RED_PHASE);
+
         delete vehicleWatcherGui;
     }
 

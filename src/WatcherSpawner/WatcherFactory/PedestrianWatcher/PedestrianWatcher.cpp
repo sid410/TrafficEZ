@@ -6,16 +6,28 @@ void PedestrianWatcher::spawn(RenderMode mode,
                               const std::string& streamName,
                               const std::string& calibName)
 {
+    currentMode = mode;
+
     if(mode == RenderMode::GUI)
     {
-        Gui* gui = new PedestrianGui();
+        gui = new PedestrianGui();
         gui->display(streamName, calibName);
-        delete gui;
     }
     else if(mode == RenderMode::HEADLESS)
     {
-        Headless* headless = new PedestrianHeadless();
+        headless = new PedestrianHeadless();
         headless->process(streamName, calibName);
-        delete headless;
+    }
+}
+
+void PedestrianWatcher::setCurrentTrafficState(TrafficState state)
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        gui->setCurrentTrafficState(state);
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        headless->setCurrentTrafficState(state);
     }
 }
