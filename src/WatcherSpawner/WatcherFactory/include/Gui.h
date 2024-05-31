@@ -14,6 +14,8 @@ public:
 
     virtual void display() = 0;
 
+    virtual float getTrafficDensity() = 0;
+
     void setCurrentTrafficState(TrafficState state)
     {
         currentTrafficState = state;

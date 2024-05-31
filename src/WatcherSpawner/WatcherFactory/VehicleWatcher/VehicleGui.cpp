@@ -43,6 +43,11 @@ void VehicleGui::display()
     //           << " px^2\n";
 }
 
+float VehicleGui::getTrafficDensity()
+{
+    return hullTracker.getTotalHullArea();
+}
+
 void VehicleGui::initialize(const std::string& streamName,
                             const std::string& calibName)
 {

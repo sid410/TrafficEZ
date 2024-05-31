@@ -13,3 +13,8 @@ void PedestrianGui::display()
 {
     std::cerr << "No implementation yet for Pedestrian Gui\n";
 }
+
+float PedestrianGui::getTrafficDensity()
+{
+    std::cerr << "No implementation yet for Pedestrian Gui\n";
+}

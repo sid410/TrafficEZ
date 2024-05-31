@@ -43,3 +43,13 @@ void VehicleWatcher::processFrame()
     //     headless->process(streamName, calibName);
     // }
 }
+
+float VehicleWatcher::getTrafficDensity()
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        return gui->getTrafficDensity();
+    }
+
+    return -1;
+}

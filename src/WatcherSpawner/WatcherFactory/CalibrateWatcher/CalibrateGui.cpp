@@ -5,7 +5,12 @@
 
 void CalibrateGui::display()
 {
-    std::cerr << "No implementation yet for Calibrate Gui\n";
+    std::cerr << "There should be no implementation for Calibrate Gui\n";
+}
+
+float CalibrateGui::getTrafficDensity()
+{
+    std::cerr << "There should be no implementation for Calibrate Gui\n";
 }
 
 void CalibrateGui::initialize(const std::string& streamName,

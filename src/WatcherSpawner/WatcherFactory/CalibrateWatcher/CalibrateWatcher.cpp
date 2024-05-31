@@ -37,3 +37,9 @@ void CalibrateWatcher::processFrame()
 {
     std::cout << "CalibrateWatcher::processFrame not yet implemented...\n";
 }
+
+float CalibrateWatcher::getTrafficDensity()
+{
+    std::cout << "CalibrateWatcher::getTrafficDensity not yet implemented...\n";
+    return -1;
+}

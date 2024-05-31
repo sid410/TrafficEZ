@@ -45,6 +45,8 @@ void TrafficManager::start()
             vehicleWatcherGui->processFrame();
             i++;
         }
+        std::cout << "Traffic Density Red: "
+                  << vehicleWatcherGui->getTrafficDensity() << "\n";
 
         vehicleWatcherGui->setCurrentTrafficState(TrafficState::GREEN_PHASE);
         while(i < 500)
@@ -52,6 +54,8 @@ void TrafficManager::start()
             vehicleWatcherGui->processFrame();
             i++;
         }
+        std::cout << "Traffic Density Green: "
+                  << vehicleWatcherGui->getTrafficDensity() << "\n";
 
         vehicleWatcherGui->setCurrentTrafficState(TrafficState::RED_PHASE);
         while(i < 600)
@@ -59,6 +63,8 @@ void TrafficManager::start()
             vehicleWatcherGui->processFrame();
             i++;
         }
+        std::cout << "Traffic Density Red: "
+                  << vehicleWatcherGui->getTrafficDensity() << "\n";
 
         delete vehicleWatcherGui;
     }
