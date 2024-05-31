@@ -6,8 +6,10 @@
 class CalibrateGui : public Gui
 {
 public:
-    void display(const std::string& streamName,
-                 const std::string& calibName) override;
+    void initialize(const std::string& streamName,
+                    const std::string& calibName) override;
+
+    void display() override;
 };
 
 #endif

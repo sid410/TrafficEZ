@@ -1,11 +1,8 @@
 #include "VehicleGui.h"
 
-void VehicleGui::display(const std::string& streamName,
-                         const std::string& calibName)
+void VehicleGui::display()
 {
-    initialize(streamName, calibName);
-
-    while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+    if(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
     {
         if(currentTrafficState == TrafficState::GREEN_PHASE)
         {
@@ -17,31 +14,33 @@ void VehicleGui::display(const std::string& streamName,
             // cv::waitKey(0);
         }
 
-        int key = cv::waitKey(1);
+        cv::waitKey(1);
 
-        if(key == 27)
-        {
-            std::cout << "Total time: " << fpsHelper.endSample() / 1000
-                      << " s\n";
-            std::cout << "Total Area: " << hullTracker.getTotalHullArea()
-                      << " px^2\n";
-            std::cout << "Total Speed: "
-                      << hullTracker.calculateAllAveragedSpeed() << " px/s\n";
-            break;
-        }
+        // int key = cv::waitKey(1);
 
-        // '1' button
-        else if(key == 49)
-        {
-            if(currentTrafficState == TrafficState::GREEN_PHASE)
-                setCurrentTrafficState(TrafficState::RED_PHASE);
-            else
-                setCurrentTrafficState(TrafficState::GREEN_PHASE);
-        }
+        // if(key == 27)
+        // {
+        //     std::cout << "Total time: " << fpsHelper.endSample() / 1000
+        //               << " s\n";
+        //     std::cout << "Total Area: " << hullTracker.getTotalHullArea()
+        //               << " px^2\n";
+        //     std::cout << "Total Speed: "
+        //               << hullTracker.calculateAllAveragedSpeed() << " px/s\n";
+        //     break;
+        // }
+
+        // // '1' button
+        // else if(key == 49)
+        // {
+        //     if(currentTrafficState == TrafficState::GREEN_PHASE)
+        //         setCurrentTrafficState(TrafficState::RED_PHASE);
+        //     else
+        //         setCurrentTrafficState(TrafficState::GREEN_PHASE);
+        // }
     }
 
-    std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
-              << " px^2\n";
+    // std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
+    //           << " px^2\n";
 }
 
 void VehicleGui::initialize(const std::string& streamName,

@@ -9,8 +9,10 @@ class Gui
 public:
     virtual ~Gui() {}
 
-    virtual void display(const std::string& streamName,
-                         const std::string& calibName) = 0;
+    virtual void initialize(const std::string& streamName,
+                            const std::string& calibName) = 0;
+
+    virtual void display() = 0;
 
     void setCurrentTrafficState(TrafficState state)
     {

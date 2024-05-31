@@ -1,6 +1,7 @@
 #include "PedestrianWatcher.h"
 #include "PedestrianGui.h"
 #include "PedestrianHeadless.h"
+#include <iostream>
 
 void PedestrianWatcher::spawn(RenderMode mode,
                               const std::string& streamName,
@@ -11,7 +12,7 @@ void PedestrianWatcher::spawn(RenderMode mode,
     if(mode == RenderMode::GUI)
     {
         gui = new PedestrianGui();
-        gui->display(streamName, calibName);
+        gui->initialize(streamName, calibName);
     }
     else if(mode == RenderMode::HEADLESS)
     {
@@ -30,4 +31,9 @@ void PedestrianWatcher::setCurrentTrafficState(TrafficState state)
     {
         headless->setCurrentTrafficState(state);
     }
+}
+
+void PedestrianWatcher::processFrame()
+{
+    std::cout << "CalibrateWatcher::processFrame not yet implemented...\n";
 }

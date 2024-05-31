@@ -37,7 +37,28 @@ void TrafficManager::start()
                                                           "debug.mp4",
                                                           "debug_calib.yaml");
 
+        int i = 0;
+
         vehicleWatcherGui->setCurrentTrafficState(TrafficState::RED_PHASE);
+        while(i < 100)
+        {
+            vehicleWatcherGui->processFrame();
+            i++;
+        }
+
+        vehicleWatcherGui->setCurrentTrafficState(TrafficState::GREEN_PHASE);
+        while(i < 500)
+        {
+            vehicleWatcherGui->processFrame();
+            i++;
+        }
+
+        vehicleWatcherGui->setCurrentTrafficState(TrafficState::RED_PHASE);
+        while(i < 600)
+        {
+            vehicleWatcherGui->processFrame();
+            i++;
+        }
 
         delete vehicleWatcherGui;
     }

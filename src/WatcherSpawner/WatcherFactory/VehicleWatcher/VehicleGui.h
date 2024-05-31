@@ -18,8 +18,10 @@
 class VehicleGui : public Gui
 {
 public:
-    void display(const std::string& streamName,
-                 const std::string& calibName) override;
+    void initialize(const std::string& streamName,
+                    const std::string& calibName) override;
+
+    void display() override;
 
 private:
     VideoStreamer videoStreamer;
@@ -44,8 +46,6 @@ private:
     int laneLength;
     int laneWidth;
 
-    void initialize(const std::string& streamName,
-                    const std::string& calibName);
     void processTrackingState();
     void processSegmentationState();
 };

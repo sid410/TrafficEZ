@@ -11,7 +11,7 @@ void VehicleWatcher::spawn(RenderMode mode,
     if(mode == RenderMode::GUI)
     {
         gui = new VehicleGui();
-        gui->display(streamName, calibName);
+        gui->initialize(streamName, calibName);
     }
     else if(mode == RenderMode::HEADLESS)
     {
@@ -22,20 +22,24 @@ void VehicleWatcher::spawn(RenderMode mode,
 
 void VehicleWatcher::setCurrentTrafficState(TrafficState state)
 {
-    std::cout << "VehicleWatcher setting Traffic State to: ";
-
     if(currentMode == RenderMode::GUI)
     {
-        std::cout << "VehicleWatcher Gui\n";
-        if(state == TrafficState::RED_PHASE)
-            std::cout << "Red State\n";
-        else
-            std::cout << "Green State\n";
         gui->setCurrentTrafficState(state);
     }
     else if(currentMode == RenderMode::HEADLESS)
     {
-        std::cout << "VehicleWatcher Headless\n";
         headless->setCurrentTrafficState(state);
     }
+}
+
+void VehicleWatcher::processFrame()
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        gui->display();
+    }
+    // else if(currentMode == RenderMode::HEADLESS)
+    // {
+    //     headless->process(streamName, calibName);
+    // }
 }

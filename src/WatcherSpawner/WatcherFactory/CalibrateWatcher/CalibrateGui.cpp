@@ -3,8 +3,13 @@
 #include "TrimPerspective.h"
 #include "WarpPerspective.h"
 
-void CalibrateGui::display(const std::string& streamName,
-                           const std::string& calibName)
+void CalibrateGui::display()
+{
+    std::cerr << "No implementation yet for Calibrate Gui\n";
+}
+
+void CalibrateGui::initialize(const std::string& streamName,
+                              const std::string& calibName)
 {
     CalibrateVideoStreamer calibrateStreamer;
     TransformPerspective* transformPerspective; // to point between warp/trim

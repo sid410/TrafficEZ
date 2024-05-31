@@ -13,6 +13,7 @@ public:
                const std::string& calibName) override;
 
     void setCurrentTrafficState(TrafficState state) override;
+    void processFrame() override;
 
 private:
     Gui* gui;

@@ -20,6 +20,7 @@ public:
                        const std::string& calibName) = 0;
 
     virtual void setCurrentTrafficState(TrafficState state) = 0;
+    virtual void processFrame() = 0;
 };
 
 #endif
