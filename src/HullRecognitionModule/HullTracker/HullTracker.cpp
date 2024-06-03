@@ -59,6 +59,15 @@ HullTracker::getTrackedHulls() const
 }
 
 /**
+ * @brief Gets the current hull count.
+ * @return Number of hulls (vehicles) that crossed the boundary line.
+ */
+int HullTracker::getHullCount() const
+{
+    return hullCount;
+}
+
+/**
  * @brief Gets the total hull area.
  * @return Accumulated area of all exited tracked hulls (sq. pixels).
  */

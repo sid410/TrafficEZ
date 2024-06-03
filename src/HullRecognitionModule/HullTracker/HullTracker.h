@@ -27,6 +27,7 @@ public:
     const std::unordered_map<int, std::shared_ptr<HullTrackable>>&
     getTrackedHulls() const;
 
+    int getHullCount() const;
     float getTotalHullArea() const;
     float getAveragedSpeed() const;
     void resetTrackerVariables();

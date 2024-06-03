@@ -26,6 +26,8 @@ float VehicleGui::getTrafficDensity()
     {
         float totalTime = fpsHelper.endSample() / 1000;
         float flow = hullTracker.getTotalHullArea() / totalTime;
+        // If counting vehicles instead of area
+        // float flow = hullTracker.getHullCount() / totalTime;
 
         density = flow / (hullTracker.getAveragedSpeed() * laneWidth);
 
@@ -34,8 +36,11 @@ float VehicleGui::getTrafficDensity()
 
     else if(currentTrafficState == TrafficState::RED_PHASE)
     {
-        density = segmentation.getTotalWhiteArea(warpedMask) /
-                  (laneLength * laneWidth);
+        float count = segmentation.getWhiteArea(warpedMask);
+        // If counting vehicles instead of area
+        // float count = segmentation.getContourCount(warpedMask);
+
+        density = count / (laneLength * laneWidth);
     }
 
     isTracking = false;
@@ -101,9 +106,6 @@ void VehicleGui::processSegmentationState()
 {
     cv::Mat segMask = segmentation.generateMask(inputFrame);
     warpedMask = videoStreamer.applyPerspective(segMask, warpPerspective);
-
-    fpsHelper.avgFps();
-    fpsHelper.displayFps(warpedMask);
 
     cv::imshow(streamWindow, warpedMask);
 }

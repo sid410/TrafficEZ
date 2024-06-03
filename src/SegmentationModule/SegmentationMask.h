@@ -20,7 +20,8 @@ public:
                            const std::vector<YoloResults>& results);
     cv::Mat processResultsDebug(const cv::Mat& img, const cv::Mat& mask);
 
-    float getTotalWhiteArea(const cv::Mat& mask);
+    float getWhiteArea(const cv::Mat& mask);
+    int getContourCount(const cv::Mat& mask);
 
 private:
     bool isModelInitialized;
