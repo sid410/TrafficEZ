@@ -13,23 +13,32 @@ void VehicleGui::display()
 
     (currentTrafficState == TrafficState::GREEN_PHASE)
         ? processTrackingState()
-        : processSegmentationState();
+        : processSegmentationState(); // we only process YOLO result for gui
 
     cv::waitKey(1); // needed for imshow
 }
 
 float VehicleGui::getTrafficDensity()
 {
-    float totalTime = fpsHelper.endSample() / 1000;
-    float flow = hullTracker.getTotalHullArea() / totalTime;
+    float density = 0;
 
-    float density = flow / (hullTracker.getAveragedSpeed() * laneWidth);
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        float totalTime = fpsHelper.endSample() / 1000;
+        float flow = hullTracker.getTotalHullArea() / totalTime;
 
-    hullTracker.resetTrackerVariables();
+        density = flow / (hullTracker.getAveragedSpeed() * laneWidth);
+
+        hullTracker.resetTrackerVariables();
+    }
+
+    else if(currentTrafficState == TrafficState::RED_PHASE)
+    {
+        density = segmentation.getTotalWhiteArea(warpedMask) /
+                  (laneLength * laneWidth);
+    }
+
     isTracking = false;
-
-    // std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
-    //           << " px^2\n";
 
     return density;
 }
