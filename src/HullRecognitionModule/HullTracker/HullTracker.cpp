@@ -77,6 +77,19 @@ float HullTracker::calculateAllAveragedSpeed() const
 }
 
 /**
+ * @brief Reset the variables for calculating the values of 
+ * getTotalHullArea and calculateAllAveragedSpeed.
+ */
+void HullTracker::resetTrackerVariables()
+{
+    currentId = 0;
+    hullCount = 0;
+    totalHullArea = 0;
+    totalAverageSpeed = 0;
+    trackedHulls.clear();
+}
+
+/**
  * @brief Matches new hulls with existing tracked hulls and updates them.
  * @param newHulls New hulls detected in the current frame.
  * @param matched Vector (list) indicating which new hulls have been matched.

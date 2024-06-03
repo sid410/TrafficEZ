@@ -29,6 +29,7 @@ public:
 
     float getTotalHullArea() const;
     float calculateAllAveragedSpeed() const;
+    void resetTrackerVariables();
 
     void drawTrackedHulls(cv::Mat& frame) const;
     void drawLanesInfo(cv::Mat& frame, int laneLength, int laneWidth) const;

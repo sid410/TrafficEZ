@@ -45,7 +45,10 @@ void VehicleGui::display()
 
 float VehicleGui::getTrafficDensity()
 {
-    return hullTracker.getTotalHullArea();
+    float density = hullTracker.getTotalHullArea();
+    hullTracker.resetTrackerVariables();
+
+    return density;
 }
 
 void VehicleGui::initialize(const std::string& streamName,

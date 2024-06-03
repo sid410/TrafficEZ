@@ -66,6 +66,15 @@ void TrafficManager::start()
         std::cout << "Traffic Density Red: "
                   << vehicleWatcherGui->getTrafficDensity() << "\n";
 
+        vehicleWatcherGui->setCurrentTrafficState(TrafficState::GREEN_PHASE);
+        while(i < 1100)
+        {
+            vehicleWatcherGui->processFrame();
+            i++;
+        }
+        std::cout << "Traffic Density Green: "
+                  << vehicleWatcherGui->getTrafficDensity() << "\n";
+
         delete vehicleWatcherGui;
     }
 
