@@ -71,7 +71,7 @@ float HullTracker::getTotalHullArea() const
  * @brief Calculates the averaged speed of all exited tracked hulls.
  * @return Averaged speed of all exited tracked hulls (pixels/second).
  */
-float HullTracker::calculateAllAveragedSpeed() const
+float HullTracker::getAveragedSpeed() const
 {
     return totalAverageSpeed / hullCount;
 }

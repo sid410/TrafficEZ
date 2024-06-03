@@ -2,51 +2,34 @@
 
 void VehicleGui::display()
 {
-    if(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+    if(!videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+        return;
+
+    if(!isTracking)
     {
-        if(currentTrafficState == TrafficState::GREEN_PHASE)
-        {
-            processTrackingState();
-        }
-        else if(currentTrafficState == TrafficState::RED_PHASE)
-        {
-            processSegmentationState();
-            // cv::waitKey(0);
-        }
-
-        cv::waitKey(1);
-
-        // int key = cv::waitKey(1);
-
-        // if(key == 27)
-        // {
-        //     std::cout << "Total time: " << fpsHelper.endSample() / 1000
-        //               << " s\n";
-        //     std::cout << "Total Area: " << hullTracker.getTotalHullArea()
-        //               << " px^2\n";
-        //     std::cout << "Total Speed: "
-        //               << hullTracker.calculateAllAveragedSpeed() << " px/s\n";
-        //     break;
-        // }
-
-        // // '1' button
-        // else if(key == 49)
-        // {
-        //     if(currentTrafficState == TrafficState::GREEN_PHASE)
-        //         setCurrentTrafficState(TrafficState::RED_PHASE);
-        //     else
-        //         setCurrentTrafficState(TrafficState::GREEN_PHASE);
-        // }
+        fpsHelper.startSample();
+        isTracking = true;
     }
 
-    // std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
-    //           << " px^2\n";
+    (currentTrafficState == TrafficState::GREEN_PHASE)
+        ? processTrackingState()
+        : processSegmentationState();
+
+    cv::waitKey(1); // needed for imshow
 }
 
 float VehicleGui::getTrafficDensity()
 {
-    float density = hullTracker.getTotalHullArea();
+    float totalTime = fpsHelper.endSample() / 1000;
+    float flow = hullTracker.getTotalHullArea() / totalTime;
+
+    float density = flow / (hullTracker.getAveragedSpeed() * laneWidth);
+
     hullTracker.resetTrackerVariables();
+    isTracking = false;
+
+    // std::cout << "YOLO Area: " << segmentation.getTotalWhiteArea(warpedMask)
+    //           << " px^2\n";
 
     return density;
 }
@@ -83,7 +66,7 @@ void VehicleGui::initialize(const std::string& streamName,
         std::make_unique<VehicleSegmentationStrategy>();
     segmentation.initializeModel(modelYolo, std::move(strategy));
 
-    fpsHelper.startSample();
+    isTracking = false;
 }
 
 void VehicleGui::processTrackingState()

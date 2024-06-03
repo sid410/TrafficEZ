@@ -49,6 +49,8 @@ private:
 
     void processTrackingState();
     void processSegmentationState();
+
+    bool isTracking;
 };
 
 #endif
