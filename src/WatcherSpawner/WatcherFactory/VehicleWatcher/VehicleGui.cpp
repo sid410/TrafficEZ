@@ -60,8 +60,6 @@ void VehicleGui::initialize(const std::string& streamName,
 
     streamWindow = streamName + " Vehicle GUI";
 
-    modelYolo = "yolov8n-seg.onnx";
-
     laneLength = videoStreamer.getLaneLength();
     laneWidth = videoStreamer.getLaneWidth();
 
@@ -70,8 +68,8 @@ void VehicleGui::initialize(const std::string& streamName,
 
     pipeDirector.setupDefaultPipeline(pipeBuilder);
     // // If you want to use the yaml config file, use the methods below:
-    // pipeDirector.savePipelineConfig(pipeBuilder, "debug_calib.yaml");
-    // pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
+    // pipeDirector.savePipelineConfig(pipeBuilder, calibName);
+    // pipeDirector.loadPipelineConfig(pipeBuilder, calibName);
 
     // // Commented out because Trackbar gets confusing with forked processes.
     // // To show Trackbar, be sure to only spawn one process then do the following:
@@ -95,6 +93,9 @@ void VehicleGui::initialize(const std::string& streamName,
     //     if(cv::waitKey(30) == 27)
     //         break;
     // }
+
+    // Fixed model for now. Later, make dynamic using the calibName yaml file.
+    modelYolo = "yolov8n-seg.onnx";
 
     std::unique_ptr<ISegmentationStrategy> strategy =
         std::make_unique<VehicleSegmentationStrategy>();
