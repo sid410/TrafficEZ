@@ -68,13 +68,33 @@ void VehicleGui::initialize(const std::string& streamName,
     videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
+    pipeDirector.setupDefaultPipeline(pipeBuilder);
+    // // If you want to use the yaml config file, use the methods below:
+    // pipeDirector.savePipelineConfig(pipeBuilder, "debug_calib.yaml");
+    // pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
+
+    // // Commented out because Trackbar gets confusing with forked processes.
+    // // To show Trackbar, be sure to only spawn one process then do the following:
+    // // 1. Uncomment PipelineTrackbar instance.
+    // // 2. Uncomment while loop below.
+    // // 3. In processTrackingState method, use processDebugStack instead of process.
+
+    // PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
 
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
     videoStreamer.resizeStreamWindow(warpedFrame);
 
     hullDetector.initDetectionBoundaries(warpedFrame);
     hullTracker.initExitBoundaryLine(hullDetector.getEndDetectionLine());
+
+    // std::cout << "Press Escape to exit Trackbar loop.\n";
+    // while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+    // {
+    //     processTrackingState();
+
+    //     if(cv::waitKey(30) == 27)
+    //         break;
+    // }
 
     std::unique_ptr<ISegmentationStrategy> strategy =
         std::make_unique<VehicleSegmentationStrategy>();
@@ -87,6 +107,7 @@ void VehicleGui::processTrackingState()
 {
     warpedFrame.copyTo(processFrame);
     pipeBuilder.process(processFrame);
+    // pipeBuilder.processDebugStack(processFrame);
 
     std::vector<std::vector<cv::Point>> hulls;
     hullDetector.getHulls(processFrame, hulls);

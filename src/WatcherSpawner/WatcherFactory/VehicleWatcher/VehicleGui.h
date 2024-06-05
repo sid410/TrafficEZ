@@ -9,6 +9,7 @@
 #include "HullTracker.h"
 #include "PipelineBuilder.h"
 #include "PipelineDirector.h"
+#include "PipelineTrackbar.h"
 #include "SegmentationMask.h"
 #include "TrafficState.h"
 #include "VehicleSegmentationStrategy.h"
@@ -31,6 +32,7 @@ private:
 
     PipelineBuilder pipeBuilder;
     PipelineDirector pipeDirector;
+
     HullDetector hullDetector;
     HullTracker hullTracker;
 
