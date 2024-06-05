@@ -122,6 +122,7 @@ void VehicleGui::processTrackingState()
     fpsHelper.displayFps(warpedFrame);
 
     cv::imshow(streamWindow, warpedFrame);
+    cv::waitKey(30);
 }
 
 void VehicleGui::processSegmentationState()
@@ -129,5 +130,6 @@ void VehicleGui::processSegmentationState()
     cv::Mat segMask = segmentation.generateMask(inputFrame);
     warpedMask = videoStreamer.applyPerspective(segMask, warpPerspective);
 
-    cv::imshow(streamWindow, warpedMask);
+    cv::imshow(streamWindow + " segMask", warpedMask);
+    // cv::waitKey(0);
 }
