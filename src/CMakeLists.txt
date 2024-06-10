@@ -4,6 +4,7 @@ add_subdirectory(VideoStreamer)
 add_subdirectory(WatcherSpawner)
 add_subdirectory(HullRecognitionModule)
 add_subdirectory(SegmentationModule)
+add_subdirectory(MultiprocessTraffic)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 setup_currdir_opencv(${EXECUTABLE_NAME})
