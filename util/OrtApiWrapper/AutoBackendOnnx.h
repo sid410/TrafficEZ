@@ -75,7 +75,7 @@ public:
                                                   int conversionCode = -1);
 
     virtual void fill_blob(cv::Mat& image,
-                           float*& blob,
+                           std::unique_ptr<float[]>& blob,
                            std::vector<int64_t>& inputTensorShape);
     virtual void postprocess_masks(cv::Mat& output0,
                                    cv::Mat& output1,

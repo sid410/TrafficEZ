@@ -217,13 +217,14 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat& image,
                                                        int conversionCode)
 {
     // 1. preprocess
-    float* blob = nullptr;
-
+    std::unique_ptr<float[]> blob = nullptr;
     std::vector<Ort::Value> inputTensors;
+
     if(conversionCode >= 0)
     {
         cv::cvtColor(image, image, conversionCode);
     }
+
     std::vector<int64_t> inputTensorShape;
     cv::Mat preprocessed_img;
     cv::Size new_shape = cv::Size(getWidth(), getHeight());
@@ -240,11 +241,11 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat& image,
                          getStride());
     fill_blob(preprocessed_img, blob, inputTensorShape);
     int64_t inputTensorSize = YoloUtils::vector_product(inputTensorShape);
-    std::vector<float> inputTensorValues(blob, blob + inputTensorSize);
+    std::vector<float> inputTensorValues(
+        blob.get(), blob.get() + inputTensorSize); // Use smart pointer
 
     Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
-
     inputTensors.push_back(
         Ort::Value::CreateTensor<float>(memoryInfo,
                                         inputTensorValues.data(),
@@ -272,7 +273,6 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat& image,
 
         // get outputs
         float* all_data0 = outputTensors[0].GetTensorMutableData<float>();
-
         cv::Mat output0 =
             cv::Mat(cv::Size((int) outputTensor0Shape[2],
                              (int) outputTensor0Shape[1]),
@@ -463,7 +463,7 @@ void AutoBackendOnnx::_get_mask2(const cv::Mat& masks_features,
 }
 
 void AutoBackendOnnx::fill_blob(cv::Mat& image,
-                                float*& blob,
+                                std::unique_ptr<float[]>& blob,
                                 std::vector<int64_t>& inputTensorShape)
 {
     cv::Mat floatImage;
@@ -477,17 +477,19 @@ void AutoBackendOnnx::fill_blob(cv::Mat& image,
     int rtype = CV_32FC3;
 
     image.convertTo(floatImage, rtype, 1.0f / 255.0);
-    blob = new float[floatImage.cols * floatImage.rows * floatImage.channels()];
+    blob =
+        std::make_unique<float[]>(floatImage.cols * floatImage.rows *
+                                  floatImage.channels()); // Use smart pointer
     cv::Size floatImageSize{floatImage.cols, floatImage.rows};
 
     // hwc -> chw
     std::vector<cv::Mat> chw(floatImage.channels());
     for(int i = 0; i < floatImage.channels(); ++i)
     {
-        chw[i] =
-            cv::Mat(floatImageSize,
-                    CV_32FC1,
-                    blob + i * floatImageSize.width * floatImageSize.height);
+        chw[i] = cv::Mat(floatImageSize,
+                         CV_32FC1,
+                         blob.get() +
+                             i * floatImageSize.width * floatImageSize.height);
     }
 
     cv::split(floatImage, chw);
