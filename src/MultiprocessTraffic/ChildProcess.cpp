@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
+#include <sstream>
 #include <unistd.h>
 
 ChildProcess::ChildProcess(int childIndex,
@@ -13,13 +14,29 @@ ChildProcess::ChildProcess(int childIndex,
     , pipeChildToParent(pipeChildToParent)
 {}
 
-void ChildProcess::run()
+void ChildProcess::runVehicle(bool debug, int vehicleId)
 {
     closeUnusedPipes();
 
     WatcherSpawner spawner;
-    Watcher* vehicleWatcherGui = spawner.spawnWatcher(
-        WatcherType::VEHICLE, RenderMode::GUI, "debug.mp4", "debug_calib.yaml");
+    Watcher* vehicleWatcher;
+
+    std::ostringstream configStream;
+    configStream << "vehicle" << vehicleId << ".yaml";
+    std::string configFile = configStream.str();
+
+    if(debug)
+    {
+        vehicleWatcher = spawner.spawnWatcher(
+            WatcherType::VEHICLE, RenderMode::GUI, "debug.mp4", configFile);
+    }
+    else
+    {
+        vehicleWatcher = spawner.spawnWatcher(WatcherType::VEHICLE,
+                                              RenderMode::HEADLESS,
+                                              "debug.mp4",
+                                              configFile);
+    }
 
     char buffer[128];
     bool isStateGreen = false;
@@ -41,7 +58,7 @@ void ChildProcess::run()
             if(strcmp(buffer, "RED_PHASE") == 0)
             {
                 // Send traffic density back to the parent
-                float density = vehicleWatcherGui->getTrafficDensity();
+                float density = vehicleWatcher->getTrafficDensity();
                 snprintf(buffer, sizeof(buffer), "%.2f", density);
                 if(write(pipeChildToParent.fds[1],
                          buffer,
@@ -55,16 +72,15 @@ void ChildProcess::run()
                 }
 
                 isStateGreen = false;
-                vehicleWatcherGui->setCurrentTrafficState(
-                    TrafficState::RED_PHASE);
+                vehicleWatcher->setCurrentTrafficState(TrafficState::RED_PHASE);
             }
             else if(strcmp(buffer, "GREEN_PHASE") == 0)
             {
                 // Process 1 red frame first before changing
-                vehicleWatcherGui->processFrame();
+                vehicleWatcher->processFrame();
 
                 // Send traffic density back to the parent
-                float density = vehicleWatcherGui->getTrafficDensity();
+                float density = vehicleWatcher->getTrafficDensity();
                 snprintf(buffer, sizeof(buffer), "%.2f", density);
                 if(write(pipeChildToParent.fds[1],
                          buffer,
@@ -78,7 +94,7 @@ void ChildProcess::run()
                 }
 
                 isStateGreen = true;
-                vehicleWatcherGui->setCurrentTrafficState(
+                vehicleWatcher->setCurrentTrafficState(
                     TrafficState::GREEN_PHASE);
             }
             else
@@ -92,16 +108,16 @@ void ChildProcess::run()
         // Process frames continuously if green
         if(isStateGreen)
         {
-            vehicleWatcherGui->processFrame();
+            vehicleWatcher->processFrame();
         }
         else
         {
             // Sleep for a short period to save CPU resource
-            usleep(1000); // Sleep for 1 milliseconds
+            usleep(1000); // Sleep for 1 millisecond
         }
     }
 
-    delete vehicleWatcherGui;
+    delete vehicleWatcher;
 }
 
 void ChildProcess::closeUnusedPipes()

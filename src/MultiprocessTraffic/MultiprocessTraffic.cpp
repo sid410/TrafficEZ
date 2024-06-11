@@ -47,7 +47,7 @@ void MultiprocessTraffic::forkChildren()
         {
             ChildProcess childProcess(
                 i, pipesParentToChild[i], pipesChildToParent[i]);
-            childProcess.run();
+            childProcess.runVehicle(true, i + 1);
             exit(EXIT_SUCCESS);
         }
         else

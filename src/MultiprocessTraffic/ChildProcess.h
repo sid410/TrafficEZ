@@ -9,7 +9,7 @@ public:
     ChildProcess(int childIndex,
                  Pipe& pipeParentToChild,
                  Pipe& pipeChildToParent);
-    void run();
+    void runVehicle(bool debug, int vehicleId);
 
 private:
     int childIndex;
