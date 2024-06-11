@@ -97,7 +97,7 @@ void ChildProcess::run()
         else
         {
             // Sleep for a short period to save CPU resource
-            usleep(10000); // Sleep for 10 milliseconds
+            usleep(1000); // Sleep for 1 milliseconds
         }
     }
 
