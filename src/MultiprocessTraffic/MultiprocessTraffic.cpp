@@ -4,16 +4,21 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-MultiprocessTraffic::MultiprocessTraffic(int numChildren)
-    : numChildren(numChildren)
-{}
+MultiprocessTraffic::MultiprocessTraffic() {}
 
 void MultiprocessTraffic::start()
 {
+    loadPhasingInfo();
+    numChildren = phases[0].size();
+
     createPipes();
     forkChildren();
-    ParentProcess parentProcess(
-        numChildren, pipesParentToChild, pipesChildToParent);
+    ParentProcess parentProcess(numChildren,
+                                pipesParentToChild,
+                                pipesChildToParent,
+                                phases,
+                                phaseDurations);
+
     parentProcess.run();
 }
 
@@ -55,4 +60,17 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
         }
     }
+}
+
+void MultiprocessTraffic::loadPhasingInfo()
+{
+    // Example phasing information for 4 signals and 3 phase cycles
+    phases = {
+        {"GREEN_PHASE", "RED_PHASE", "GREEN_PHASE", "RED_PHASE"}, // Phase 1
+        {"GREEN_PHASE", "GREEN_PHASE", "RED_PHASE", "RED_PHASE"}, // Phase 2
+        {"RED_PHASE", "RED_PHASE", "RED_PHASE", "GREEN_PHASE"} // Phase 3
+    };
+
+    // Phase durations in milliseconds
+    phaseDurations = {6500, 2500, 3500};
 }

@@ -6,10 +6,14 @@
 
 ParentProcess::ParentProcess(int numChildren,
                              std::vector<Pipe>& pipesParentToChild,
-                             std::vector<Pipe>& pipesChildToParent)
+                             std::vector<Pipe>& pipesChildToParent,
+                             std::vector<std::vector<const char*>>& phases,
+                             std::vector<int>& phaseDurations)
     : numChildren(numChildren)
     , pipesParentToChild(pipesParentToChild)
     , pipesChildToParent(pipesChildToParent)
+    , phases(phases)
+    , phaseDurations(phaseDurations)
 {}
 
 void ParentProcess::run()
@@ -17,26 +21,20 @@ void ParentProcess::run()
     closeUnusedPipes();
 
     char buffer[128];
-
-    const char* redPhaseMsg = "RED_PHASE";
-    const char* greenPhaseMsg = "GREEN_PHASE";
-
-    // Traffic state phases
-    const int redPhaseDuration = 1000;
-    const int greenPhaseDuration = 500;
-
-    // Initial state
-    const char* currentPhaseMsg = greenPhaseMsg;
+    int phaseIndex = 0;
 
     while(true)
     {
+        std::cerr
+            << "============================================================\n";
+
         for(int i = 0; i < numChildren; ++i)
         {
             std::cout << "Parent: Sending phase message to child " << i << ": "
-                      << currentPhaseMsg << "\n";
+                      << phases[phaseIndex][i] << "\n";
             if(write(pipesParentToChild[i].fds[1],
-                     currentPhaseMsg,
-                     strlen(currentPhaseMsg) + 1) == -1)
+                     phases[phaseIndex][i],
+                     strlen(phases[phaseIndex][i]) + 1) == -1)
             {
                 std::cerr << "Parent: Failed to write to pipe: "
                           << strerror(errno) << "\n";
@@ -61,12 +59,10 @@ void ParentProcess::run()
         }
 
         // Simulate time passing
-        usleep(currentPhaseMsg == redPhaseMsg ? redPhaseDuration * 10000
-                                              : greenPhaseDuration * 10000);
+        usleep(phaseDurations[phaseIndex] * 1000);
 
-        // Toggle phase
-        currentPhaseMsg =
-            (currentPhaseMsg == redPhaseMsg) ? greenPhaseMsg : redPhaseMsg;
+        // Move to the next phase
+        phaseIndex = (phaseIndex + 1) % phases.size();
     }
 
     for(int i = 0; i < numChildren; ++i)

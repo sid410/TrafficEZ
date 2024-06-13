@@ -10,7 +10,7 @@
 class MultiprocessTraffic
 {
 public:
-    MultiprocessTraffic(int numChildren);
+    MultiprocessTraffic();
     void start();
 
 private:
@@ -19,8 +19,12 @@ private:
     std::vector<Pipe> pipesParentToChild;
     std::vector<Pipe> pipesChildToParent;
 
+    std::vector<std::vector<const char*>> phases;
+    std::vector<int> phaseDurations;
+
     void createPipes();
     void forkChildren();
+    void loadPhasingInfo();
 };
 
 #endif
