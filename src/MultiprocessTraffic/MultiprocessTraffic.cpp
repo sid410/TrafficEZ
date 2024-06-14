@@ -72,5 +72,6 @@ void MultiprocessTraffic::loadPhasingInfo()
     };
 
     // Phase durations in milliseconds
-    phaseDurations = {6500, 2500, 3500};
+    // phaseDurations = {65000, 25000, 35000};
+    phaseDurations = {20000, 20000, 20000};
 }

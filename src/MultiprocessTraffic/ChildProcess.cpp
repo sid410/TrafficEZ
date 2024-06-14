@@ -21,21 +21,21 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
     WatcherSpawner spawner;
     Watcher* vehicleWatcher;
 
-    std::ostringstream configStream;
-    configStream << "vehicle" << vehicleId << ".yaml";
-    std::string configFile = configStream.str();
+    std::ostringstream streamConfig, streamName;
+    streamConfig << "vehicle" << vehicleId << ".yaml";
+    streamName << "stream" << vehicleId << ".mp4";
+    std::string configFile = streamConfig.str();
+    std::string streamFile = streamName.str();
 
     if(debug)
     {
         vehicleWatcher = spawner.spawnWatcher(
-            WatcherType::VEHICLE, RenderMode::GUI, "debug.mp4", configFile);
+            WatcherType::VEHICLE, RenderMode::GUI, streamFile, configFile);
     }
     else
     {
-        vehicleWatcher = spawner.spawnWatcher(WatcherType::VEHICLE,
-                                              RenderMode::HEADLESS,
-                                              "debug.mp4",
-                                              configFile);
+        vehicleWatcher = spawner.spawnWatcher(
+            WatcherType::VEHICLE, RenderMode::HEADLESS, streamFile, configFile);
     }
 
     char buffer[128];
