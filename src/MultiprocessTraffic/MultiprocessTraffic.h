@@ -4,6 +4,7 @@
 #include "ChildProcess.h"
 #include "ParentProcess.h"
 #include "Pipe.h"
+
 #include <sys/types.h>
 #include <vector>
 
@@ -11,7 +12,9 @@ class MultiprocessTraffic
 {
 public:
     MultiprocessTraffic();
+
     void start();
+    void resetPhasingInfo();
 
 private:
     int numChildren;

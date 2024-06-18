@@ -13,6 +13,7 @@ void MultiprocessTraffic::start()
 
     createPipes();
     forkChildren();
+
     ParentProcess parentProcess(numChildren,
                                 pipesParentToChild,
                                 pipesChildToParent,
@@ -52,7 +53,7 @@ void MultiprocessTraffic::forkChildren()
         {
             ChildProcess childProcess(
                 i, pipesParentToChild[i], pipesChildToParent[i]);
-            childProcess.runVehicle(true, i + 1);
+            childProcess.runVehicle(true, i);
             exit(EXIT_SUCCESS);
         }
         else
@@ -72,6 +73,11 @@ void MultiprocessTraffic::loadPhasingInfo()
     };
 
     // Phase durations in milliseconds
-    // phaseDurations = {65000, 25000, 35000};
-    phaseDurations = {20000, 20000, 20000};
+    phaseDurations = {65000, 25000, 35000};
+
+    if(phases.size() != phaseDurations.size())
+    {
+        std::cerr << "Size of phase info and duration do not match!\n";
+        exit(EXIT_FAILURE);
+    }
 }
