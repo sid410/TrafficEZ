@@ -128,7 +128,20 @@ void ParentProcess::run()
         }
 
         // Waiting time for the current phase
-        usleep(phaseDurations[phaseIndex] * 1000);
+        // usleep(phaseDurations[phaseIndex] * 1000);
+
+        // Countdown timer for the current phase
+        int remainingTime = phaseDurations[phaseIndex] / 1000;
+
+        while(remainingTime > 0)
+        {
+            std::cout << "\rRemaining time for phase " << phaseIndex << ": "
+                      << remainingTime << " seconds.";
+            std::cout.flush();
+            sleep(1);
+            --remainingTime;
+        }
+        std::cout << std::endl;
 
         // Move to the next phase
         phaseIndex = (phaseIndex + 1) % phases.size();
