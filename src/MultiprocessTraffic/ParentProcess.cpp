@@ -14,6 +14,7 @@ ParentProcess::ParentProcess(int numChildren,
                              std::vector<std::vector<const char*>>& phases,
                              std::vector<int>& phaseDurations,
                              float densityMultiplierGreenPhase,
+                             float densityMultiplierRedPhase,
                              float densityMin,
                              float densityMax,
                              int minPhaseDurationMs)
@@ -23,6 +24,7 @@ ParentProcess::ParentProcess(int numChildren,
     , phases(phases)
     , phaseDurations(phaseDurations)
     , densityMultiplierGreenPhase(densityMultiplierGreenPhase)
+    , densityMultiplierRedPhase(densityMultiplierRedPhase)
     , densityMin(densityMin)
     , densityMax(densityMax)
     , minPhaseDurationMs(minPhaseDurationMs)
@@ -105,13 +107,19 @@ void ParentProcess::run()
                 density *= densityMultiplierGreenPhase;
             }
 
+            // If previous phase was red, give way to other phase cycle
+            if(strcmp(phases[previousPhaseIndex][i], "RED_PHASE") == 0)
+            {
+                density = (densityMax - density) * densityMultiplierRedPhase;
+            }
+
             density = std::clamp(density, densityMin, densityMax);
 
             std::cout << "Previous Traffic Density from child " << i << ": "
                       << density << "\n";
 
-            // Store density
-            phaseDensities[phaseIndex][i] = density;
+            // Store density to the previous phase
+            phaseDensities[previousPhaseIndex][i] = density;
         }
 
         if(densityError)
@@ -178,7 +186,9 @@ void ParentProcess::updatePhaseDurations(
 
         // so we always have enough time for yellow
         if(phaseDurations[phase] < minPhaseDurationMs)
+        {
             phaseDurations[phase] = minPhaseDurationMs;
+        }
 
         if(phaseDurations[phase] > fullCycleDurationMs)
         {

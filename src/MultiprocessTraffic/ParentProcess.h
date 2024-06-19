@@ -14,6 +14,7 @@ public:
                   std::vector<std::vector<const char*>>& phases,
                   std::vector<int>& phaseDurations,
                   float densityMultiplierGreenPhase = 10.0f,
+                  float densityMultiplierRedPhase = 0.3f,
                   float densityMin = 0.0f,
                   float densityMax = 50.0f,
                   int minPhaseDurationMs = 5000);
@@ -21,6 +22,7 @@ public:
 
 private:
     float densityMultiplierGreenPhase;
+    float densityMultiplierRedPhase;
     float densityMin;
     float densityMax;
     int minPhaseDurationMs;

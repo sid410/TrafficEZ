@@ -29,7 +29,9 @@ float VehicleGui::getTrafficDensity()
         // If counting vehicles instead of area
         // float flow = hullTracker.getHullCount() / totalTime;
 
-        density = flow / (hullTracker.getAveragedSpeed() * laneWidth);
+        density = (flow == 0)
+                      ? 0
+                      : flow / (hullTracker.getAveragedSpeed() * laneWidth);
 
         hullTracker.resetTrackerVariables();
     }
