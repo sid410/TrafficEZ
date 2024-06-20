@@ -14,7 +14,7 @@ public:
     void initializeModel(const std::string& modelPath,
                          std::unique_ptr<ISegmentationStrategy> strategy);
 
-    cv::Mat generateMask(const cv::Mat& img);
+    cv::Mat generateMask(const cv::Mat& img, bool isBinaryMask = true);
 
     cv::Mat processResults(const cv::Mat& img,
                            const std::vector<YoloResults>& results);
@@ -22,11 +22,14 @@ public:
 
     float getWhiteArea(const cv::Mat& mask);
     int getContourCount(const cv::Mat& mask);
+    int getDetectionResultSize();
 
 private:
     bool isModelInitialized;
     std::unique_ptr<AutoBackendOnnx> model;
     std::unique_ptr<ISegmentationStrategy> segmentationStrategy;
+
+    int detectionResultCount;
 };
 
 #endif

@@ -2,6 +2,13 @@
 #define PEDESTRIAN_GUI_H
 
 #include "Gui.h"
+#include <opencv2/opencv.hpp>
+
+#include "PersonSegmentationStrategy.h"
+#include "SegmentationMask.h"
+#include "TrimPerspective.h"
+#include "VideoStreamer.h"
+#include "WarpPerspective.h"
 
 class PedestrianGui : public Gui
 {
@@ -11,6 +18,19 @@ public:
 
     void display() override;
     float getTrafficDensity() override;
+
+private:
+    VideoStreamer videoStreamer;
+    TrimPerspective trimPerspective;
+    WarpPerspective warpPerspective;
+    SegmentationMask segmentation;
+
+    std::string streamWindow;
+    std::string modelYolo;
+
+    cv::Mat inputFrame;
+    cv::Mat trimmedFrame;
+    cv::Mat outputMask;
 };
 
 #endif

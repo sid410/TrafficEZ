@@ -5,6 +5,7 @@
 SegmentationMask::SegmentationMask()
 {
     isModelInitialized = false;
+    detectionResultCount = 0;
 }
 
 void SegmentationMask::initializeModel(
@@ -25,7 +26,7 @@ void SegmentationMask::initializeModel(
     isModelInitialized = true;
 }
 
-cv::Mat SegmentationMask::generateMask(const cv::Mat& img)
+cv::Mat SegmentationMask::generateMask(const cv::Mat& img, bool isBinaryMask)
 {
     if(!isModelInitialized)
     {
@@ -35,13 +36,11 @@ cv::Mat SegmentationMask::generateMask(const cv::Mat& img)
     cv::Mat converted_img;
     cv::cvtColor(img, converted_img, cv::COLOR_BGR2RGB);
 
-    // Create variables for the floating-point arguments
     float conf_threshold = 0.30f;
     float iou_threshold = 0.45f;
     float mask_threshold = 0.5f;
     int conversion_code = cv::COLOR_BGR2RGB;
 
-    // Pass variables instead of literals to predict_once
     auto results = model->predict_once(converted_img,
                                        conf_threshold,
                                        iou_threshold,
@@ -50,7 +49,17 @@ cv::Mat SegmentationMask::generateMask(const cv::Mat& img)
 
     auto filteredResults = segmentationStrategy->filterResults(results);
 
-    return processResults(img, filteredResults);
+    detectionResultCount = filteredResults.size();
+    cv::Mat output = processResults(img, filteredResults);
+
+    if(isBinaryMask)
+    {
+        return output;
+    }
+    else
+    {
+        return processResultsDebug(img, output);
+    }
 }
 
 cv::Mat
@@ -135,4 +144,9 @@ int SegmentationMask::getContourCount(const cv::Mat& mask)
         binaryMask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     return contours.size();
+}
+
+int SegmentationMask::getDetectionResultSize()
+{
+    return detectionResultCount;
 }

@@ -12,7 +12,5 @@ std::vector<YoloResults> PersonSegmentationStrategy::filterResults(
                      return result.class_idx == 0; // Person class
                  });
 
-    std::cout << "Detected People: " << filtered.size() << std::endl;
-
     return filtered;
 }

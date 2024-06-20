@@ -1,20 +1,47 @@
 #include "PedestrianGui.h"
-#include <iostream>
 
 void PedestrianGui::initialize(const std::string& streamName,
                                const std::string& calibName)
 {
-    std::cout << "Stream Name: " << streamName << std::endl;
-    std::cout << "Calibration Name: " << calibName << std::endl;
-    std::cerr << "No implementation yet for Pedestrian Gui\n";
+    if(!videoStreamer.openVideoStream(streamName) ||
+       !videoStreamer.readCalibrationData(calibName))
+    {
+        std::cerr << "Failed to initialize video stream or calibration data.\n";
+        return;
+    }
+
+    streamWindow = streamName + " Pedestrian GUI";
+
+    videoStreamer.constructStreamWindow(streamWindow);
+
+    // there is a bug where the matrix sizes or types do not match,
+    // as workaround for now, process one frame of warp to initialize correctly,
+    videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
+    videoStreamer.applyFrameRoi(inputFrame, trimmedFrame, warpPerspective);
+
+    // then we can use the trim after one warp.
+    videoStreamer.initializePerspectiveTransform(inputFrame, trimPerspective);
+    videoStreamer.applyFrameRoi(inputFrame, trimmedFrame, trimPerspective);
+
+    // Fixed model for now. Later, make dynamic using the calibName yaml file.
+    modelYolo = "yolov8n-seg.onnx";
+
+    std::unique_ptr<ISegmentationStrategy> strategy =
+        std::make_unique<PersonSegmentationStrategy>();
+    segmentation.initializeModel(modelYolo, std::move(strategy));
 }
 
 void PedestrianGui::display()
 {
-    std::cerr << "No implementation yet for Pedestrian Gui\n";
+    if(!videoStreamer.applyFrameRoi(inputFrame, trimmedFrame, trimPerspective))
+        return;
+
+    cv::Mat segMask = segmentation.generateMask(trimmedFrame, false);
+    cv::imshow(streamWindow, segMask);
+    cv::waitKey(1);
 }
 
 float PedestrianGui::getTrafficDensity()
 {
-    std::cerr << "No implementation yet for Pedestrian Gui\n";
+    return segmentation.getDetectionResultSize();
 }

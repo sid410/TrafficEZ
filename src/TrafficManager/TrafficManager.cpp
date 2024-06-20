@@ -38,13 +38,29 @@ void TrafficManager::handleCalibrationMode()
 
     Watcher* calibrateWatcherGui = spawner.spawnWatcher(WatcherType::CALIBRATE,
                                                         RenderMode::GUI,
-                                                        "debug.mp4",
-                                                        "debug_calib.yaml");
+                                                        "pedestrian.mp4",
+                                                        "pedestrian.yaml");
     delete calibrateWatcherGui;
 }
 
 void TrafficManager::handleDebugMode()
 {
-    MultiprocessTraffic multiprocessTraffic(true);
-    multiprocessTraffic.start();
+    // MultiprocessTraffic multiprocessTraffic(true);
+    // multiprocessTraffic.start();
+
+    WatcherSpawner spawner;
+    Watcher* pedestrianWatcher = spawner.spawnWatcher(WatcherType::PEDESTRIAN,
+                                                      RenderMode::GUI,
+                                                      "pedestrian.mp4",
+                                                      "pedestrian.yaml");
+
+    while(true)
+    {
+        pedestrianWatcher->processFrame();
+
+        std::cout << "People detected:"
+                  << pedestrianWatcher->getTrafficDensity() << "\n";
+    }
+
+    delete pedestrianWatcher;
 }

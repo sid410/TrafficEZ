@@ -38,10 +38,12 @@ void VehicleWatcher::processFrame()
     {
         gui->display();
     }
-    // else if(currentMode == RenderMode::HEADLESS)
-    // {
-    //     headless->process(streamName, calibName);
-    // }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        // headless->process();
+        std::cerr << "VehicleWatcher::processFrame headless not yet "
+                     "implemented...\n";
+    }
 }
 
 float VehicleWatcher::getTrafficDensity()
@@ -49,6 +51,12 @@ float VehicleWatcher::getTrafficDensity()
     if(currentMode == RenderMode::GUI)
     {
         return gui->getTrafficDensity();
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        // return headless->getTrafficDensity();
+        std::cerr << "VehicleWatcher::getTrafficDensity headless not yet "
+                     "implemented...\n";
     }
 
     return -1;
