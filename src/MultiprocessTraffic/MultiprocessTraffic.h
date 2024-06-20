@@ -11,12 +11,13 @@
 class MultiprocessTraffic
 {
 public:
-    MultiprocessTraffic();
+    MultiprocessTraffic(bool verbose = false);
 
     void start();
-    void resetPhasingInfo();
 
 private:
+    bool verbose;
+
     int numChildren;
     std::vector<pid_t> childPids;
     std::vector<Pipe> pipesParentToChild;

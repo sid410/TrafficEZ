@@ -8,10 +8,12 @@
 
 ChildProcess::ChildProcess(int childIndex,
                            Pipe& pipeParentToChild,
-                           Pipe& pipeChildToParent)
+                           Pipe& pipeChildToParent,
+                           bool verbose)
     : childIndex(childIndex)
     , pipeParentToChild(pipeParentToChild)
     , pipeChildToParent(pipeChildToParent)
+    , verbose(verbose)
 {}
 
 void ChildProcess::runVehicle(bool debug, int vehicleId)
@@ -52,8 +54,12 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
         if(bytesRead > 0)
         {
             buffer[bytesRead] = '\0'; // Ensure null termination
-            std::cout << "Child " << childIndex
-                      << ": Received phase message: " << buffer << "\n";
+
+            if(verbose)
+            {
+                std::cout << "Child " << childIndex
+                          << ": Received phase message: " << buffer << "\n";
+            }
 
             if(strcmp(buffer, "RED_PHASE") == 0)
             {

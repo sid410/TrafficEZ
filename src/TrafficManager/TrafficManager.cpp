@@ -45,6 +45,6 @@ void TrafficManager::handleCalibrationMode()
 
 void TrafficManager::handleDebugMode()
 {
-    MultiprocessTraffic multiprocessTraffic;
+    MultiprocessTraffic multiprocessTraffic(false);
     multiprocessTraffic.start();
 }

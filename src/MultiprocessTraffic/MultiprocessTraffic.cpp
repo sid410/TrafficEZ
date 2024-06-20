@@ -4,7 +4,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-MultiprocessTraffic::MultiprocessTraffic() {}
+MultiprocessTraffic::MultiprocessTraffic(bool verbose)
+    : verbose(verbose)
+{}
 
 void MultiprocessTraffic::start()
 {
@@ -18,7 +20,8 @@ void MultiprocessTraffic::start()
                                 pipesParentToChild,
                                 pipesChildToParent,
                                 phases,
-                                phaseDurations);
+                                phaseDurations,
+                                verbose);
 
     parentProcess.run();
 }
@@ -52,7 +55,7 @@ void MultiprocessTraffic::forkChildren()
         else if(pid == 0)
         {
             ChildProcess childProcess(
-                i, pipesParentToChild[i], pipesChildToParent[i]);
+                i, pipesParentToChild[i], pipesChildToParent[i], verbose);
             childProcess.runVehicle(true, i);
             exit(EXIT_SUCCESS);
         }
@@ -73,7 +76,7 @@ void MultiprocessTraffic::loadPhasingInfo()
     };
 
     // Phase durations in milliseconds
-    phaseDurations = {65000, 25000, 35000};
+    phaseDurations = {6500, 2500, 3500};
 
     if(phases.size() != phaseDurations.size())
     {

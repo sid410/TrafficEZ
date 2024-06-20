@@ -8,10 +8,13 @@ class ChildProcess
 public:
     ChildProcess(int childIndex,
                  Pipe& pipeParentToChild,
-                 Pipe& pipeChildToParent);
+                 Pipe& pipeChildToParent,
+                 bool verbose = false);
     void runVehicle(bool debug, int vehicleId);
 
 private:
+    bool verbose;
+
     int childIndex;
     Pipe& pipeParentToChild;
     Pipe& pipeChildToParent;

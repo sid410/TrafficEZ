@@ -13,6 +13,7 @@ ParentProcess::ParentProcess(int numChildren,
                              std::vector<Pipe>& pipesChildToParent,
                              std::vector<std::vector<const char*>>& phases,
                              std::vector<int>& phaseDurations,
+                             bool verbose,
                              float densityMultiplierGreenPhase,
                              float densityMultiplierRedPhase,
                              float densityMin,
@@ -28,6 +29,7 @@ ParentProcess::ParentProcess(int numChildren,
     , densityMin(densityMin)
     , densityMax(densityMax)
     , minPhaseDurationMs(minPhaseDurationMs)
+    , verbose(verbose)
 {
     originalPhaseDurations = phaseDurations;
 
@@ -53,13 +55,20 @@ void ParentProcess::run()
 
     while(true)
     {
-        std::cout << "==================== Phase Cycle " << phaseIndex
-                  << " ======================================\n";
+        if(verbose)
+        {
+            std::cout << "==================== Phase Cycle " << phaseIndex
+                      << " ======================================\n";
+        }
 
         for(int i = 0; i < numChildren; ++i)
         {
-            std::cout << "Parent: Sending phase message to child " << i << ": "
-                      << phases[phaseIndex][i] << "\n";
+            if(verbose)
+            {
+                std::cout << "Parent: Sending phase message to child " << i
+                          << ": " << phases[phaseIndex][i] << "\n";
+            }
+
             if(write(pipesParentToChild[i].fds[1],
                      phases[phaseIndex][i],
                      strlen(phases[phaseIndex][i]) + 1) == -1)
@@ -115,8 +124,11 @@ void ParentProcess::run()
 
             density = std::clamp(density, densityMin, densityMax);
 
-            std::cout << "Previous Traffic Density from child " << i << ": "
-                      << density << "\n";
+            if(verbose)
+            {
+                std::cout << "Previous Traffic Density from child " << i << ": "
+                          << density << "\n";
+            }
 
             // Store density to the previous phase
             phaseDensities[previousPhaseIndex][i] = density;
@@ -175,14 +187,23 @@ void ParentProcess::updatePhaseDurations(
     std::vector<float> phaseTotals(phases.size(), 0.0);
     float totalDensity = 0.0;
 
-    std::cout << "----------------------------------------------------------\n";
+    if(verbose)
+    {
+        std::cout << "----------------------------------------------\n";
+    }
+
     for(int phase = 0; phase < phases.size(); ++phase)
     {
         for(int child = 0; child < numChildren; ++child)
         {
             phaseTotals[phase] += phaseDensities[phase][child];
-            std::cout << "Phase " << phase << " - child " << child
-                      << " density: " << phaseDensities[phase][child] << "\n";
+
+            if(verbose)
+            {
+                std::cout << "Phase " << phase << " - child " << child
+                          << " density: " << phaseDensities[phase][child]
+                          << "\n";
+            }
         }
         totalDensity += phaseTotals[phase];
     }
@@ -214,14 +235,14 @@ void ParentProcess::updatePhaseDurations(
                   << " seconds.\n";
     }
 
+    std::cout << "----------------------------------------------------------\n";
+
     if(!validDurations)
     {
         phaseDurations = originalPhaseDurations;
         std::cerr << "Parent: Phase durations set to original values due to "
                      "invalid duration.\n";
     }
-
-    std::cout << "----------------------------------------------------------\n";
 }
 
 void ParentProcess::setDefaultPhaseDensities(
