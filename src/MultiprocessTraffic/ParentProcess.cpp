@@ -24,12 +24,12 @@ ParentProcess::ParentProcess(int numChildren,
     , pipesChildToParent(pipesChildToParent)
     , phases(phases)
     , phaseDurations(phaseDurations)
+    , verbose(verbose)
     , densityMultiplierGreenPhase(densityMultiplierGreenPhase)
     , densityMultiplierRedPhase(densityMultiplierRedPhase)
     , densityMin(densityMin)
     , densityMax(densityMax)
     , minPhaseDurationMs(minPhaseDurationMs)
-    , verbose(verbose)
 {
     originalPhaseDurations = phaseDurations;
 
@@ -42,13 +42,12 @@ ParentProcess::ParentProcess(int numChildren,
         float ratio = static_cast<float>(duration) / fullCycleDurationMs;
         phaseRatio.push_back(ratio);
     }
+
+    closeUnusedPipes();
 }
 
 void ParentProcess::run()
 {
-    closeUnusedPipes();
-
-    char buffer[128];
     int phaseIndex = 0;
     std::vector<std::vector<float>> phaseDensities(
         phases.size(), std::vector<float>(numChildren, 0.0));
@@ -61,108 +60,19 @@ void ParentProcess::run()
                       << " ======================================\n";
         }
 
-        for(int i = 0; i < numChildren; ++i)
-        {
-            if(verbose)
-            {
-                std::cout << "Parent: Sending phase message to child " << i
-                          << ": " << phases[phaseIndex][i] << "\n";
-            }
+        sendPhaseMessagesToChildren(phaseIndex);
 
-            if(write(pipesParentToChild[i].fds[1],
-                     phases[phaseIndex][i],
-                     strlen(phases[phaseIndex][i]) + 1) == -1)
-            {
-                std::cerr << "Parent: Failed to write to pipe: "
-                          << strerror(errno) << "\n";
-                break;
-            }
-        }
-
-        bool densityError = false;
-        int previousPhaseIndex =
+        // we place the received density data to the previous phase
+        int prevPhaseIndex =
             (phaseIndex == 0) ? phases.size() - 1 : phaseIndex - 1;
 
-        for(int i = 0; i < numChildren; ++i)
-        {
-            int bytesRead =
-                read(pipesChildToParent[i].fds[0], buffer, sizeof(buffer) - 1);
-            if(bytesRead <= 0)
-            {
-                std::cerr << "Parent: Failed to read from pipe or EOF reached: "
-                          << strerror(errno) << "\n";
-                break;
-            }
-            buffer[bytesRead] = '\0'; // Ensure null termination
-
-            // Convert buffer to float
-            float density = std::stof(buffer);
-
-            // Check if density is NaN or negative NaN
-            if(std::isnan(density) ||
-               (std::isnan(density) && std::signbit(density)))
-            {
-                std::cerr << "Parent: Detected NaN or negative NaN in traffic "
-                             "density from child "
-                          << i << "\n";
-
-                densityError = true;
-                break;
-            }
-
-            // If previous phase was green, multiply density by the multiplier
-            if(strcmp(phases[previousPhaseIndex][i], "GREEN_PHASE") == 0)
-            {
-                density *= densityMultiplierGreenPhase;
-            }
-
-            // If previous phase was red, give way to other phase cycle
-            if(strcmp(phases[previousPhaseIndex][i], "RED_PHASE") == 0)
-            {
-                density = (densityMax - density) * densityMultiplierRedPhase;
-            }
-
-            density = std::clamp(density, densityMin, densityMax);
-
-            if(verbose)
-            {
-                std::cout << "Previous Traffic Density from child " << i << ": "
-                          << density << "\n";
-            }
-
-            // Store density to the previous phase
-            phaseDensities[previousPhaseIndex][i] = density;
-        }
-
-        if(densityError)
+        if(!receiveDensitiesFromChildren(prevPhaseIndex, phaseDensities))
         {
             setDefaultPhaseDensities(phaseDensities);
         }
 
-        // Waiting time for the current phase
-        // usleep(phaseDurations[phaseIndex] * 1000);
-
-        // Countdown timer for the current phase
-        int remainingTime = phaseDurations[phaseIndex] / 1000;
-
-        while(remainingTime > 0)
-        {
-            std::cout << "\rRemaining time for phase " << phaseIndex << ": "
-                      << remainingTime << " seconds.";
-            std::cout.flush();
-            sleep(1);
-            --remainingTime;
-        }
-        std::cout << std::endl;
-
-        // Move to the next phase
-        phaseIndex = (phaseIndex + 1) % phases.size();
-
-        // If completed a full cycle, update phase durations
-        if(phaseIndex == 0)
-        {
-            updatePhaseDurations(phaseDensities);
-        }
+        handlePhaseTimer(phaseIndex);
+        transitionToNextPhase(phaseIndex, phaseDensities);
     }
 
     for(int i = 0; i < numChildren; ++i)
@@ -171,13 +81,126 @@ void ParentProcess::run()
     }
 }
 
-void ParentProcess::closeUnusedPipes()
+void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
 {
     for(int i = 0; i < numChildren; ++i)
     {
-        close(pipesParentToChild[i].fds[0]);
-        close(pipesChildToParent[i].fds[1]);
+        if(verbose)
+        {
+            std::cout << "Parent: Sending phase message to child " << i << ": "
+                      << phases[phaseIndex][i] << "\n";
+        }
+
+        if(write(pipesParentToChild[i].fds[1],
+                 phases[phaseIndex][i],
+                 strlen(phases[phaseIndex][i]) + 1) == -1)
+        {
+            std::cerr << "Parent: Failed to write to pipe: " << strerror(errno)
+                      << "\n";
+            break;
+        }
     }
+}
+
+bool ParentProcess::receiveDensitiesFromChildren(
+    int previousPhaseIndex, std::vector<std::vector<float>>& phaseDensities)
+{
+    char buffer[BUFFER_SIZE];
+
+    for(int i = 0; i < numChildren; ++i)
+    {
+        int bytesRead =
+            read(pipesChildToParent[i].fds[0], buffer, sizeof(buffer) - 1);
+        if(bytesRead <= 0)
+        {
+            std::cerr << "Parent: Failed to read from pipe or EOF reached: "
+                      << strerror(errno) << "\n";
+            return false;
+        }
+        buffer[bytesRead] = '\0'; // Ensure null termination
+
+        // Convert buffer to float
+        float density = std::stof(buffer);
+
+        // Check if density is NaN or negative NaN
+        if(std::isnan(density) ||
+           (std::isnan(density) && std::signbit(density)))
+        {
+            std::cerr << "Parent: Detected NaN or negative NaN in traffic "
+                         "density from child "
+                      << i << "\n";
+
+            return false;
+        }
+
+        // If previous phase was green, multiply density by the multiplier
+        if(strcmp(phases[previousPhaseIndex][i], "GREEN_PHASE") == 0)
+        {
+            density *= densityMultiplierGreenPhase;
+        }
+
+        // If previous phase was red, give way to other phase cycle
+        if(strcmp(phases[previousPhaseIndex][i], "RED_PHASE") == 0)
+        {
+            density = (densityMax - density) * densityMultiplierRedPhase;
+        }
+
+        density = std::clamp(density, densityMin, densityMax);
+
+        if(verbose)
+        {
+            std::cout << "Previous Traffic Density from child " << i << ": "
+                      << density << "\n";
+        }
+
+        // Store density to the previous phase
+        phaseDensities[previousPhaseIndex][i] = density;
+    }
+
+    return true;
+}
+
+void ParentProcess::handlePhaseTimer(int phaseIndex)
+{
+    int remainingTime = phaseDurations[phaseIndex] / 1000;
+
+    while(remainingTime > 0)
+    {
+        std::cout << "\rRemaining time for phase " << phaseIndex << ": "
+                  << remainingTime << " seconds.";
+        std::cout.flush();
+        sleep(1);
+        --remainingTime;
+    }
+    std::cout << std::endl;
+}
+
+void ParentProcess::transitionToNextPhase(
+    int& phaseIndex, std::vector<std::vector<float>>& phaseDensities)
+{
+    phaseIndex = (phaseIndex + 1) % phases.size();
+
+    if(phaseIndex == 0)
+    {
+        updatePhaseDurations(phaseDensities);
+    }
+}
+
+void ParentProcess::setDefaultPhaseDensities(
+    std::vector<std::vector<float>>& phaseDensities)
+{
+    if(phaseDensities.size() != phaseRatio.size())
+    {
+        std::cerr << "Size of phase density and ratio do not match!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    for(int i = 0; i < phaseRatio.size(); ++i)
+    {
+        phaseDensities[i] = std::vector<float>(numChildren, phaseRatio[i]);
+    }
+
+    std::cout << "Parent: Phase densities set to default values.\n";
 }
 
 void ParentProcess::updatePhaseDurations(
@@ -245,19 +268,11 @@ void ParentProcess::updatePhaseDurations(
     }
 }
 
-void ParentProcess::setDefaultPhaseDensities(
-    std::vector<std::vector<float>>& phaseDensities)
+void ParentProcess::closeUnusedPipes()
 {
-    if(phaseDensities.size() != phaseRatio.size())
+    for(int i = 0; i < numChildren; ++i)
     {
-        std::cerr << "Size of phase density and ratio do not match!\n";
-        exit(EXIT_FAILURE);
+        close(pipesParentToChild[i].fds[0]);
+        close(pipesChildToParent[i].fds[1]);
     }
-
-    for(int i = 0; i < phaseRatio.size(); ++i)
-    {
-        phaseDensities[i] = std::vector<float>(numChildren, phaseRatio[i]);
-    }
-
-    std::cout << "Parent: Phase densities set to default values.\n";
 }

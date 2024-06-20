@@ -14,12 +14,12 @@ ChildProcess::ChildProcess(int childIndex,
     , pipeParentToChild(pipeParentToChild)
     , pipeChildToParent(pipeChildToParent)
     , verbose(verbose)
-{}
+{
+    closeUnusedPipes();
+}
 
 void ChildProcess::runVehicle(bool debug, int vehicleId)
 {
-    closeUnusedPipes();
-
     WatcherSpawner spawner;
     Watcher* vehicleWatcher;
 
