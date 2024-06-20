@@ -1,55 +1,5 @@
 #include "VehicleGui.h"
 
-void VehicleGui::display()
-{
-    if(!videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
-        return;
-
-    if(!isTracking)
-    {
-        fpsHelper.startSample();
-        isTracking = true;
-    }
-
-    (currentTrafficState == TrafficState::GREEN_PHASE)
-        ? processTrackingState()
-        : processSegmentationState(); // we only process YOLO result for gui
-
-    cv::waitKey(1); // needed for imshow
-}
-
-float VehicleGui::getTrafficDensity()
-{
-    float density = 0;
-
-    if(currentTrafficState == TrafficState::GREEN_PHASE)
-    {
-        float totalTime = fpsHelper.endSample() / 1000;
-        float flow = hullTracker.getTotalHullArea() / totalTime;
-        // If counting vehicles instead of area
-        // float flow = hullTracker.getHullCount() / totalTime;
-
-        density = (flow == 0)
-                      ? 0
-                      : flow / (hullTracker.getAveragedSpeed() * laneWidth);
-
-        hullTracker.resetTrackerVariables();
-    }
-
-    else if(currentTrafficState == TrafficState::RED_PHASE)
-    {
-        float count = segmentation.getWhiteArea(warpedMask);
-        // If counting vehicles instead of area
-        // float count = segmentation.getContourCount(warpedMask);
-
-        density = count / (laneLength * laneWidth);
-    }
-
-    isTracking = false;
-
-    return density;
-}
-
 void VehicleGui::initialize(const std::string& streamName,
                             const std::string& calibName)
 {
@@ -104,6 +54,56 @@ void VehicleGui::initialize(const std::string& streamName,
     segmentation.initializeModel(modelYolo, std::move(strategy));
 
     isTracking = false;
+}
+
+void VehicleGui::display()
+{
+    if(!videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+        return;
+
+    if(!isTracking)
+    {
+        fpsHelper.startSample();
+        isTracking = true;
+    }
+
+    (currentTrafficState == TrafficState::GREEN_PHASE)
+        ? processTrackingState()
+        : processSegmentationState(); // we only process YOLO result for gui
+
+    cv::waitKey(1); // needed for imshow
+}
+
+float VehicleGui::getTrafficDensity()
+{
+    float density = 0;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        float totalTime = fpsHelper.endSample() / 1000;
+        float flow = hullTracker.getTotalHullArea() / totalTime;
+        // If counting vehicles instead of area
+        // float flow = hullTracker.getHullCount() / totalTime;
+
+        density = (flow == 0)
+                      ? 0
+                      : flow / (hullTracker.getAveragedSpeed() * laneWidth);
+
+        hullTracker.resetTrackerVariables();
+    }
+
+    else if(currentTrafficState == TrafficState::RED_PHASE)
+    {
+        float count = segmentation.getWhiteArea(warpedMask);
+        // If counting vehicles instead of area
+        // float count = segmentation.getContourCount(warpedMask);
+
+        density = count / (laneLength * laneWidth);
+    }
+
+    isTracking = false;
+
+    return density;
 }
 
 void VehicleGui::processTrackingState()
