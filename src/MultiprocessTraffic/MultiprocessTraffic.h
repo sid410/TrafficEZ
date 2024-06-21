@@ -19,6 +19,9 @@ private:
     bool verbose;
 
     int numChildren;
+    int numVehicle;
+    int numPedestrian;
+
     std::vector<pid_t> childPids;
     std::vector<Pipe> pipesParentToChild;
     std::vector<Pipe> pipesChildToParent;
@@ -28,7 +31,9 @@ private:
 
     void createPipes();
     void forkChildren();
+
     void loadPhasingInfo();
+    void setVehicleAndPedestrianCount();
 };
 
 #endif

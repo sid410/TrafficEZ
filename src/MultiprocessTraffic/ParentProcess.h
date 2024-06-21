@@ -8,7 +8,8 @@
 class ParentProcess
 {
 public:
-    ParentProcess(int numChildren,
+    ParentProcess(int numVehicle,
+                  int numPedestrian,
                   std::vector<Pipe>& pipesParentToChild,
                   std::vector<Pipe>& pipesChildToParent,
                   std::vector<std::vector<const char*>>& phases,
@@ -18,7 +19,8 @@ public:
                   float densityMultiplierRedPhase = 0.3f,
                   float densityMin = 0.0f,
                   float densityMax = 50.0f,
-                  int minPhaseDurationMs = 5000);
+                  int minPhaseDurationMs = 5000,
+                  int minPedestrianDurationMs = 25000);
     void run();
 
 private:
@@ -32,9 +34,13 @@ private:
     float densityMax;
 
     int minPhaseDurationMs;
+    int minPedestrianDurationMs;
     int fullCycleDurationMs;
 
+    int numVehicle;
+    int numPedestrian;
     int numChildren;
+
     std::vector<Pipe>& pipesParentToChild;
     std::vector<Pipe>& pipesChildToParent;
 
@@ -44,7 +50,7 @@ private:
     std::vector<float> phaseRatio;
 
     void sendPhaseMessagesToChildren(int phaseIndex);
-    bool receiveDensitiesFromChildren(
+    bool receivePrevDensitiesFromChildren(
         int previousPhaseIndex,
         std::vector<std::vector<float>>& phaseDensities);
 

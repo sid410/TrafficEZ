@@ -8,7 +8,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-ParentProcess::ParentProcess(int numChildren,
+ParentProcess::ParentProcess(int numVehicle,
+                             int numPedestrian,
                              std::vector<Pipe>& pipesParentToChild,
                              std::vector<Pipe>& pipesChildToParent,
                              std::vector<std::vector<const char*>>& phases,
@@ -18,8 +19,10 @@ ParentProcess::ParentProcess(int numChildren,
                              float densityMultiplierRedPhase,
                              float densityMin,
                              float densityMax,
-                             int minPhaseDurationMs)
-    : numChildren(numChildren)
+                             int minPhaseDurationMs,
+                             int minPedestrianDurationMs)
+    : numVehicle(numVehicle)
+    , numPedestrian(numPedestrian)
     , pipesParentToChild(pipesParentToChild)
     , pipesChildToParent(pipesChildToParent)
     , phases(phases)
@@ -30,7 +33,10 @@ ParentProcess::ParentProcess(int numChildren,
     , densityMin(densityMin)
     , densityMax(densityMax)
     , minPhaseDurationMs(minPhaseDurationMs)
+    , minPedestrianDurationMs(minPedestrianDurationMs)
 {
+    numChildren = numVehicle + numPedestrian;
+
     originalPhaseDurations = phaseDurations;
 
     fullCycleDurationMs = std::accumulate(
@@ -49,6 +55,7 @@ ParentProcess::ParentProcess(int numChildren,
 void ParentProcess::run()
 {
     int phaseIndex = 0;
+
     std::vector<std::vector<float>> phaseDensities(
         phases.size(), std::vector<float>(numChildren, 0.0));
 
@@ -62,11 +69,7 @@ void ParentProcess::run()
 
         sendPhaseMessagesToChildren(phaseIndex);
 
-        // we place the received density data to the previous phase
-        int prevPhaseIndex =
-            (phaseIndex == 0) ? phases.size() - 1 : phaseIndex - 1;
-
-        if(!receiveDensitiesFromChildren(prevPhaseIndex, phaseDensities))
+        if(!receivePrevDensitiesFromChildren(phaseIndex, phaseDensities))
         {
             setDefaultPhaseDensities(phaseDensities);
         }
@@ -104,10 +107,13 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
     }
 }
 
-bool ParentProcess::receiveDensitiesFromChildren(
-    int previousPhaseIndex, std::vector<std::vector<float>>& phaseDensities)
+bool ParentProcess::receivePrevDensitiesFromChildren(
+    int phaseIndex, std::vector<std::vector<float>>& phaseDensities)
 {
     char buffer[BUFFER_SIZE];
+
+    int previousPhaseIndex =
+        (phaseIndex == 0) ? phases.size() - 1 : phaseIndex - 1;
 
     for(int i = 0; i < numChildren; ++i)
     {
@@ -145,6 +151,14 @@ bool ParentProcess::receiveDensitiesFromChildren(
         if(strcmp(phases[previousPhaseIndex][i], "RED_PHASE") == 0)
         {
             density = (densityMax - density) * densityMultiplierRedPhase;
+        }
+
+        // previous is green pedestrian, so ignore by setting 0
+        // if previous was red, the received message should be
+        // greater than 0 if there are waiting pedestrians
+        if(strcmp(phases[previousPhaseIndex][i], "RED_PED") == 0)
+        {
+            density = 0;
         }
 
         density = std::clamp(density, densityMin, densityMax);
@@ -208,18 +222,18 @@ void ParentProcess::setDefaultPhaseDensities(
 void ParentProcess::updatePhaseDurations(
     const std::vector<std::vector<float>>& phaseDensities)
 {
-    // Calculate total density for each phase
-    std::vector<float> phaseTotals(phases.size(), 0.0);
     float totalDensity = 0.0;
+    std::vector<float> phaseTotals(phases.size(), 0.0);
+    std::vector<float> pedestrianTotals(phases.size(), 0.0);
 
     if(verbose)
     {
-        std::cout << "----------------------------------------------\n";
+        std::cout << "----- Density Distribution ------------\n";
     }
 
     for(int phase = 0; phase < phases.size(); ++phase)
     {
-        for(int child = 0; child < numChildren; ++child)
+        for(int child = 0; child < numVehicle; ++child)
         {
             phaseTotals[phase] += phaseDensities[phase][child];
 
@@ -231,6 +245,18 @@ void ParentProcess::updatePhaseDurations(
             }
         }
         totalDensity += phaseTotals[phase];
+
+        for(int child = numVehicle; child < numChildren; ++child)
+        {
+            pedestrianTotals[phase] += phaseDensities[phase][child];
+
+            if(verbose)
+            {
+                std::cout << "Phase " << phase << " - child " << child
+                          << " pedestrian: " << phaseDensities[phase][child]
+                          << "\n";
+            }
+        }
     }
 
     std::cout << "----------------------------------------------------------\n";
@@ -253,6 +279,13 @@ void ParentProcess::updatePhaseDurations(
         {
             validDurations = false;
             break;
+        }
+
+        // if there is waiting pedestrian, prioritize them
+        if(pedestrianTotals[phase] > 0 &&
+           phaseDurations[phase] < minPedestrianDurationMs)
+        {
+            phaseDurations[phase] = minPedestrianDurationMs;
         }
 
         std::cout << "Phase " << phase

@@ -2,6 +2,7 @@
 #define CHILD_PROCESS_H
 
 #include "Pipe.h"
+#include "WatcherSpawner.h"
 
 class ChildProcess
 {
@@ -10,10 +11,14 @@ public:
                  Pipe& pipeParentToChild,
                  Pipe& pipeChildToParent,
                  bool verbose = false);
+
     void runVehicle(bool debug, int vehicleId);
+    void runPedestrian(bool debug, int pedestrianId);
 
 private:
     bool verbose;
+
+    WatcherSpawner spawner;
 
     int childIndex;
     Pipe& pipeParentToChild;
