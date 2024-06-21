@@ -106,6 +106,23 @@ float VehicleGui::getTrafficDensity()
     return density;
 }
 
+int VehicleGui::getInstanceCount()
+{
+    int count = 0;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        count = hullTracker.getHullCount();
+    }
+
+    else if(currentTrafficState == TrafficState::RED_PHASE)
+    {
+        count = segmentation.getDetectionResultSize();
+    }
+
+    return count;
+}
+
 void VehicleGui::processTrackingState()
 {
     warpedFrame.copyTo(processFrame);

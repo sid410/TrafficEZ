@@ -16,6 +16,7 @@ public:
 
     void setCurrentTrafficState(TrafficState state) override;
     float getTrafficDensity() override;
+    int getInstanceCount() override;
 
 private:
     Gui* gui;

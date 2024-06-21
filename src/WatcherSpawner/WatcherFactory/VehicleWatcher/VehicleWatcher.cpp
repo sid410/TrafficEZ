@@ -61,3 +61,19 @@ float VehicleWatcher::getTrafficDensity()
 
     return -1;
 }
+
+int VehicleWatcher::getInstanceCount()
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        return gui->getInstanceCount();
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        // return headless->getTrafficDensity();
+        std::cerr << "VehicleWatcher::getInstanceCount headless not yet "
+                     "implemented...\n";
+    }
+
+    return -1;
+}
