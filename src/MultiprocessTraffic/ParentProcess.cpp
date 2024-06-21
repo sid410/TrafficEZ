@@ -71,6 +71,8 @@ void ParentProcess::run()
             setDefaultPhaseDensities(phaseDensities);
         }
 
+        // TODO: place here sendSerialMessageToRelay(phases, phaseindex, numChildren, verbose)
+
         handlePhaseTimer(phaseIndex);
         transitionToNextPhase(phaseIndex, phaseDensities);
     }
