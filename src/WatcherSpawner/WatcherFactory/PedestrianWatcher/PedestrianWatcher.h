@@ -13,9 +13,7 @@ public:
                const std::string& calibName) override;
 
     void processFrame() override;
-
-    void setCurrentTrafficState(TrafficState state) override;
-    float getTrafficDensity() override;
+    int getInstanceCount() override;
 
 private:
     Gui* gui;

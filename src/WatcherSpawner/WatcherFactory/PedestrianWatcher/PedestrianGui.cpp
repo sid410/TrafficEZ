@@ -41,7 +41,7 @@ void PedestrianGui::display()
     cv::waitKey(1);
 }
 
-float PedestrianGui::getTrafficDensity()
+int PedestrianGui::getInstanceCount()
 {
     return segmentation.getDetectionResultSize();
 }

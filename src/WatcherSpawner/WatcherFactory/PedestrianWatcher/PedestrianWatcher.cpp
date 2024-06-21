@@ -20,18 +20,6 @@ void PedestrianWatcher::spawn(RenderMode mode,
     }
 }
 
-void PedestrianWatcher::setCurrentTrafficState(TrafficState state)
-{
-    if(currentMode == RenderMode::GUI)
-    {
-        gui->setCurrentTrafficState(state);
-    }
-    else if(currentMode == RenderMode::HEADLESS)
-    {
-        headless->setCurrentTrafficState(state);
-    }
-}
-
 void PedestrianWatcher::processFrame()
 {
     if(currentMode == RenderMode::GUI)
@@ -46,11 +34,11 @@ void PedestrianWatcher::processFrame()
     }
 }
 
-float PedestrianWatcher::getTrafficDensity()
+int PedestrianWatcher::getInstanceCount()
 {
     if(currentMode == RenderMode::GUI)
     {
-        return gui->getTrafficDensity();
+        return gui->getInstanceCount();
     }
     else if(currentMode == RenderMode::HEADLESS)
     {

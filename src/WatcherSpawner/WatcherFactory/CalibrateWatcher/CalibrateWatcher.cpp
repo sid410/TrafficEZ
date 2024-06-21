@@ -1,7 +1,6 @@
 #include "CalibrateWatcher.h"
 #include "CalibrateGui.h"
 #include "CalibrateHeadless.h"
-#include <iostream>
 
 void CalibrateWatcher::spawn(RenderMode mode,
                              const std::string& streamName,
@@ -19,27 +18,4 @@ void CalibrateWatcher::spawn(RenderMode mode,
         headless = new CalibrateHeadless();
         headless->process(streamName, calibName);
     }
-}
-
-void CalibrateWatcher::setCurrentTrafficState(TrafficState state)
-{
-    if(currentMode == RenderMode::GUI)
-    {
-        gui->setCurrentTrafficState(state);
-    }
-    else if(currentMode == RenderMode::HEADLESS)
-    {
-        headless->setCurrentTrafficState(state);
-    }
-}
-
-void CalibrateWatcher::processFrame()
-{
-    std::cout << "CalibrateWatcher::processFrame not yet implemented...\n";
-}
-
-float CalibrateWatcher::getTrafficDensity()
-{
-    std::cout << "CalibrateWatcher::getTrafficDensity not yet implemented...\n";
-    return -1;
 }

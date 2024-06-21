@@ -20,18 +20,6 @@ void VehicleWatcher::spawn(RenderMode mode,
     }
 }
 
-void VehicleWatcher::setCurrentTrafficState(TrafficState state)
-{
-    if(currentMode == RenderMode::GUI)
-    {
-        gui->setCurrentTrafficState(state);
-    }
-    else if(currentMode == RenderMode::HEADLESS)
-    {
-        headless->setCurrentTrafficState(state);
-    }
-}
-
 void VehicleWatcher::processFrame()
 {
     if(currentMode == RenderMode::GUI)
@@ -43,6 +31,18 @@ void VehicleWatcher::processFrame()
         // headless->process();
         std::cerr << "VehicleWatcher::processFrame headless not yet "
                      "implemented...\n";
+    }
+}
+
+void VehicleWatcher::setCurrentTrafficState(TrafficState state)
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        gui->setCurrentTrafficState(state);
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        headless->setCurrentTrafficState(state);
     }
 }
 

@@ -17,7 +17,7 @@ public:
                     const std::string& calibName) override;
 
     void display() override;
-    float getTrafficDensity() override;
+    int getInstanceCount() override;
 
 private:
     VideoStreamer videoStreamer;

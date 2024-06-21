@@ -3,16 +3,6 @@
 #include "TrimPerspective.h"
 #include "WarpPerspective.h"
 
-void CalibrateGui::display()
-{
-    std::cerr << "There should be no implementation for Calibrate Gui\n";
-}
-
-float CalibrateGui::getTrafficDensity()
-{
-    std::cerr << "There should be no implementation for Calibrate Gui\n";
-}
-
 void CalibrateGui::initialize(const std::string& streamName,
                               const std::string& calibName)
 {

@@ -8,9 +8,6 @@ class CalibrateGui : public Gui
 public:
     void initialize(const std::string& streamName,
                     const std::string& calibName) override;
-
-    void display() override;
-    float getTrafficDensity() override;
 };
 
 #endif

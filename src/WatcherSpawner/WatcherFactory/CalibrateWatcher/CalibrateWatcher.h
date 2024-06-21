@@ -12,11 +12,6 @@ public:
                const std::string& streamName,
                const std::string& calibName) override;
 
-    void processFrame() override;
-
-    void setCurrentTrafficState(TrafficState state) override;
-    float getTrafficDensity() override;
-
 private:
     Gui* gui;
     Headless* headless;
