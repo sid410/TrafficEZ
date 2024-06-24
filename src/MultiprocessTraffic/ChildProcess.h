@@ -16,6 +16,9 @@ public:
     void runPedestrian(bool debug, int pedestrianId);
 
 private:
+    static constexpr int BUFFER_SIZE = 128;
+    static constexpr int CPU_SLEEP_US = 1000;
+
     bool verbose;
 
     WatcherSpawner spawner;
@@ -24,6 +27,11 @@ private:
     Pipe& pipeParentToChild;
     Pipe& pipeChildToParent;
 
+    Watcher* createWatcher(WatcherType watcherType,
+                           bool debug,
+                           const std::string& configFile,
+                           const std::string& streamFile);
+    void sendDensityToParent(float density);
     void closeUnusedPipes();
 };
 

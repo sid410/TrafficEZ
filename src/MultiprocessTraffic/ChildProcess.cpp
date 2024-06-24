@@ -19,26 +19,14 @@ ChildProcess::ChildProcess(int childIndex,
 
 void ChildProcess::runVehicle(bool debug, int vehicleId)
 {
-    Watcher* vehicleWatcher;
+    std::ostringstream configStream, nameStream;
+    configStream << "vehicle" << vehicleId << ".yaml";
+    nameStream << "stream" << vehicleId << ".mp4";
 
-    std::ostringstream streamConfig, streamName;
-    streamConfig << "vehicle" << vehicleId << ".yaml";
-    streamName << "stream" << vehicleId << ".mp4";
-    std::string configFile = streamConfig.str();
-    std::string streamFile = streamName.str();
+    Watcher* vehicleWatcher = createWatcher(
+        WatcherType::VEHICLE, debug, configStream.str(), nameStream.str());
 
-    if(debug)
-    {
-        vehicleWatcher = spawner.spawnWatcher(
-            WatcherType::VEHICLE, RenderMode::GUI, streamFile, configFile);
-    }
-    else
-    {
-        vehicleWatcher = spawner.spawnWatcher(
-            WatcherType::VEHICLE, RenderMode::HEADLESS, streamFile, configFile);
-    }
-
-    char buffer[128];
+    char buffer[BUFFER_SIZE];
     bool isStateGreen = false;
 
     // read end of the pipe to non-blocking mode
@@ -61,19 +49,8 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
 
             if(strcmp(buffer, "RED_PHASE") == 0)
             {
-                // Send traffic density back to the parent
                 float density = vehicleWatcher->getTrafficDensity();
-                snprintf(buffer, sizeof(buffer), "%.2f", density);
-                if(write(pipeChildToParent.fds[1],
-                         buffer,
-                         strlen(buffer) + 1) == -1)
-                {
-                    std::cerr
-                        << "Child " << childIndex
-                        << ": Failed to write to pipe: " << strerror(errno)
-                        << "\n";
-                    break;
-                }
+                sendDensityToParent(density);
 
                 isStateGreen = false;
                 vehicleWatcher->setCurrentTrafficState(TrafficState::RED_PHASE);
@@ -82,20 +59,8 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
             {
                 // Process 1 red frame first before changing
                 vehicleWatcher->processFrame();
-
-                // Send traffic density back to the parent
                 float density = vehicleWatcher->getTrafficDensity();
-                snprintf(buffer, sizeof(buffer), "%.2f", density);
-                if(write(pipeChildToParent.fds[1],
-                         buffer,
-                         strlen(buffer) + 1) == -1)
-                {
-                    std::cerr
-                        << "Child " << childIndex
-                        << ": Failed to write to pipe: " << strerror(errno)
-                        << "\n";
-                    break;
-                }
+                sendDensityToParent(density);
 
                 isStateGreen = true;
                 vehicleWatcher->setCurrentTrafficState(
@@ -117,7 +82,7 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
         else
         {
             // Sleep for a short period to save CPU resource
-            usleep(1000); // Sleep for 1 millisecond
+            usleep(CPU_SLEEP_US); // Sleep for 1 millisecond
         }
     }
 
@@ -126,28 +91,14 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
 
 void ChildProcess::runPedestrian(bool debug, int pedestrianId)
 {
-    Watcher* pedestrianWatcher;
+    std::ostringstream configStream, nameStream;
+    configStream << "pedestrian" << pedestrianId << ".yaml";
+    nameStream << "streamPed" << pedestrianId << ".mp4";
 
-    std::ostringstream streamConfig, streamName;
-    streamConfig << "pedestrian" << pedestrianId << ".yaml";
-    streamName << "streamPed" << pedestrianId << ".mp4";
-    std::string configFile = streamConfig.str();
-    std::string streamFile = streamName.str();
+    Watcher* pedestrianWatcher = createWatcher(
+        WatcherType::PEDESTRIAN, debug, configStream.str(), nameStream.str());
 
-    if(debug)
-    {
-        pedestrianWatcher = spawner.spawnWatcher(
-            WatcherType::PEDESTRIAN, RenderMode::GUI, streamFile, configFile);
-    }
-    else
-    {
-        pedestrianWatcher = spawner.spawnWatcher(WatcherType::PEDESTRIAN,
-                                                 RenderMode::HEADLESS,
-                                                 streamFile,
-                                                 configFile);
-    }
-
-    char buffer[128];
+    char buffer[BUFFER_SIZE];
 
     // read end of the pipe to non-blocking mode
     fcntl(pipeParentToChild.fds[0], F_SETFL, O_NONBLOCK);
@@ -171,35 +122,13 @@ void ChildProcess::runPedestrian(bool debug, int pedestrianId)
             {
                 pedestrianWatcher->processFrame();
                 float density = pedestrianWatcher->getInstanceCount();
-
-                snprintf(buffer, sizeof(buffer), "%.2f", density);
-                if(write(pipeChildToParent.fds[1],
-                         buffer,
-                         strlen(buffer) + 1) == -1)
-                {
-                    std::cerr
-                        << "Child " << childIndex
-                        << ": Failed to write to pipe: " << strerror(errno)
-                        << "\n";
-                    break;
-                }
+                sendDensityToParent(density);
             }
             else if(strcmp(buffer, "GREEN_PED") == 0)
             {
                 pedestrianWatcher->processFrame();
                 float density = pedestrianWatcher->getInstanceCount();
-
-                snprintf(buffer, sizeof(buffer), "%.2f", density);
-                if(write(pipeChildToParent.fds[1],
-                         buffer,
-                         strlen(buffer) + 1) == -1)
-                {
-                    std::cerr
-                        << "Child " << childIndex
-                        << ": Failed to write to pipe: " << strerror(errno)
-                        << "\n";
-                    break;
-                }
+                sendDensityToParent(density);
             }
             else
             {
@@ -210,10 +139,38 @@ void ChildProcess::runPedestrian(bool debug, int pedestrianId)
         }
 
         // Sleep for a short period to save CPU resource
-        usleep(1000); // Sleep for 1 millisecond
+        usleep(CPU_SLEEP_US);
     }
 
     delete pedestrianWatcher;
+}
+
+Watcher* ChildProcess::createWatcher(WatcherType watcherType,
+                                     bool debug,
+                                     const std::string& configFile,
+                                     const std::string& streamFile)
+{
+    if(debug)
+    {
+        return spawner.spawnWatcher(
+            watcherType, RenderMode::GUI, streamFile, configFile);
+    }
+    else
+    {
+        return spawner.spawnWatcher(
+            watcherType, RenderMode::HEADLESS, streamFile, configFile);
+    }
+}
+
+void ChildProcess::sendDensityToParent(float density)
+{
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, sizeof(buffer), "%.2f", density);
+    if(write(pipeChildToParent.fds[1], buffer, strlen(buffer) + 1) == -1)
+    {
+        std::cerr << "Child " << childIndex
+                  << ": Failed to write to pipe: " << strerror(errno) << "\n";
+    }
 }
 
 void ChildProcess::closeUnusedPipes()
