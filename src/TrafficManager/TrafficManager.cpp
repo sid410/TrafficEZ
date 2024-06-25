@@ -2,22 +2,22 @@
 #include "MultiprocessTraffic.h"
 #include "WatcherSpawner.h"
 
-TrafficManager::TrafficManager(int numCars,
-                               int numPedestrians,
+TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
-                               bool calib)
-    : numberOfCars(numCars)
-    , numberOfPedestrians(numPedestrians)
+                               bool calib,
+                               bool verbose)
+    : configFile(configFile)
     , debugMode(debug)
     , calibMode(calib)
+    , verbose(verbose)
 {}
 
 void TrafficManager::start()
 {
     std::cout << "TrafficManager starting...\n";
-    std::cout << "Number of Cars: " << numberOfCars << "\n";
-    std::cout << "Number of Pedestrians: " << numberOfPedestrians << "\n";
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
+    std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
+    std::cout << "Verbose Mode: " << (verbose ? "true" : "false") << "\n";
 
     if(calibMode)
     {
@@ -38,28 +38,13 @@ void TrafficManager::handleCalibrationMode()
 
     Watcher* calibrateWatcherGui = spawner.spawnWatcher(WatcherType::CALIBRATE,
                                                         RenderMode::GUI,
-                                                        "pedestrian.mp4",
-                                                        "pedestrian.yaml");
+                                                        "debug.mp4",
+                                                        "debug_calib.yaml");
     delete calibrateWatcherGui;
 }
 
 void TrafficManager::handleDebugMode()
 {
-    MultiprocessTraffic multiprocessTraffic("junction_config.yaml", true);
+    MultiprocessTraffic multiprocessTraffic(configFile, debugMode, verbose);
     multiprocessTraffic.start();
-
-    // WatcherSpawner spawner;
-    // Watcher* pedestrianWatcher = spawner.spawnWatcher(WatcherType::PEDESTRIAN,
-    //                                                   RenderMode::GUI,
-    //                                                   "pedestrian.mp4",
-    //                                                   "pedestrian.yaml");
-
-    // while(true)
-    // {
-    //     pedestrianWatcher->processFrame();
-
-    //     std::cout << "People:" << pedestrianWatcher->getInstanceCount() << "\n";
-    // }
-
-    // delete pedestrianWatcher;
 }

@@ -6,15 +6,18 @@
 class TrafficManager
 {
 public:
-    TrafficManager(int numCars, int numPedestrians, bool debug, bool calib);
+    TrafficManager(const std::string& configFile,
+                   bool debug,
+                   bool calib,
+                   bool verbose);
 
     void start();
 
 private:
-    int numberOfCars;
-    int numberOfPedestrians;
+    std::string configFile;
     bool debugMode;
     bool calibMode;
+    bool verbose;
 
     void handleCalibrationMode();
     void handleDebugMode();

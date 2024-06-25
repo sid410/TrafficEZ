@@ -17,14 +17,12 @@ ChildProcess::ChildProcess(int childIndex,
     closeUnusedPipes();
 }
 
-void ChildProcess::runVehicle(bool debug, int vehicleId)
+void ChildProcess::runVehicle(bool debug,
+                              const std::string& streamConfig,
+                              const std::string& streamLink)
 {
-    std::ostringstream configStream, nameStream;
-    configStream << "vehicle" << vehicleId << ".yaml";
-    nameStream << "stream" << vehicleId << ".mp4";
-
-    Watcher* vehicleWatcher = createWatcher(
-        WatcherType::VEHICLE, debug, configStream.str(), nameStream.str());
+    Watcher* vehicleWatcher =
+        createWatcher(WatcherType::VEHICLE, debug, streamConfig, streamLink);
 
     char buffer[BUFFER_SIZE];
     bool isStateGreen = false;
@@ -51,14 +49,12 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
     delete vehicleWatcher;
 }
 
-void ChildProcess::runPedestrian(bool debug, int pedestrianId)
+void ChildProcess::runPedestrian(bool debug,
+                                 const std::string& streamConfig,
+                                 const std::string& streamLink)
 {
-    std::ostringstream configStream, nameStream;
-    configStream << "pedestrian" << pedestrianId << ".yaml";
-    nameStream << "streamPed" << pedestrianId << ".mp4";
-
-    Watcher* pedestrianWatcher = createWatcher(
-        WatcherType::PEDESTRIAN, debug, configStream.str(), nameStream.str());
+    Watcher* pedestrianWatcher =
+        createWatcher(WatcherType::PEDESTRIAN, debug, streamConfig, streamLink);
 
     char buffer[BUFFER_SIZE];
     bool isStateGreen = false; // just a placeholder, no logic for pedestrian
@@ -81,18 +77,18 @@ void ChildProcess::runPedestrian(bool debug, int pedestrianId)
 
 Watcher* ChildProcess::createWatcher(WatcherType watcherType,
                                      bool debug,
-                                     const std::string& configFile,
-                                     const std::string& streamFile)
+                                     const std::string& streamConfig,
+                                     const std::string& streamLink)
 {
     if(debug)
     {
         return spawner.spawnWatcher(
-            watcherType, RenderMode::GUI, streamFile, configFile);
+            watcherType, RenderMode::GUI, streamLink, streamConfig);
     }
     else
     {
         return spawner.spawnWatcher(
-            watcherType, RenderMode::HEADLESS, streamFile, configFile);
+            watcherType, RenderMode::HEADLESS, streamLink, streamConfig);
     }
 }
 

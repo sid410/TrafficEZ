@@ -13,13 +13,16 @@
 class MultiprocessTraffic
 {
 public:
-    MultiprocessTraffic(const std::string& configFile, bool verbose = false);
+    MultiprocessTraffic(const std::string& configFile,
+                        bool debug = false,
+                        bool verbose = false);
 
     void start();
 
 private:
-    bool verbose;
     std::string configFile;
+    bool debug;
+    bool verbose;
 
     int numChildren;
     int numVehicle;
@@ -39,6 +42,9 @@ private:
     std::vector<std::vector<PhaseMessageType>> phases;
     std::vector<int> phaseDurations;
 
+    std::vector<std::string> streamConfigs;
+    std::vector<std::string> streamLinks;
+
     void createPipes();
     void forkChildren();
 
@@ -46,6 +52,7 @@ private:
     void loadPhases(const YAML::Node& config);
     void loadPhaseDurations(const YAML::Node& config);
     void loadDensitySettings(const YAML::Node& config);
+    void loadStreamInfo(const YAML::Node& config);
     void setVehicleAndPedestrianCount();
 };
 

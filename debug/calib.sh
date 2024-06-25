@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export GTK_THEME=Adwaita:dark
-
 root_dir="$(pwd)/.."
 resources_dir="$root_dir/resources/"
 

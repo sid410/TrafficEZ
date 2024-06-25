@@ -5,8 +5,10 @@
 #include <unistd.h>
 
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
+                                         bool debug,
                                          bool verbose)
     : configFile(configFile)
+    , debug(debug)
     , verbose(verbose)
 {}
 
@@ -66,7 +68,8 @@ void MultiprocessTraffic::forkChildren()
                                       pipesParentToChild[pipeIndex],
                                       pipesChildToParent[pipeIndex],
                                       verbose);
-            childProcess.runVehicle(true, i);
+            childProcess.runVehicle(
+                debug, streamConfigs[pipeIndex], streamLinks[pipeIndex]);
             exit(EXIT_SUCCESS);
         }
         else
@@ -90,7 +93,8 @@ void MultiprocessTraffic::forkChildren()
                                       pipesParentToChild[pipeIndex],
                                       pipesChildToParent[pipeIndex],
                                       verbose);
-            childProcess.runPedestrian(true, i);
+            childProcess.runPedestrian(
+                debug, streamConfigs[pipeIndex], streamLinks[pipeIndex]);
             exit(EXIT_SUCCESS);
         }
         else
@@ -105,20 +109,22 @@ void MultiprocessTraffic::loadJunctionConfig()
 {
     YAML::Node config = YAML::LoadFile(configFile);
 
-    if(!config["phases"] || !config["phaseDurations"])
-    {
-        std::cerr << "Invalid configuration file!\n";
-        exit(EXIT_FAILURE);
-    }
-
     loadPhases(config);
     loadPhaseDurations(config);
     loadDensitySettings(config);
+    loadStreamInfo(config);
+
     setVehicleAndPedestrianCount();
 }
 
 void MultiprocessTraffic::loadPhases(const YAML::Node& config)
 {
+    if(!config["phases"])
+    {
+        std::cerr << "No phases config found!\n";
+        exit(EXIT_FAILURE);
+    }
+
     phases.clear();
     for(const auto& phase : config["phases"])
     {
@@ -135,6 +141,12 @@ void MultiprocessTraffic::loadPhases(const YAML::Node& config)
 
 void MultiprocessTraffic::loadPhaseDurations(const YAML::Node& config)
 {
+    if(!config["phaseDurations"])
+    {
+        std::cerr << "No phaseDurations config found!\n";
+        exit(EXIT_FAILURE);
+    }
+
     phaseDurations.clear();
     for(const auto& duration : config["phaseDurations"])
     {
@@ -168,6 +180,24 @@ void MultiprocessTraffic::loadDensitySettings(const YAML::Node& config)
     minPedestrianDurationMs = config["minPedestrianDurationMs"].as<int>();
 }
 
+void MultiprocessTraffic::loadStreamInfo(const YAML::Node& config)
+{
+    streamConfigs.clear();
+    streamLinks.clear();
+
+    for(const auto& stream : config["streamInfo"])
+    {
+        if(stream.size() != 2)
+        {
+            std::cerr << "Invalid streamInfo entry!\n";
+            exit(EXIT_FAILURE);
+        }
+
+        streamConfigs.push_back(stream[0].as<std::string>());
+        streamLinks.push_back(stream[1].as<std::string>());
+    }
+}
+
 void MultiprocessTraffic::setVehicleAndPedestrianCount()
 {
     numVehicle = 0;
@@ -197,6 +227,14 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
         std::cerr << "Count of children(" << numChildren
                   << ") do not match Vehicle(" << numVehicle
                   << ") + Pedestrian(" << numPedestrian << ")\n";
+        exit(EXIT_FAILURE);
+    }
+
+    if(numChildren != streamConfigs.size() || numChildren != streamLinks.size())
+    {
+        std::cerr << "Count of children(" << numChildren
+                  << ") do not match streamConfigs(" << streamConfigs.size()
+                  << ") or streamLinks(" << streamLinks.size() << ")\n";
         exit(EXIT_FAILURE);
     }
 }

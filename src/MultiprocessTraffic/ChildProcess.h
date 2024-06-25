@@ -13,8 +13,12 @@ public:
                  Pipe& pipeChildToParent,
                  bool verbose = false);
 
-    void runVehicle(bool debug, int vehicleId);
-    void runPedestrian(bool debug, int pedestrianId);
+    void runVehicle(bool debug,
+                    const std::string& streamConfig,
+                    const std::string& streamLink);
+    void runPedestrian(bool debug,
+                       const std::string& streamConfig,
+                       const std::string& streamLink);
 
 private:
     static constexpr int BUFFER_SIZE = 128;
@@ -30,8 +34,8 @@ private:
 
     Watcher* createWatcher(WatcherType watcherType,
                            bool debug,
-                           const std::string& configFile,
-                           const std::string& streamFile);
+                           const std::string& streamConfig,
+                           const std::string& streamLink);
 
     void processMessageBuffer(int bytesRead,
                               char* buffer,
