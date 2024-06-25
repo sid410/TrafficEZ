@@ -26,7 +26,7 @@ private:
     SegmentationMask segmentation;
 
     std::string streamWindow;
-    std::string modelYolo;
+    std::string segModel;
 
     cv::Mat inputFrame;
     cv::Mat trimmedFrame;

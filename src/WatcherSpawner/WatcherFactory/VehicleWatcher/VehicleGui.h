@@ -45,7 +45,7 @@ private:
     cv::Mat warpedMask;
 
     std::string streamWindow;
-    std::string modelYolo;
+    std::string segModel;
 
     int laneLength;
     int laneWidth;

@@ -14,6 +14,7 @@ void VehicleGui::initialize(const std::string& streamName,
 
     laneLength = videoStreamer.getLaneLength();
     laneWidth = videoStreamer.getLaneWidth();
+    segModel = videoStreamer.getSegModel();
 
     videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
@@ -46,12 +47,9 @@ void VehicleGui::initialize(const std::string& streamName,
     //         break;
     // }
 
-    // Fixed model for now. Later, make dynamic using the calibName yaml file.
-    modelYolo = "yolov8n-seg.onnx";
-
     std::unique_ptr<ISegmentationStrategy> strategy =
         std::make_unique<VehicleSegmentationStrategy>();
-    segmentation.initializeModel(modelYolo, std::move(strategy));
+    segmentation.initializeModel(segModel, std::move(strategy));
 
     isTracking = false;
 }

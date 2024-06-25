@@ -24,6 +24,7 @@ public:
 
     double getLaneLength() const;
     double getLaneWidth() const;
+    cv::String getSegModel() const;
 
     void initializePerspectiveTransform(cv::Mat& frame,
                                         TransformPerspective& perspective);
@@ -49,6 +50,7 @@ private:
 
     double laneLength;
     double laneWidth;
+    cv::String segModel;
 
     bool roiMatrixInitialized;
 };

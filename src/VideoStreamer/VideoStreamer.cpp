@@ -146,6 +146,16 @@ bool VideoStreamer::readCalibrationData(const cv::String& yamlFilename)
             return false;
         }
 
+        const YAML::Node& segModelNode = yamlNode["segmentation_model"];
+        if(!segModelNode || !segModelNode.IsScalar())
+        {
+            std::cerr << "Error: Segmentation model not found or not in the "
+                         "correct format.\n";
+            return false;
+        }
+
+        segModel = segModelNode.as<std::string>();
+
         fin.close();
         readCalibSuccess = true;
     }
@@ -183,6 +193,15 @@ double VideoStreamer::getLaneWidth() const
         std::cerr << "Error: laneWidth is zero.\n";
     }
     return laneWidth;
+}
+
+/**
+ * @brief Getter for segmentation model
+ * @return the string of the segmentation model to use.
+ */
+cv::String VideoStreamer::getSegModel() const
+{
+    return segModel;
 }
 
 /**

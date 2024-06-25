@@ -23,12 +23,11 @@ void PedestrianGui::initialize(const std::string& streamName,
     videoStreamer.initializePerspectiveTransform(inputFrame, trimPerspective);
     videoStreamer.applyFrameRoi(inputFrame, trimmedFrame, trimPerspective);
 
-    // Fixed model for now. Later, make dynamic using the calibName yaml file.
-    modelYolo = "yolov8n-seg.onnx";
+    segModel = videoStreamer.getSegModel();
 
     std::unique_ptr<ISegmentationStrategy> strategy =
         std::make_unique<PersonSegmentationStrategy>();
-    segmentation.initializeModel(modelYolo, std::move(strategy));
+    segmentation.initializeModel(segModel, std::move(strategy));
 }
 
 void PedestrianGui::display()
