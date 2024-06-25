@@ -117,63 +117,85 @@ bool ParentProcess::receivePrevDensitiesFromChildren(
 
     for(int i = 0; i < numChildren; ++i)
     {
-        int bytesRead =
-            read(pipesChildToParent[i].fds[0], buffer, sizeof(buffer) - 1);
-        if(bytesRead <= 0)
+        float density;
+        if(!readDensityFromChild(i, density))
         {
-            std::cerr << "Parent: Failed to read from pipe or EOF reached: "
-                      << strerror(errno) << "\n";
-            return false;
-        }
-        buffer[bytesRead] = '\0'; // Ensure null termination
-
-        // Convert buffer to float
-        float density = std::stof(buffer);
-
-        // Check if density is NaN or negative NaN
-        if(std::isnan(density) ||
-           (std::isnan(density) && std::signbit(density)))
-        {
-            std::cerr << "Parent: Detected NaN or negative NaN in traffic "
-                         "density from child "
-                      << i << "\n";
-
             return false;
         }
 
-        // If previous phase was green, multiply density by the multiplier
-        if(strcmp(phases[previousPhaseIndex][i], "GREEN_PHASE") == 0)
-        {
-            density *= densityMultiplierGreenPhase;
-        }
+        PhaseMessageType previousPhaseType =
+            getPhaseMessageType(phases[previousPhaseIndex][i]);
 
-        // If previous phase was red, give way to other phase cycle
-        if(strcmp(phases[previousPhaseIndex][i], "RED_PHASE") == 0)
-        {
-            density = (densityMax - density) * densityMultiplierRedPhase;
-        }
-
-        // previous is green pedestrian, so ignore by setting 0
-        // if previous was red, the received message should be
-        // greater than 0 if there are waiting pedestrians
-        if(strcmp(phases[previousPhaseIndex][i], "RED_PED") == 0)
-        {
-            density = 0;
-        }
+        processDensityByPhaseType(previousPhaseType, density);
 
         density = std::clamp(density, densityMin, densityMax);
 
         if(verbose)
         {
-            std::cout << "Previous Traffic Density from child " << i << ": "
-                      << density << "\n";
+            std::cout << "Previous child " << i << " data: " << density << "\n";
         }
 
-        // Store density to the previous phase
         phaseDensities[previousPhaseIndex][i] = density;
     }
 
     return true;
+}
+
+bool ParentProcess::readDensityFromChild(int childIndex, float& density)
+{
+    char buffer[BUFFER_SIZE];
+    int bytesRead =
+        read(pipesChildToParent[childIndex].fds[0], buffer, sizeof(buffer) - 1);
+    if(bytesRead <= 0)
+    {
+        std::cerr << "Parent: Failed to read from pipe or EOF reached: "
+                  << strerror(errno) << "\n";
+        return false;
+    }
+    buffer[bytesRead] = '\0'; // Ensure null termination
+
+    try
+    {
+        density = std::stof(buffer);
+    }
+    catch(const std::invalid_argument&)
+    {
+        std::cerr << "Parent: Invalid density value received from child "
+                  << childIndex << "\n";
+        return false;
+    }
+
+    if(std::isnan(density) || (std::isnan(density) && std::signbit(density)))
+    {
+        std::cerr << "Parent: Detected NaN or negative NaN in traffic density "
+                     "from child "
+                  << childIndex << "\n";
+        return false;
+    }
+
+    return true;
+}
+
+void ParentProcess::processDensityByPhaseType(PhaseMessageType phaseType,
+                                              float& density)
+{
+    switch(phaseType)
+    {
+    case GREEN_PHASE:
+        density *= densityMultiplierGreenPhase;
+        break;
+    case RED_PHASE:
+        density = (densityMax - density) * densityMultiplierRedPhase;
+        break;
+    case RED_PED:
+        density = 0;
+        break;
+    case GREEN_PED:
+        // No specific handling needed
+        break;
+    default:
+        break;
+    }
 }
 
 void ParentProcess::handlePhaseTimer(int phaseIndex)

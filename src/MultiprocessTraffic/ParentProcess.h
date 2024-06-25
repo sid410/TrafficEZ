@@ -1,8 +1,8 @@
 #ifndef PARENT_PROCESS_H
 #define PARENT_PROCESS_H
 
+#include "PhaseMessageType.h"
 #include "Pipe.h"
-
 #include <vector>
 
 class ParentProcess
@@ -50,9 +50,12 @@ private:
     std::vector<float> phaseRatio;
 
     void sendPhaseMessagesToChildren(int phaseIndex);
+
     bool receivePrevDensitiesFromChildren(
         int previousPhaseIndex,
         std::vector<std::vector<float>>& phaseDensities);
+    bool readDensityFromChild(int childIndex, float& density);
+    void processDensityByPhaseType(PhaseMessageType phaseType, float& density);
 
     void handlePhaseTimer(int phaseIndex);
     void transitionToNextPhase(int& phaseIndex,

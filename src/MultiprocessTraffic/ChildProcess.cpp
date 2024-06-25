@@ -29,60 +29,22 @@ void ChildProcess::runVehicle(bool debug, int vehicleId)
     char buffer[BUFFER_SIZE];
     bool isStateGreen = false;
 
-    // read end of the pipe to non-blocking mode
     fcntl(pipeParentToChild.fds[0], F_SETFL, O_NONBLOCK);
 
     while(true)
     {
-        // Check for phase change message from the parent
         int bytesRead =
             read(pipeParentToChild.fds[0], buffer, sizeof(buffer) - 1);
-        if(bytesRead > 0)
-        {
-            buffer[bytesRead] = '\0'; // Ensure null termination
 
-            if(verbose)
-            {
-                std::cout << "Child " << childIndex
-                          << ": Received phase message: " << buffer << "\n";
-            }
+        processMessageBuffer(bytesRead, buffer, isStateGreen, vehicleWatcher);
 
-            if(strcmp(buffer, "RED_PHASE") == 0)
-            {
-                float density = vehicleWatcher->getTrafficDensity();
-                sendDensityToParent(density);
-
-                isStateGreen = false;
-                vehicleWatcher->setCurrentTrafficState(TrafficState::RED_PHASE);
-            }
-            else if(strcmp(buffer, "GREEN_PHASE") == 0)
-            {
-                // Process 1 red frame first before changing
-                vehicleWatcher->processFrame();
-                float density = vehicleWatcher->getTrafficDensity();
-                sendDensityToParent(density);
-
-                isStateGreen = true;
-                vehicleWatcher->setCurrentTrafficState(
-                    TrafficState::GREEN_PHASE);
-            }
-            else
-            {
-                std::cerr << "Child " << childIndex
-                          << ": Unknown message received: " << buffer << "\n";
-                break; // Exit if an unknown message is received
-            }
-        }
-
-        // Process frames continuously if green
         if(isStateGreen)
         {
             vehicleWatcher->processFrame();
         }
         else
         {
-            // Sleep for a short period to save CPU resource
-            usleep(CPU_SLEEP_US); // Sleep for 1 millisecond
+            usleep(CPU_SLEEP_US);
         }
     }
 
@@ -99,46 +61,18 @@ void ChildProcess::runPedestrian(bool debug, int pedestrianId)
         WatcherType::PEDESTRIAN, debug, configStream.str(), nameStream.str());
 
     char buffer[BUFFER_SIZE];
+    bool isStateGreen = false; // just a placeholder, no logic for pedestrian
 
-    // read end of the pipe to non-blocking mode
     fcntl(pipeParentToChild.fds[0], F_SETFL, O_NONBLOCK);
 
     while(true)
     {
-        // Check for phase change message from the parent
         int bytesRead =
             read(pipeParentToChild.fds[0], buffer, sizeof(buffer) - 1);
-        if(bytesRead > 0)
-        {
-            buffer[bytesRead] = '\0'; // Ensure null termination
 
-            if(verbose)
-            {
-                std::cout << "Child " << childIndex
-                          << ": Received phase message: " << buffer << "\n";
-            }
+        processMessageBuffer(
+            bytesRead, buffer, isStateGreen, pedestrianWatcher);
 
-            if(strcmp(buffer, "RED_PED") == 0)
-            {
-                pedestrianWatcher->processFrame();
-                float density = pedestrianWatcher->getInstanceCount();
-                sendDensityToParent(density);
-            }
-            else if(strcmp(buffer, "GREEN_PED") == 0)
-            {
-                pedestrianWatcher->processFrame();
-                float density = pedestrianWatcher->getInstanceCount();
-                sendDensityToParent(density);
-            }
-            else
-            {
-                std::cerr << "Child " << childIndex
-                          << ": Unknown message received: " << buffer << "\n";
-                break; // Exit if an unknown message is received
-            }
-        }
-
-        // Sleep for a short period to save CPU resource
         usleep(CPU_SLEEP_US);
     }
 
@@ -159,6 +93,76 @@ Watcher* ChildProcess::createWatcher(WatcherType watcherType,
     {
         return spawner.spawnWatcher(
             watcherType, RenderMode::HEADLESS, streamFile, configFile);
+    }
+}
+
+void ChildProcess::processMessageBuffer(int bytesRead,
+                                        char* buffer,
+                                        bool& isStateGreen,
+                                        Watcher* watcher)
+{
+    if(bytesRead > 0)
+    {
+        buffer[bytesRead] = '\0'; // Ensure null termination
+
+        if(verbose)
+        {
+            std::cout << "Child " << childIndex
+                      << ": Received phase message: " << buffer << "\n";
+        }
+
+        PhaseMessageType phaseType = getPhaseMessageType(buffer);
+        handlePhaseMessage(phaseType, watcher, isStateGreen);
+    }
+}
+
+void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
+                                      Watcher* watcher,
+                                      bool& isStateGreen)
+{
+    switch(phaseType)
+    {
+
+    case RED_PHASE: {
+        // send the previous green vehicle density
+        float density = watcher->getTrafficDensity();
+        sendDensityToParent(density);
+
+        isStateGreen = false;
+        watcher->setCurrentTrafficState(TrafficState::RED_PHASE);
+        break;
+    }
+
+    case GREEN_PHASE: {
+        // send the previous red vehicle density
+        watcher->processFrame();
+        float density = watcher->getTrafficDensity();
+        sendDensityToParent(density);
+
+        isStateGreen = true;
+        watcher->setCurrentTrafficState(TrafficState::GREEN_PHASE);
+        break;
+    }
+
+    case RED_PED: {
+        // send the waiting pedestrian count
+        watcher->processFrame();
+        float density = watcher->getInstanceCount();
+        sendDensityToParent(density);
+        break;
+    }
+
+    case GREEN_PED: {
+        // ignore the already walking pedestrian
+        sendDensityToParent(0.0f);
+        break;
+    }
+
+    case UNKNOWN:
+    default: {
+        std::cerr << "Child " << childIndex << ": Unknown message received.\n";
+        break;
+    }
     }
 }
 

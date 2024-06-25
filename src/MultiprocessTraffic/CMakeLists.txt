@@ -1,4 +1,4 @@
-add_library(MultiprocessTraffic MultiprocessTraffic.cpp ParentProcess.cpp ChildProcess.cpp)
+add_library(MultiprocessTraffic MultiprocessTraffic.cpp ParentProcess.cpp ChildProcess.cpp PhaseMessageType.cpp)
 
 target_include_directories(
     MultiprocessTraffic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

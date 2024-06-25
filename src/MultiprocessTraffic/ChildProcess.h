@@ -1,6 +1,7 @@
 #ifndef CHILD_PROCESS_H
 #define CHILD_PROCESS_H
 
+#include "PhaseMessageType.h"
 #include "Pipe.h"
 #include "WatcherSpawner.h"
 
@@ -31,6 +32,16 @@ private:
                            bool debug,
                            const std::string& configFile,
                            const std::string& streamFile);
+
+    void processMessageBuffer(int bytesRead,
+                              char* buffer,
+                              bool& isStateGreen,
+                              Watcher* watcher);
+
+    void handlePhaseMessage(PhaseMessageType phaseType,
+                            Watcher* watcher,
+                            bool& isStateGreen);
+
     void sendDensityToParent(float density);
     void closeUnusedPipes();
 };

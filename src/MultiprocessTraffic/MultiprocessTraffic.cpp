@@ -128,21 +128,15 @@ void MultiprocessTraffic::loadPhasingInfo()
         exit(EXIT_FAILURE);
     }
 
-    numChildren = phases[0].size();
     setVehicleAndPedestrianCount();
-
-    if(numChildren != numVehicle + numPedestrian)
-    {
-        std::cerr
-            << "Count of children do not match numVehicle and numPedestrian!\n";
-        exit(EXIT_FAILURE);
-    }
 }
 
 void MultiprocessTraffic::setVehicleAndPedestrianCount()
 {
     numVehicle = 0;
     numPedestrian = 0;
+
+    numChildren = phases[0].size();
 
     for(const auto& phase : phases[0])
     {
@@ -154,5 +148,12 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
         {
             numPedestrian++;
         }
+    }
+
+    if(numChildren != numVehicle + numPedestrian)
+    {
+        std::cerr
+            << "Count of children do not match numVehicle and numPedestrian!\n";
+        exit(EXIT_FAILURE);
     }
 }
