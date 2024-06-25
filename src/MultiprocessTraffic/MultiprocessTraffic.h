@@ -18,6 +18,7 @@ public:
                         bool verbose = false);
 
     void start();
+    void calibrate();
 
 private:
     std::string configFile;

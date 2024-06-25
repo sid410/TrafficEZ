@@ -10,11 +10,12 @@ MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
     : configFile(configFile)
     , debug(debug)
     , verbose(verbose)
-{}
+{
+    loadJunctionConfig();
+}
 
 void MultiprocessTraffic::start()
 {
-    loadJunctionConfig();
     createPipes();
     forkChildren();
 
@@ -102,6 +103,22 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
         }
         ++pipeIndex;
+    }
+}
+
+void MultiprocessTraffic::calibrate()
+{
+    WatcherSpawner spawner;
+
+    for(int i = 0; i < numChildren; ++i)
+    {
+        // calibration can only be done with GUI, not headless
+        Watcher* calibrateWatcherGui =
+            spawner.spawnWatcher(WatcherType::CALIBRATE,
+                                 RenderMode::GUI,
+                                 streamLinks[i],
+                                 streamConfigs[i]);
+        delete calibrateWatcherGui;
     }
 }
 

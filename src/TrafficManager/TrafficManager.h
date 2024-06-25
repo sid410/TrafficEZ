@@ -1,7 +1,7 @@
 #ifndef TRAFFIC_MANAGER_H
 #define TRAFFIC_MANAGER_H
 
-#include <iostream>
+#include <string>
 
 class TrafficManager
 {
@@ -18,9 +18,6 @@ private:
     bool debugMode;
     bool calibMode;
     bool verbose;
-
-    void handleCalibrationMode();
-    void handleDebugMode();
 };
 
 #endif
