@@ -12,7 +12,7 @@ ParentProcess::ParentProcess(int numVehicle,
                              int numPedestrian,
                              std::vector<Pipe>& pipesParentToChild,
                              std::vector<Pipe>& pipesChildToParent,
-                             std::vector<std::vector<const char*>>& phases,
+                             std::vector<std::vector<PhaseMessageType>>& phases,
                              std::vector<int>& phaseDurations,
                              bool verbose,
                              float densityMultiplierGreenPhase,
@@ -96,9 +96,29 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
                       << phases[phaseIndex][i] << "\n";
         }
 
+        std::string phaseString;
+        switch(phases[phaseIndex][i])
+        {
+        case GREEN_PHASE:
+            phaseString = "GREEN_PHASE";
+            break;
+        case RED_PHASE:
+            phaseString = "RED_PHASE";
+            break;
+        case GREEN_PED:
+            phaseString = "GREEN_PED";
+            break;
+        case RED_PED:
+            phaseString = "RED_PED";
+            break;
+        default:
+            phaseString = "UNKNOWN";
+            break;
+        }
+
         if(write(pipesParentToChild[i].fds[1],
-                 phases[phaseIndex][i],
-                 strlen(phases[phaseIndex][i]) + 1) == -1)
+                 phaseString.c_str(),
+                 phaseString.size() + 1) == -1)
         {
             std::cerr << "Parent: Failed to write to pipe: " << strerror(errno)
                       << "\n";
@@ -123,11 +143,8 @@ bool ParentProcess::receivePrevDensitiesFromChildren(
             return false;
         }
 
-        PhaseMessageType previousPhaseType =
-            getPhaseMessageType(phases[previousPhaseIndex][i]);
-
+        PhaseMessageType previousPhaseType = phases[previousPhaseIndex][i];
         processDensityByPhaseType(previousPhaseType, density);
-
         density = std::clamp(density, densityMin, densityMax);
 
         if(verbose)

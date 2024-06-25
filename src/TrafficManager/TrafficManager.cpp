@@ -45,7 +45,7 @@ void TrafficManager::handleCalibrationMode()
 
 void TrafficManager::handleDebugMode()
 {
-    MultiprocessTraffic multiprocessTraffic(true);
+    MultiprocessTraffic multiprocessTraffic("junction_config.yaml", true);
     multiprocessTraffic.start();
 
     // WatcherSpawner spawner;

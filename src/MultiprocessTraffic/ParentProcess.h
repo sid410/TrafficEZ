@@ -12,7 +12,7 @@ public:
                   int numPedestrian,
                   std::vector<Pipe>& pipesParentToChild,
                   std::vector<Pipe>& pipesChildToParent,
-                  std::vector<std::vector<const char*>>& phases,
+                  std::vector<std::vector<PhaseMessageType>>& phases,
                   std::vector<int>& phaseDurations,
                   bool verbose = false,
                   float densityMultiplierGreenPhase = 10.0f,
@@ -44,7 +44,7 @@ private:
     std::vector<Pipe>& pipesParentToChild;
     std::vector<Pipe>& pipesChildToParent;
 
-    std::vector<std::vector<const char*>>& phases;
+    std::vector<std::vector<PhaseMessageType>>& phases;
     std::vector<int>& phaseDurations;
     std::vector<int> originalPhaseDurations;
     std::vector<float> phaseRatio;
