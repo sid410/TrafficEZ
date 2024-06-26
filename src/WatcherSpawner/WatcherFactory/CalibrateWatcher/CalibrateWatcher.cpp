@@ -15,7 +15,9 @@ void CalibrateWatcher::spawn(RenderMode mode,
     }
     else if(mode == RenderMode::HEADLESS)
     {
-        headless = new CalibrateHeadless();
-        headless->process(streamName, calibName);
+        // headless = new CalibrateHeadless();
+        // headless->process(streamName, calibName);
+        std::cerr << "Calibration method cannot be headless\n";
+        exit(EXIT_FAILURE);
     }
 }

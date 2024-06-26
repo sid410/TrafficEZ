@@ -16,7 +16,7 @@ void VehicleWatcher::spawn(RenderMode mode,
     else if(mode == RenderMode::HEADLESS)
     {
         headless = new VehicleHeadless();
-        headless->process(streamName, calibName);
+        headless->initialize(streamName, calibName);
     }
 }
 
@@ -28,9 +28,7 @@ void VehicleWatcher::processFrame()
     }
     else if(currentMode == RenderMode::HEADLESS)
     {
-        // headless->process();
-        std::cerr << "VehicleWatcher::processFrame headless not yet "
-                     "implemented...\n";
+        headless->process();
     }
 }
 
@@ -54,9 +52,7 @@ float VehicleWatcher::getTrafficDensity()
     }
     else if(currentMode == RenderMode::HEADLESS)
     {
-        // return headless->getTrafficDensity();
-        std::cerr << "VehicleWatcher::getTrafficDensity headless not yet "
-                     "implemented...\n";
+        return headless->getTrafficDensity();
     }
 
     return -1;
@@ -70,9 +66,7 @@ int VehicleWatcher::getInstanceCount()
     }
     else if(currentMode == RenderMode::HEADLESS)
     {
-        // return headless->getTrafficDensity();
-        std::cerr << "VehicleWatcher::getInstanceCount headless not yet "
-                     "implemented...\n";
+        return headless->getInstanceCount();
     }
 
     return -1;

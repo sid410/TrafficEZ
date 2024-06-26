@@ -80,8 +80,6 @@ float VehicleGui::getTrafficDensity()
     {
         float totalTime = fpsHelper.endSample() / 1000;
         float flow = hullTracker.getTotalHullArea() / totalTime;
-        // If counting vehicles instead of area
-        // float flow = hullTracker.getHullCount() / totalTime;
 
         density = (flow == 0)
                       ? 0
@@ -93,9 +91,6 @@ float VehicleGui::getTrafficDensity()
     else if(currentTrafficState == TrafficState::RED_PHASE)
     {
         float count = segmentation.getWhiteArea(warpedMask);
-        // If counting vehicles instead of area
-        // float count = segmentation.getContourCount(warpedMask);
-
         density = count / (laneLength * laneWidth);
     }
 

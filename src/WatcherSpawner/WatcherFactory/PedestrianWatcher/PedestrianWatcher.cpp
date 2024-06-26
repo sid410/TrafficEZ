@@ -16,7 +16,7 @@ void PedestrianWatcher::spawn(RenderMode mode,
     else if(mode == RenderMode::HEADLESS)
     {
         headless = new PedestrianHeadless();
-        headless->process(streamName, calibName);
+        headless->initialize(streamName, calibName);
     }
 }
 
@@ -28,9 +28,7 @@ void PedestrianWatcher::processFrame()
     }
     else if(currentMode == RenderMode::HEADLESS)
     {
-        // headless->process();
-        std::cerr << "PedestrianWatcher::processFrame headless not yet "
-                     "implemented...\n";
+        headless->process();
     }
 }
 
@@ -42,9 +40,7 @@ int PedestrianWatcher::getInstanceCount()
     }
     else if(currentMode == RenderMode::HEADLESS)
     {
-        // return headless->getTrafficDensity();
-        std::cerr << "PedestrianWatcher::getTrafficDensity headless not yet "
-                     "implemented...\n";
+        return headless->getInstanceCount();
     }
 
     return -1;
