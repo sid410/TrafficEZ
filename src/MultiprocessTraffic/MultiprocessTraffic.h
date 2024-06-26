@@ -46,6 +46,9 @@ private:
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
 
+    static void handleSignal(int signal);
+    static MultiprocessTraffic* instance;
+
     void createPipes();
     void forkChildren();
 

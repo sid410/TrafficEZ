@@ -42,6 +42,9 @@ protected:
     std::vector<cv::Point2f> roiPoints;
 
 private:
+    static constexpr int MAX_EMPTY_FRAMES = 30;
+    int emptyFrameCount;
+
     cv::VideoCapture stream;
     cv::String streamWindowInstance;
 

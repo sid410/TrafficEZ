@@ -32,6 +32,9 @@ private:
     Pipe& pipeParentToChild;
     Pipe& pipeChildToParent;
 
+    static void handleSignal(int signal);
+    static ChildProcess* instance;
+
     Watcher* createWatcher(WatcherType watcherType,
                            bool debug,
                            const std::string& streamConfig,

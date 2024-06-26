@@ -1,8 +1,11 @@
 #include "MultiprocessTraffic.h"
+#include <csignal>
 #include <cstring>
 #include <iostream>
 #include <sys/wait.h>
 #include <unistd.h>
+
+MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
 
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
@@ -11,6 +14,10 @@ MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
     , debug(debug)
     , verbose(verbose)
 {
+    instance = this;
+    std::signal(SIGINT, MultiprocessTraffic::handleSignal);
+    std::signal(SIGCHLD, MultiprocessTraffic::handleSignal);
+
     loadJunctionConfig();
 }
 
@@ -35,6 +42,39 @@ void MultiprocessTraffic::start()
     parentProcess.run();
 }
 
+void MultiprocessTraffic::handleSignal(int signal)
+{
+    if(instance == nullptr)
+    {
+        std::cerr << "MultiprocessTraffic instance is null\n";
+        exit(EXIT_FAILURE);
+    }
+
+    if(signal == SIGINT)
+    {
+        std::cout << "\nInterrupt signal received.\n";
+        for(pid_t pid : instance->childPids)
+        {
+            std::cout << "Killing Child PID: " << pid << "\n";
+            kill(pid, SIGTERM);
+        }
+        std::cout << "Exiting Parent PID: " << getpid() << "\n";
+        exit(EXIT_SUCCESS);
+    }
+
+    if(signal == SIGCHLD)
+    {
+        std::cout << "\nOne of the children unexpectedly crashed.\n";
+        for(pid_t pid : instance->childPids)
+        {
+            std::cout << "Killing Child PID: " << pid << "\n";
+            kill(pid, SIGTERM);
+        }
+        std::cout << "Exiting Parent PID: " << getpid() << "\n";
+        exit(EXIT_SUCCESS);
+    }
+}
+
 void MultiprocessTraffic::createPipes()
 {
     pipesParentToChild.resize(numChildren);
@@ -54,6 +94,11 @@ void MultiprocessTraffic::createPipes()
 void MultiprocessTraffic::forkChildren()
 {
     int pipeIndex = 0;
+
+    if(verbose)
+    {
+        std::cout << "Parent PID: " << getpid() << "\n";
+    }
 
     for(int i = 0; i < numVehicle; ++i)
     {
@@ -76,6 +121,10 @@ void MultiprocessTraffic::forkChildren()
         else
         {
             childPids.push_back(pid);
+            if(verbose)
+            {
+                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+            }
         }
         ++pipeIndex;
     }
@@ -101,6 +150,10 @@ void MultiprocessTraffic::forkChildren()
         else
         {
             childPids.push_back(pid);
+            if(verbose)
+            {
+                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+            }
         }
         ++pipeIndex;
     }

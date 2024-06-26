@@ -1,9 +1,12 @@
 #include "ChildProcess.h"
+#include <csignal>
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
+
+ChildProcess* ChildProcess::instance = nullptr;
 
 ChildProcess::ChildProcess(int childIndex,
                            Pipe& pipeParentToChild,
@@ -14,7 +17,27 @@ ChildProcess::ChildProcess(int childIndex,
     , pipeChildToParent(pipeChildToParent)
     , verbose(verbose)
 {
+    instance = this;
+    std::signal(SIGINT, ChildProcess::handleSignal);
+    std::signal(SIGCHLD, ChildProcess::handleSignal);
+
     closeUnusedPipes();
+}
+
+void ChildProcess::handleSignal(int signal)
+{
+    if(instance == nullptr)
+    {
+        std::cerr << "Child " << instance->childIndex << " instance is null\n";
+        exit(EXIT_FAILURE);
+    }
+
+    if(signal == SIGTERM)
+    {
+        std::cout << "Child " << instance->childIndex
+                  << " received termination signal. Exiting...\n";
+        exit(EXIT_SUCCESS);
+    }
 }
 
 void ChildProcess::runVehicle(bool debug,

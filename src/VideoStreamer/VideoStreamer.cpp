@@ -9,7 +9,9 @@ VideoStreamer::VideoStreamer()
     , laneLength(0)
     , laneWidth(0)
     , streamWindowInstance("Uninitialized Stream")
-{}
+{
+    emptyFrameCount = 0;
+}
 
 VideoStreamer::~VideoStreamer()
 {
@@ -32,7 +34,7 @@ bool VideoStreamer::openVideoStream(const cv::String& streamName)
     if(!stream.isOpened())
     {
         std::cerr << "Error: Unable to open stream: " << streamName << "\n";
-        return false;
+        exit(EXIT_FAILURE);
     }
 
     return true;
@@ -72,6 +74,20 @@ void VideoStreamer::resizeStreamWindow(const cv::Mat& referenceFrame)
 bool VideoStreamer::getNextFrame(cv::Mat& frame)
 {
     stream.read(frame);
+
+    if(frame.empty())
+    {
+        ++emptyFrameCount;
+        if(emptyFrameCount > MAX_EMPTY_FRAMES)
+        {
+            std::cerr << "Too many missing frames. Exiting...\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        emptyFrameCount = 0;
+    }
     return !frame.empty();
 }
 
@@ -240,7 +256,7 @@ bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
     if(!roiMatrixInitialized)
     {
         std::cerr << "Error: Failed to initialize.\n";
-        return false;
+        exit(EXIT_FAILURE);
     }
 
     if(!getNextFrame(frame))
@@ -259,6 +275,7 @@ cv::Mat VideoStreamer::applyPerspective(cv::Mat inputFrame,
     if(!roiMatrixInitialized)
     {
         std::cerr << "Error: Failed to initialize.\n";
+        exit(EXIT_FAILURE);
     }
 
     cv::Mat outputFrame;
