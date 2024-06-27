@@ -8,6 +8,7 @@ enum PhaseMessageType
 {
     RED_PHASE,
     GREEN_PHASE,
+    YELLOW_PHASE,
     RED_PED,
     GREEN_PED,
     UNKNOWN

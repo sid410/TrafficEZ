@@ -3,6 +3,7 @@
 
 #include "PhaseMessageType.h"
 #include "Pipe.h"
+#include "RelayController.h"
 #include <vector>
 
 class ParentProcess
@@ -20,13 +21,17 @@ public:
                   float densityMin = 0.0f,
                   float densityMax = 50.0f,
                   int minPhaseDurationMs = 5000,
-                  int minPedestrianDurationMs = 25000);
+                  int minPedestrianDurationMs = 25000,
+                  std::string relayUrl = "http://192.168.1.4/30000/");
     void run();
 
 private:
     static constexpr int BUFFER_SIZE = 128;
 
     bool verbose;
+
+    RelayController relay;
+    std::string relayUrl;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;

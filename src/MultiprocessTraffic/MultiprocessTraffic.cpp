@@ -38,7 +38,8 @@ void MultiprocessTraffic::start()
                                 densityMin,
                                 densityMax,
                                 minPhaseDurationMs,
-                                minPedestrianDurationMs);
+                                minPedestrianDurationMs,
+                                relayUrl);
     parentProcess.run();
 }
 
@@ -183,6 +184,7 @@ void MultiprocessTraffic::loadJunctionConfig()
     loadPhaseDurations(config);
     loadDensitySettings(config);
     loadStreamInfo(config);
+    loadRelayInfo(config);
 
     setVehicleAndPedestrianCount();
 }
@@ -266,6 +268,17 @@ void MultiprocessTraffic::loadStreamInfo(const YAML::Node& config)
         streamConfigs.push_back(stream[0].as<std::string>());
         streamLinks.push_back(stream[1].as<std::string>());
     }
+}
+
+void MultiprocessTraffic::loadRelayInfo(const YAML::Node& config)
+{
+    if(!config["relayUrl"])
+    {
+        std::cerr << "Missing relay URL in configuration file!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    relayUrl = config["relayUrl"].as<std::string>();
 }
 
 void MultiprocessTraffic::setVehicleAndPedestrianCount()

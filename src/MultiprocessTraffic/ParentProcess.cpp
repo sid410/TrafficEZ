@@ -20,7 +20,8 @@ ParentProcess::ParentProcess(int numVehicle,
                              float densityMin,
                              float densityMax,
                              int minPhaseDurationMs,
-                             int minPedestrianDurationMs)
+                             int minPedestrianDurationMs,
+                             std::string relayUrl)
     : numVehicle(numVehicle)
     , numPedestrian(numPedestrian)
     , pipesParentToChild(pipesParentToChild)
@@ -34,6 +35,7 @@ ParentProcess::ParentProcess(int numVehicle,
     , densityMax(densityMax)
     , minPhaseDurationMs(minPhaseDurationMs)
     , minPedestrianDurationMs(minPedestrianDurationMs)
+    , relayUrl(relayUrl)
 {
     numChildren = numVehicle + numPedestrian;
 
@@ -54,6 +56,8 @@ ParentProcess::ParentProcess(int numVehicle,
 
 void ParentProcess::run()
 {
+    relay.initialize(phases, relayUrl, verbose);
+
     int phaseIndex = 0;
 
     std::vector<std::vector<float>> phaseDensities(
@@ -67,14 +71,15 @@ void ParentProcess::run()
                       << " ======================================\n";
         }
 
+        relay.setPhaseCycle(phaseIndex);
+        relay.executePhase();
+
         sendPhaseMessagesToChildren(phaseIndex);
 
         if(!receivePrevDensitiesFromChildren(phaseIndex, phaseDensities))
         {
             setDefaultPhaseDensities(phaseDensities);
         }
-
-        // TODO: place here sendSerialMessageToRelay(phases, phaseindex, numChildren, verbose)
 
         handlePhaseTimer(phaseIndex);
         transitionToNextPhase(phaseIndex, phaseDensities);
@@ -225,8 +230,15 @@ void ParentProcess::handlePhaseTimer(int phaseIndex)
                   << remainingTime << " seconds.";
         std::cout.flush();
         sleep(1);
+
+        if(remainingTime == 5)
+        {
+            relay.executeTransitionPhase();
+        }
+
         --remainingTime;
     }
+
     std::cout << std::endl;
 }
 

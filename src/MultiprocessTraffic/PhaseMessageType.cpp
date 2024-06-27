@@ -5,6 +5,7 @@ PhaseMessageType getPhaseMessageType(const std::string& message)
     static const std::unordered_map<std::string, PhaseMessageType> messageMap =
         {{"RED_PHASE", RED_PHASE},
          {"GREEN_PHASE", GREEN_PHASE},
+         {"YELLOW_PHASE", YELLOW_PHASE},
          {"RED_PED", RED_PED},
          {"GREEN_PED", GREEN_PED}};
 

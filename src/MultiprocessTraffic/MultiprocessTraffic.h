@@ -45,6 +45,7 @@ private:
 
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
+    std::string relayUrl;
 
     static void handleSignal(int signal);
     static MultiprocessTraffic* instance;
@@ -57,6 +58,8 @@ private:
     void loadPhaseDurations(const YAML::Node& config);
     void loadDensitySettings(const YAML::Node& config);
     void loadStreamInfo(const YAML::Node& config);
+    void loadRelayInfo(const YAML::Node& config);
+
     void setVehicleAndPedestrianCount();
 };
 
