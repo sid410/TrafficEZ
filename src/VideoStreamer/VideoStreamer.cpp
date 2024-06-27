@@ -37,6 +37,13 @@ bool VideoStreamer::openVideoStream(const cv::String& streamName)
         exit(EXIT_FAILURE);
     }
 
+    framesPerSec = stream.get(cv::CAP_PROP_FPS);
+    if(framesPerSec == 0.0)
+    {
+        std::cout << "FPS information is not available for this video stream\n";
+        framesPerSec = 30.0;
+    }
+
     return true;
 }
 
@@ -183,6 +190,16 @@ bool VideoStreamer::readCalibrationData(const cv::String& yamlFilename)
     }
 
     return readCalibSuccess;
+}
+
+/**
+ * @brief Getter for FPS. If cv::CAP_PROP_FPS does not have information,
+ * it defaults to 30 fps.
+ * @return FPS.
+ */
+double VideoStreamer::getFPS() const
+{
+    return framesPerSec;
 }
 
 /**

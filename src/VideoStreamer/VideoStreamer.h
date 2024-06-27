@@ -22,6 +22,7 @@ public:
     bool getNextFrame(cv::Mat& frame);
     bool readCalibrationData(const cv::String& yamlFilename);
 
+    double getFPS() const;
     double getLaneLength() const;
     double getLaneWidth() const;
     cv::String getSegModel() const;
@@ -44,6 +45,8 @@ protected:
 private:
     static constexpr int MAX_EMPTY_FRAMES = 30;
     int emptyFrameCount;
+
+    double framesPerSec;
 
     cv::VideoCapture stream;
     cv::String streamWindowInstance;

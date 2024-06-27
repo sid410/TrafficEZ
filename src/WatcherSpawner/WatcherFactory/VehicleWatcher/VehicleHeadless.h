@@ -48,6 +48,8 @@ private:
     int laneLength;
     int laneWidth;
 
+    int sleepTime;
+
     void processTrackingState();
     void processSegmentationState();
 

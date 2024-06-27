@@ -15,6 +15,7 @@ void VehicleHeadless::initialize(const std::string& streamName,
     laneLength = videoStreamer.getLaneLength();
     laneWidth = videoStreamer.getLaneWidth();
     segModel = videoStreamer.getSegModel();
+    sleepTime = 1000 / videoStreamer.getFPS();
 
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
     pipeDirector.loadPipelineConfig(pipeBuilder, calibName);
@@ -45,8 +46,6 @@ void VehicleHeadless::process()
     (currentTrafficState == TrafficState::GREEN_PHASE)
         ? processTrackingState()
         : processSegmentationState();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(33));
 }
 
 float VehicleHeadless::getTrafficDensity()
@@ -101,6 +100,8 @@ void VehicleHeadless::processTrackingState()
     std::vector<std::vector<cv::Point>> hulls;
     hullDetector.getHulls(processFrame, hulls);
     hullTracker.update(hulls);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
 }
 
 void VehicleHeadless::processSegmentationState()
