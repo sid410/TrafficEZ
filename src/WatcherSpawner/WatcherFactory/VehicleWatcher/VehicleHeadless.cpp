@@ -1,4 +1,6 @@
 #include "VehicleHeadless.h"
+#include <chrono>
+#include <thread>
 
 void VehicleHeadless::initialize(const std::string& streamName,
                                  const std::string& calibName)
@@ -43,6 +45,8 @@ void VehicleHeadless::process()
     (currentTrafficState == TrafficState::GREEN_PHASE)
         ? processTrackingState()
         : processSegmentationState();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(33));
 }
 
 float VehicleHeadless::getTrafficDensity()
@@ -102,4 +106,6 @@ void VehicleHeadless::processTrackingState()
 void VehicleHeadless::processSegmentationState()
 {
     cv::Mat segMask = segmentation.generateMask(inputFrame);
+    // still need to update warpedMask for getWhiteArea method
+    warpedMask = videoStreamer.applyPerspective(segMask, warpPerspective);
 }

@@ -10,7 +10,7 @@ if [ -n "$debug_file" ]; then
     cd "$resources_dir"
     echo "Debugging: $debug_file"
     echo "=========="
-    "$debug_file" -v
+    "$debug_file" -d -v
 else
     echo "File to debug not found."
 fi
