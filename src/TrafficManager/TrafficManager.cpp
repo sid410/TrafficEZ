@@ -1,43 +1,29 @@
 #include "TrafficManager.h"
-#include "WatcherSpawner.h"
-#include <iostream>
+#include "MultiprocessTraffic.h"
 
-TrafficManager::TrafficManager(int numCars,
-                               int numPedestrians,
+TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
-                               bool calib)
-    : numberOfCars(numCars)
-    , numberOfPedestrians(numPedestrians)
+                               bool calib,
+                               bool verbose)
+    : configFile(configFile)
     , debugMode(debug)
     , calibMode(calib)
+    , verbose(verbose)
 {}
 
 void TrafficManager::start()
 {
     std::cout << "TrafficManager starting...\n";
-    std::cout << "Number of Cars: " << numberOfCars << "\n";
-    std::cout << "Number of Pedestrians: " << numberOfPedestrians << "\n";
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
+    std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
+    std::cout << "Verbose Mode: " << (verbose ? "true" : "false") << "\n";
 
-    WatcherSpawner spawner;
+    MultiprocessTraffic multiprocessTraffic(configFile, debugMode, verbose);
 
     if(calibMode)
-    {
-        Watcher* calibrateWatcherGui =
-            spawner.spawnWatcher(WatcherType::CALIBRATE,
-                                 RenderMode::GUI,
-                                 "debug.mp4",
-                                 "debug_calib.yaml");
-        delete calibrateWatcherGui;
-    }
-    if(debugMode)
-    {
-        Watcher* vehicleWatcherGui = spawner.spawnWatcher(WatcherType::VEHICLE,
-                                                          RenderMode::GUI,
-                                                          "debug.mp4",
-                                                          "debug_calib.yaml");
-        delete vehicleWatcherGui;
-    }
+        multiprocessTraffic.calibrate();
+    else
+        multiprocessTraffic.start();
 
     std::cout << "TrafficManager ended.\n";
 }

@@ -69,6 +69,11 @@ void CalibrateVideoStreamer::saveCalibrationData(const cv::String& yamlFilename)
     std::cout << "Enter lane width: ";
     std::cin >> laneWidth;
 
+    // Ask for segmentation model name
+    std::string segModel;
+    std::cout << "Enter segmentation model name: ";
+    std::cin >> segModel;
+
     YAML::Emitter emitter;
     emitter << YAML::BeginMap;
 
@@ -92,6 +97,10 @@ void CalibrateVideoStreamer::saveCalibrationData(const cv::String& yamlFilename)
     emitter << YAML::Key << "width" << YAML::Value << laneWidth;
     emitter << YAML::EndMap;
     emitter << YAML::EndSeq;
+
+    // Saving segmentation model
+    emitter << YAML::Key << "segmentation_model";
+    emitter << YAML::Value << segModel;
 
     emitter << YAML::EndMap;
 

@@ -20,12 +20,13 @@ int main(int argc, char* argv[])
         "c,calib",
         "Enter calibration",
         cxxopts::value<bool>()->default_value("false"))(
-        "v,vehicle",
-        "Number of vehicle ROIs",
-        cxxopts::value<int>()->default_value("3"))(
-        "p,pedestrian",
-        "Number of pedestrian ROIs",
-        cxxopts::value<int>()->default_value("2"))("h,help", "Print usage");
+        "v,verbose",
+        "Verbose mode",
+        cxxopts::value<bool>()->default_value("false"))(
+        "j,jconf",
+        "Junction config",
+        cxxopts::value<std::string>()->default_value("junction_config.yaml"))(
+        "h,help", "Print usage");
 
     auto result = options.parse(argc, argv);
 
@@ -37,18 +38,17 @@ int main(int argc, char* argv[])
 
     bool debug = result["debug"].as<bool>();
     bool calib = result["calib"].as<bool>();
-    int numCarRoi = result["vehicle"].as<int>();
-    int numPedRoi = result["pedestrian"].as<int>();
+    bool verbose = result["verbose"].as<bool>();
+    std::string configFile = result["jconf"].as<std::string>();
 
-    if(debug)
+    if(verbose)
     {
         std::cout << "Project version: " << PROJECT_NAME_VER << "\n";
         std::cout << "OpenCV version: " << CV_VERSION << "\n";
         std::cout << "Number of CPU cores: " << cv::getNumberOfCPUs() << "\n";
     }
 
-    // should change whether numCarRoi + numPedRoi > numCpuCores
-    TrafficManager trafficManager(numCarRoi, numPedRoi, debug, calib);
+    TrafficManager trafficManager(configFile, debug, calib, verbose);
     trafficManager.start();
 
     return 0;

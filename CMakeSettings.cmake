@@ -30,6 +30,29 @@ function(setup_yaml_libstatic TARGET)
     ${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/util/yaml-cpp/lib/libyaml-cpp.a)
 endfunction()
 
+function(setup_onnxruntime TARGET)
+  setup_common_compile_options(${TARGET})
+  target_include_directories(
+    ${TARGET} PUBLIC ${CMAKE_SOURCE_DIR}/util/onnxruntime/include)
+  target_link_libraries(
+    ${TARGET}
+    PRIVATE ${CMAKE_SOURCE_DIR}/util/onnxruntime/lib/libonnxruntime.so)
+endfunction()
+
+function(setup_ort_api TARGET)
+  setup_common_compile_options(${TARGET})
+  target_include_directories(${TARGET}
+                             PUBLIC ${CMAKE_SOURCE_DIR}/util/OrtApiWrapper)
+  target_link_libraries(${TARGET} PRIVATE OrtApiWrapper)
+endfunction()
+
+function(setup_ort_segmentation TARGET)
+  setup_common_compile_options(${TARGET})
+  target_include_directories(${TARGET}
+                             PUBLIC ${CMAKE_SOURCE_DIR}/src/SegmentationModule)
+  target_link_libraries(${TARGET} PRIVATE SegmentationModule)
+endfunction()
+
 function(setup_fps_helper TARGET)
   setup_common_compile_options(${TARGET})
   target_include_directories(${TARGET}

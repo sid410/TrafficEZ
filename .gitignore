@@ -9,6 +9,9 @@
 /[Rr]esource/
 /[Rr]esources/
 
+# folder for storing YOLO models
+/model/
+
 # doc folders
 /[Dd]oc/
 /[Dd]ocs/
@@ -34,6 +37,7 @@ Doxyfile
 *.so
 *.dylib
 *.dll
+!libonnxruntime.so
 
 # Compiled Static libraries
 *.lai

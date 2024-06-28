@@ -9,7 +9,9 @@ VideoStreamer::VideoStreamer()
     , laneLength(0)
     , laneWidth(0)
     , streamWindowInstance("Uninitialized Stream")
-{}
+{
+    emptyFrameCount = 0;
+}
 
 VideoStreamer::~VideoStreamer()
 {
@@ -32,7 +34,14 @@ bool VideoStreamer::openVideoStream(const cv::String& streamName)
     if(!stream.isOpened())
     {
         std::cerr << "Error: Unable to open stream: " << streamName << "\n";
-        return false;
+        exit(EXIT_FAILURE);
+    }
+
+    framesPerSec = stream.get(cv::CAP_PROP_FPS);
+    if(framesPerSec == 0.0)
+    {
+        std::cout << "FPS information is not available for this video stream\n";
+        framesPerSec = 30.0;
     }
 
     return true;
@@ -72,6 +81,20 @@ void VideoStreamer::resizeStreamWindow(const cv::Mat& referenceFrame)
 bool VideoStreamer::getNextFrame(cv::Mat& frame)
 {
     stream.read(frame);
+
+    if(frame.empty())
+    {
+        ++emptyFrameCount;
+        if(emptyFrameCount > MAX_EMPTY_FRAMES)
+        {
+            std::cerr << "Too many missing frames. Exiting...\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        emptyFrameCount = 0;
+    }
     return !frame.empty();
 }
 
@@ -146,6 +169,16 @@ bool VideoStreamer::readCalibrationData(const cv::String& yamlFilename)
             return false;
         }
 
+        const YAML::Node& segModelNode = yamlNode["segmentation_model"];
+        if(!segModelNode || !segModelNode.IsScalar())
+        {
+            std::cerr << "Error: Segmentation model not found or not in the "
+                         "correct format.\n";
+            return false;
+        }
+
+        segModel = segModelNode.as<std::string>();
+
         fin.close();
         readCalibSuccess = true;
     }
@@ -157,6 +190,16 @@ bool VideoStreamer::readCalibrationData(const cv::String& yamlFilename)
     }
 
     return readCalibSuccess;
+}
+
+/**
+ * @brief Getter for FPS. If cv::CAP_PROP_FPS does not have information,
+ * it defaults to 30 fps.
+ * @return FPS.
+ */
+double VideoStreamer::getFPS() const
+{
+    return framesPerSec;
 }
 
 /**
@@ -183,6 +226,15 @@ double VideoStreamer::getLaneWidth() const
         std::cerr << "Error: laneWidth is zero.\n";
     }
     return laneWidth;
+}
+
+/**
+ * @brief Getter for segmentation model
+ * @return the string of the segmentation model to use.
+ */
+cv::String VideoStreamer::getSegModel() const
+{
+    return segModel;
 }
 
 /**
@@ -221,7 +273,7 @@ bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
     if(!roiMatrixInitialized)
     {
         std::cerr << "Error: Failed to initialize.\n";
-        return false;
+        exit(EXIT_FAILURE);
     }
 
     if(!getNextFrame(frame))
@@ -232,4 +284,19 @@ bool VideoStreamer::applyFrameRoi(cv::Mat& frame,
 
     perspective.apply(frame, roiFrame, roiMatrix);
     return true;
+}
+
+cv::Mat VideoStreamer::applyPerspective(cv::Mat inputFrame,
+                                        TransformPerspective& perspective)
+{
+    if(!roiMatrixInitialized)
+    {
+        std::cerr << "Error: Failed to initialize.\n";
+        exit(EXIT_FAILURE);
+    }
+
+    cv::Mat outputFrame;
+    perspective.apply(inputFrame, outputFrame, roiMatrix);
+
+    return outputFrame;
 }

@@ -2,10 +2,13 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(
   TrafficEZ
-  VERSION 0.1.5
+  VERSION 0.1.6
   LANGUAGES CXX)
 
 include(${CMAKE_SOURCE_DIR}/CMakeSettings.cmake)
+
+# Need to have CURL installed locally
+find_package(CURL REQUIRED)
 
 # Need to have OpenCV installed locally If OpenCV is not in your environment
 # variables, do: set(OpenCV_DIR /path/to/opencv/build)
@@ -46,3 +49,5 @@ endif()
 add_subdirectory(src)
 add_subdirectory(util/yaml-cpp)
 add_subdirectory(util/FPSHelper)
+add_subdirectory(util/onnxruntime)
+add_subdirectory(util/OrtApiWrapper)

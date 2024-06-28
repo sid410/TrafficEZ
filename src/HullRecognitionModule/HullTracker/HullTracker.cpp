@@ -59,6 +59,15 @@ HullTracker::getTrackedHulls() const
 }
 
 /**
+ * @brief Gets the current hull count.
+ * @return Number of hulls (vehicles) that crossed the boundary line.
+ */
+int HullTracker::getHullCount() const
+{
+    return hullCount;
+}
+
+/**
  * @brief Gets the total hull area.
  * @return Accumulated area of all exited tracked hulls (sq. pixels).
  */
@@ -71,9 +80,22 @@ float HullTracker::getTotalHullArea() const
  * @brief Calculates the averaged speed of all exited tracked hulls.
  * @return Averaged speed of all exited tracked hulls (pixels/second).
  */
-float HullTracker::calculateAllAveragedSpeed() const
+float HullTracker::getAveragedSpeed() const
 {
     return totalAverageSpeed / hullCount;
+}
+
+/**
+ * @brief Reset the variables for calculating the values of 
+ * getTotalHullArea and calculateAllAveragedSpeed.
+ */
+void HullTracker::resetTrackerVariables()
+{
+    currentId = 0;
+    hullCount = 0;
+    totalHullArea = 0;
+    totalAverageSpeed = 0;
+    trackedHulls.clear();
 }
 
 /**
