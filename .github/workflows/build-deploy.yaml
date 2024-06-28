@@ -17,7 +17,7 @@ jobs:
     - name: Install Required Packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake doxygen graphviz curl
+        sudo apt-get install -y cmake doxygen graphviz curl libcurl4-openssl-dev
 
     # We need to add these manually to make the opencv action below work
     - name: Add Missing APT Keys
@@ -62,3 +62,31 @@ jobs:
         publish_dir: ./doc/html
         allow_empty_commit: true
         keep_files: false
+
+    - name: Find Built Executable
+      id: find_executable
+      run: |
+        EXECUTABLE_PATH=$(find ${{ github.workspace }}/build/src -type f -name 'TrafficEZ-*' | head -n 1)
+        if [[ -z "$EXECUTABLE_PATH" ]]; then
+          echo "Executable not found!"
+          exit 1
+        fi
+        echo "EXECUTABLE_PATH=$EXECUTABLE_PATH" >> $GITHUB_ENV
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: latest
+        release_name: Latest Release
+        draft: false
+        prerelease: false
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.EXECUTABLE_PATH }}
+        asset_name: TrafficEZ
+        asset_content_type: application/octet-stream
