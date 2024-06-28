@@ -75,40 +75,23 @@ jobs:
         echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
         echo "RELEASE_NAME=$EXECUTABLE_NAME" >> $GITHUB_ENV
 
-    - name: Add Timestamp to Release Name
-      id: add_timestamp
-      run: |
-        TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-        NEW_RELEASE_NAME="${RELEASE_NAME}-${TIMESTAMP}"
-        echo "RELEASE_NAME=$NEW_RELEASE_NAME" >> $GITHUB_ENV
-
-    - name: Create Versioned Release
+    - name: Create or Update Versioned Release
       id: create_versioned_release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      with:
-        tag_name: ${{ env.TAG_NAME }}
-        release_name: ${{ env.RELEASE_NAME }}
-        draft: false
-        prerelease: false
+      run: |
+        gh release view ${{ env.TAG_NAME }} > /dev/null 2>&1 && \
+        gh release edit ${{ env.TAG_NAME }} --title ${{ env.RELEASE_NAME }} || \
+        gh release create ${{ env.TAG_NAME }} --title ${{ env.RELEASE_NAME }} --notes "Automated release by GitHub Actions"
 
     - name: Upload Release Asset to Versioned Release
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_versioned_release.outputs.upload_url }}
-        asset_path: ${{ env.EXECUTABLE_PATH }}
-        asset_name: TrafficEZ
-        asset_content_type: application/octet-stream
+      run: |
+        gh release upload ${{ env.TAG_NAME }} ${{ env.EXECUTABLE_PATH }} --clobber --name "TrafficEZ"
 
     - name: Upload ONNX Runtime Library
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_versioned_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/util/onnxruntime/lib/libonnxruntime.so.1.17.1
-        asset_name: libonnxruntime.so.1.17.1
-        asset_content_type: application/octet-stream
+      run: |
+        gh release upload ${{ env.TAG_NAME }} ${{ github.workspace }}/util/onnxruntime/lib/libonnxruntime.so.1.17.1 --clobber --name "libonnxruntime.so.1.17.1"
