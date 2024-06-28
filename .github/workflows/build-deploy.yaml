@@ -69,25 +69,29 @@ jobs:
           echo "Executable not found!"
           exit 1
         fi
+        EXECUTABLE_NAME=$(basename $EXECUTABLE_PATH)
+        TAG_NAME="v${EXECUTABLE_NAME#TrafficEZ-}"
         echo "EXECUTABLE_PATH=$EXECUTABLE_PATH" >> $GITHUB_ENV
+        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+        echo "RELEASE_NAME=$EXECUTABLE_NAME" >> $GITHUB_ENV
 
-    - name: Create Release
-      id: create_release
+    - name: Create Versioned Release
+      id: create_versioned_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
-        tag_name: latest
-        release_name: Latest Release
+        tag_name: ${{ env.TAG_NAME }}
+        release_name: ${{ env.RELEASE_NAME }}
         draft: false
         prerelease: false
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset to Versioned Release
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ steps.create_versioned_release.outputs.upload_url }}
         asset_path: ${{ env.EXECUTABLE_PATH }}
         asset_name: TrafficEZ
         asset_content_type: application/octet-stream
