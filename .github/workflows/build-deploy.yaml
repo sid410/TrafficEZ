@@ -35,10 +35,10 @@ jobs:
 
     - name: Configure the Project for Release
       run: |
-        cmake -DCMAKE_BUILD_TYPE:STRING=Release \
-              -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE \
-              -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc \
-              -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++ \
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+              -DCMAKE_C_COMPILER=/usr/bin/gcc \
+              -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
               -S ${{ github.workspace }} \
               -B ${{ github.workspace }}/build \
               -G "Unix Makefiles"
@@ -47,8 +47,6 @@ jobs:
       run: |
         cmake --build ${{ github.workspace }}/build --config Release --target all -j 2
 
-    # Add tests after build
-    # Also add more steps for publishing release / docker push
     - name: Generate Documentation
       run: doxygen Doxyfile
 
@@ -86,6 +84,8 @@ jobs:
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.EXECUTABLE_PATH }}
