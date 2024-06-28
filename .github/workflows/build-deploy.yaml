@@ -14,8 +14,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install CMake, Doxygen, and Graphviz
-      run: sudo apt-get update && sudo apt-get install -y cmake doxygen graphviz
+    - name: Install Required Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake doxygen graphviz curl libcurl4-openssl-dev
 
     # We need to add these manually to make the opencv action below work
     - name: Add Missing APT Keys
@@ -33,10 +35,10 @@ jobs:
 
     - name: Configure the Project for Release
       run: |
-        cmake -DCMAKE_BUILD_TYPE:STRING=Release \
-              -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE \
-              -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc \
-              -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++ \
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+              -DCMAKE_C_COMPILER=/usr/bin/gcc \
+              -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
               -S ${{ github.workspace }} \
               -B ${{ github.workspace }}/build \
               -G "Unix Makefiles"
@@ -45,8 +47,6 @@ jobs:
       run: |
         cmake --build ${{ github.workspace }}/build --config Release --target all -j 2
 
-    # Add tests after build
-    # Also add more steps for publishing release / docker push
     - name: Generate Documentation
       run: doxygen Doxyfile
 
@@ -60,4 +60,38 @@ jobs:
         publish_dir: ./doc/html
         allow_empty_commit: true
         keep_files: false
-    
+
+    - name: Find Built Executable
+      id: find_executable
+      run: |
+        EXECUTABLE_PATH=$(find ${{ github.workspace }}/build/src -type f -name 'TrafficEZ-*' | head -n 1)
+        if [[ -z "$EXECUTABLE_PATH" ]]; then
+          echo "Executable not found!"
+          exit 1
+        fi
+        EXECUTABLE_NAME=$(basename $EXECUTABLE_PATH)
+        TAG_NAME="v${EXECUTABLE_NAME#TrafficEZ-}"
+        echo "EXECUTABLE_PATH=$EXECUTABLE_PATH" >> $GITHUB_ENV
+        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+        echo "RELEASE_NAME=$EXECUTABLE_NAME" >> $GITHUB_ENV
+
+    - name: Create Versioned Release
+      id: create_versioned_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        tag_name: ${{ env.TAG_NAME }}
+        release_name: ${{ env.RELEASE_NAME }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset to Versioned Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_versioned_release.outputs.upload_url }}
+        asset_path: ${{ env.EXECUTABLE_PATH }}
+        asset_name: TrafficEZ
+        asset_content_type: application/octet-stream

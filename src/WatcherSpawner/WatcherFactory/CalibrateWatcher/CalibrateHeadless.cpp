@@ -1,10 +1,11 @@
 #include "CalibrateHeadless.h"
 #include <iostream>
 
-void CalibrateHeadless::process(const std::string& streamName,
-                                const std::string& calibName) const
+void CalibrateHeadless::initialize(const std::string& streamName,
+                                   const std::string& calibName)
 {
     std::cout << "Stream Name: " << streamName << std::endl;
     std::cout << "Calibration Name: " << calibName << std::endl;
-    std::cerr << "No implementation yet for Calibrate Headless\n";
+    std::cerr << "There is no implementation for Calibrate Headless\n";
+    exit(EXIT_FAILURE);
 }

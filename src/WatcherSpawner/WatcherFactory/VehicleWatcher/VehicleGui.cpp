@@ -1,93 +1,147 @@
 #include "VehicleGui.h"
-#include "FPSHelper.h"
-#include "HullDetector.h"
-#include "HullTracker.h"
-#include "PipelineBuilder.h"
-#include "PipelineDirector.h"
-#include "PipelineTrackbar.h"
-#include "VideoStreamer.h"
-#include "WarpPerspective.h"
 
-void VehicleGui::display(const std::string& streamName,
-                         const std::string& calibName) const
+void VehicleGui::initialize(const std::string& streamName,
+                            const std::string& calibName)
 {
-    int frameCounter = 0; // temporary, for estimating traffic flow
-
-    VideoStreamer videoStreamer;
-    WarpPerspective warpPerspective;
-    FPSHelper fpsHelper;
-
-    PipelineBuilder pipeBuilder;
-    PipelineDirector pipeDirector;
-
-    HullDetector hullDetector;
-    HullTracker hullTracker;
-
-    cv::Mat inputFrame;
-    cv::Mat warpedFrame;
-    cv::Mat processFrame;
-
-    cv::String streamWindow = streamName + " Vehicle GUI";
-
-    if(!videoStreamer.openVideoStream(streamName))
+    if(!videoStreamer.openVideoStream(streamName) ||
+       !videoStreamer.readCalibrationData(calibName))
+    {
+        std::cerr << "Failed to initialize video stream or calibration data.\n";
         return;
+    }
 
-    if(!videoStreamer.readCalibrationData(calibName))
-        return;
+    streamWindow = streamName + " Vehicle GUI";
 
-    static int laneLength = videoStreamer.getLaneLength();
-    static int laneWidth = videoStreamer.getLaneWidth();
+    laneLength = videoStreamer.getLaneLength();
+    laneWidth = videoStreamer.getLaneWidth();
+    segModel = videoStreamer.getSegModel();
 
     videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    // load settings, and create trackbar
-    pipeDirector.loadPipelineConfig(pipeBuilder, "debug_calib.yaml");
-    PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
+    pipeDirector.setupDefaultPipeline(pipeBuilder);
+    // // If you want to use the yaml config file, use the methods below:
+    // pipeDirector.savePipelineConfig(pipeBuilder, calibName);
+    // pipeDirector.loadPipelineConfig(pipeBuilder, calibName);
 
-    // for initialization of detector and tracker
+    // // Commented out because Trackbar gets confusing with forked processes.
+    // // To show Trackbar, be sure to only spawn one process then do the following:
+    // // 1. Uncomment PipelineTrackbar instance.
+    // // 2. Uncomment while loop below.
+    // // 3. In processTrackingState method, use processDebugStack instead of process.
+
+    // PipelineTrackbar pipeTrackbar(pipeBuilder, streamName);
+
     videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective);
     videoStreamer.resizeStreamWindow(warpedFrame);
 
     hullDetector.initDetectionBoundaries(warpedFrame);
     hullTracker.initExitBoundaryLine(hullDetector.getEndDetectionLine());
 
-    // used for measuring the total time spent in the loop
-    fpsHelper.startSample();
+    // std::cout << "Press Escape to exit Trackbar loop.\n";
+    // while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+    // {
+    //     processTrackingState();
 
-    // frame update loop
-    while(videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+    //     if(cv::waitKey(30) == 27)
+    //         break;
+    // }
+
+    std::unique_ptr<ISegmentationStrategy> strategy =
+        std::make_unique<VehicleSegmentationStrategy>();
+    segmentation.initializeModel(segModel, std::move(strategy));
+
+    isTracking = false;
+}
+
+void VehicleGui::display()
+{
+    if(!videoStreamer.applyFrameRoi(inputFrame, warpedFrame, warpPerspective))
+        return;
+
+    if(!isTracking)
     {
-        warpedFrame.copyTo(processFrame);
-        // pipeBuilder.process(processFrame);
-        pipeBuilder.processDebugStack(processFrame);
-
-        std::vector<std::vector<cv::Point>> hulls;
-        hullDetector.getHulls(processFrame, hulls);
-
-        hullTracker.update(hulls);
-
-        // draw information on frame, only for GUI
-        hullTracker.drawTrackedHulls(warpedFrame);
-        hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
-        hullDetector.drawLengthBoundaries(warpedFrame);
-
-        fpsHelper.avgFps();
-        fpsHelper.displayFps(warpedFrame);
-        cv::imshow(streamWindow, warpedFrame);
-
-        // temporary, for estimating traffic flow
-        // need a way to constantly cut to uniformly measure
-        std::cout << frameCounter++ << "\n";
-        if(frameCounter >= 1000)
-            break;
-
-        if(cv::waitKey(30) == 27)
-            break;
+        fpsHelper.startSample();
+        isTracking = true;
     }
 
-    std::cout << "Total time: " << fpsHelper.endSample() / 1000 << " s\n";
-    std::cout << "Total Area: " << hullTracker.getTotalHullArea() << " px^2\n";
-    std::cout << "Total Speed: " << hullTracker.calculateAllAveragedSpeed()
-              << " px/s\n";
+    (currentTrafficState == TrafficState::GREEN_PHASE)
+        ? processTrackingState()
+        : processSegmentationState(); // we only process YOLO result for gui
+
+    cv::waitKey(1); // needed for imshow
+}
+
+float VehicleGui::getTrafficDensity()
+{
+    float density = 0;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        float totalTime = fpsHelper.endSample() / 1000;
+        float flow = hullTracker.getTotalHullArea() / totalTime;
+
+        density = (flow == 0)
+                      ? 0
+                      : flow / (hullTracker.getAveragedSpeed() * laneWidth);
+
+        hullTracker.resetTrackerVariables();
+    }
+
+    else if(currentTrafficState == TrafficState::RED_PHASE)
+    {
+        float count = segmentation.getWhiteArea(warpedMask);
+        density = count / (laneLength * laneWidth);
+    }
+
+    isTracking = false;
+
+    return density;
+}
+
+int VehicleGui::getInstanceCount()
+{
+    int count = 0;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        count = hullTracker.getHullCount();
+    }
+
+    else if(currentTrafficState == TrafficState::RED_PHASE)
+    {
+        count = segmentation.getDetectionResultSize();
+    }
+
+    return count;
+}
+
+void VehicleGui::processTrackingState()
+{
+    warpedFrame.copyTo(processFrame);
+    pipeBuilder.process(processFrame);
+    // pipeBuilder.processDebugStack(processFrame);
+
+    std::vector<std::vector<cv::Point>> hulls;
+    hullDetector.getHulls(processFrame, hulls);
+    hullTracker.update(hulls);
+
+    hullTracker.drawTrackedHulls(warpedFrame);
+    hullTracker.drawLanesInfo(warpedFrame, laneLength, laneWidth);
+    hullDetector.drawLengthBoundaries(warpedFrame);
+
+    fpsHelper.avgFps();
+    fpsHelper.displayFps(warpedFrame);
+
+    cv::imshow(streamWindow, warpedFrame);
+    cv::waitKey(30);
+}
+
+void VehicleGui::processSegmentationState()
+{
+    cv::Mat segMask = segmentation.generateMask(inputFrame);
+    warpedMask = videoStreamer.applyPerspective(segMask, warpPerspective);
+
+    cv::imshow(streamWindow + " segMask", warpedMask);
+    // cv::waitKey(0);
 }

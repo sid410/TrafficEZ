@@ -4,18 +4,20 @@
 
 void CalibrateWatcher::spawn(RenderMode mode,
                              const std::string& streamName,
-                             const std::string& calibName) const
+                             const std::string& calibName)
 {
+    currentMode = mode;
+
     if(mode == RenderMode::GUI)
     {
-        Gui* gui = new CalibrateGui();
-        gui->display(streamName, calibName);
-        delete gui;
+        gui = new CalibrateGui();
+        gui->initialize(streamName, calibName);
     }
     else if(mode == RenderMode::HEADLESS)
     {
-        Headless* headless = new CalibrateHeadless();
-        headless->process(streamName, calibName);
-        delete headless;
+        // headless = new CalibrateHeadless();
+        // headless->process(streamName, calibName);
+        std::cerr << "Calibration method cannot be headless\n";
+        exit(EXIT_FAILURE);
     }
 }

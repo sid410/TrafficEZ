@@ -4,18 +4,70 @@
 
 void VehicleWatcher::spawn(RenderMode mode,
                            const std::string& streamName,
-                           const std::string& calibName) const
+                           const std::string& calibName)
 {
+    currentMode = mode;
+
     if(mode == RenderMode::GUI)
     {
-        Gui* gui = new VehicleGui();
-        gui->display(streamName, calibName);
-        delete gui;
+        gui = new VehicleGui();
+        gui->initialize(streamName, calibName);
     }
     else if(mode == RenderMode::HEADLESS)
     {
-        Headless* headless = new VehicleHeadless();
-        headless->process(streamName, calibName);
-        delete headless;
+        headless = new VehicleHeadless();
+        headless->initialize(streamName, calibName);
     }
+}
+
+void VehicleWatcher::processFrame()
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        gui->display();
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        headless->process();
+    }
+}
+
+void VehicleWatcher::setCurrentTrafficState(TrafficState state)
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        gui->setCurrentTrafficState(state);
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        headless->setCurrentTrafficState(state);
+    }
+}
+
+float VehicleWatcher::getTrafficDensity()
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        return gui->getTrafficDensity();
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        return headless->getTrafficDensity();
+    }
+
+    return -1;
+}
+
+int VehicleWatcher::getInstanceCount()
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        return gui->getInstanceCount();
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        return headless->getInstanceCount();
+    }
+
+    return -1;
 }

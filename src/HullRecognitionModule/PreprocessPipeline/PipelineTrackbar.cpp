@@ -19,6 +19,7 @@ PipelineTrackbar::~PipelineTrackbar()
     {
         cv::destroyWindow(windowName);
     }
+    std::cout << "Destroyed Trackbar.\n";
 }
 
 /**
@@ -30,6 +31,7 @@ PipelineTrackbar::~PipelineTrackbar()
 void PipelineTrackbar::initializeTrackbars()
 {
     size_t stepCount = pipelineBuilder.getNumberOfSteps();
+    std::cout << "Initialized trackbar with step: " << stepCount << "\n";
 
     // initialize the text info of each steps in the pipeline
     int imageHeight = stepCount * 30 + 20;
