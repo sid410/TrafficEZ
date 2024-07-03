@@ -51,8 +51,8 @@ jobs:
       run: doxygen Doxyfile
 
     - name: Deploy to GitHub Pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
-      if: github.event_name == 'push'
       with:
         personal_token: ${{ secrets.DOCUMENTATION_PAT }}
         external_repository: imb410/TrafficEZ-Documentation
@@ -76,6 +76,7 @@ jobs:
         echo "RELEASE_NAME=$EXECUTABLE_NAME" >> $GITHUB_ENV
 
     - name: Create or Update Versioned Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       id: create_versioned_release
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
@@ -85,15 +86,18 @@ jobs:
         gh release create ${{ env.TAG_NAME }} --title ${{ env.RELEASE_NAME }} --notes "Automated release by GitHub Actions"
 
     - name: Rename Executable for Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: mv ${{ env.EXECUTABLE_PATH }} ${{ github.workspace }}/build/src/TrafficEZ
 
     - name: Upload Release Asset to Versioned Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       run: |
         gh release upload ${{ env.TAG_NAME }} ${{ github.workspace }}/build/src/TrafficEZ --clobber
 
     - name: Upload ONNX Runtime Library
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       run: |
