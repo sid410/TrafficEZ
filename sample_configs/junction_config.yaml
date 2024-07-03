@@ -1,0 +1,26 @@
+phases:
+  - ["GREEN_PHASE", "RED_PHASE", "GREEN_PHASE", "RED_PHASE", "GREEN_PED", "RED_PED"]
+  - ["GREEN_PHASE", "GREEN_PHASE", "RED_PHASE", "RED_PHASE", "RED_PED", "RED_PED"]
+  - ["RED_PHASE", "RED_PHASE", "RED_PHASE", "GREEN_PHASE", "RED_PED", "GREEN_PED"]
+
+phaseDurations:
+  - 65000
+  - 25000
+  - 35000
+
+densityMultiplierGreenPhase: 10.0
+densityMultiplierRedPhase: 0.3
+densityMin: 0.0
+densityMax: 50.0
+minPhaseDurationMs: 5000
+minPedestrianDurationMs: 25000
+
+streamInfo:
+  - ["vehicle0.yaml", "rtsp://172.31.1.144:8554/vehicle0"]
+  - ["vehicle1.yaml", "rtsp://172.31.1.144:8554/vehicle1"]
+  - ["vehicle2.yaml", "rtsp://172.31.1.144:8554/vehicle2"]
+  - ["vehicle3.yaml", "rtsp://172.31.1.144:8554/vehicle3"]
+  - ["pedestrian0.yaml", "rtsp://172.31.1.144:8555/pedestrian0"]
+  - ["pedestrian1.yaml", "rtsp://172.31.1.144:8555/pedestrian1"]
+
+relayUrl: "http://192.168.1.4/30000/"
