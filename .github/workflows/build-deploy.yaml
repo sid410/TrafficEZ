@@ -84,11 +84,14 @@ jobs:
         gh release edit ${{ env.TAG_NAME }} --title ${{ env.RELEASE_NAME }} || \
         gh release create ${{ env.TAG_NAME }} --title ${{ env.RELEASE_NAME }} --notes "Automated release by GitHub Actions"
 
+    - name: Rename Executable for Release
+      run: mv ${{ env.EXECUTABLE_PATH }} ${{ github.workspace }}/build/src/TrafficEZ
+
     - name: Upload Release Asset to Versioned Release
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       run: |
-        gh release upload ${{ env.TAG_NAME }} ${{ env.EXECUTABLE_PATH }} --clobber
+        gh release upload ${{ env.TAG_NAME }} ${{ github.workspace }}/build/src/TrafficEZ --clobber
 
     - name: Upload ONNX Runtime Library
       env:
