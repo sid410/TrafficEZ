@@ -88,10 +88,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       run: |
-        gh release upload ${{ env.TAG_NAME }} ${{ env.EXECUTABLE_PATH }} --clobber --name "TrafficEZ"
+        gh release upload ${{ env.TAG_NAME }} ${{ env.EXECUTABLE_PATH }} --clobber
 
     - name: Upload ONNX Runtime Library
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       run: |
-        gh release upload ${{ env.TAG_NAME }} ${{ github.workspace }}/util/onnxruntime/lib/libonnxruntime.so.1.17.1 --clobber --name "libonnxruntime.so.1.17.1"
+        gh release upload ${{ env.TAG_NAME }} ${{ github.workspace }}/util/onnxruntime/lib/libonnxruntime.so.1.17.1 --clobber
