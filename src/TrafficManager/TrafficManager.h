@@ -18,6 +18,8 @@ private:
     bool debugMode;
     bool calibMode;
     bool verbose;
+
+    void test();
 };
 
 #endif

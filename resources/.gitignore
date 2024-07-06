@@ -1,0 +1,3 @@
+# Ignore everything in resources except this gitignore
+*
+!.gitignore

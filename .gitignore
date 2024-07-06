@@ -5,10 +5,6 @@
 /[Bb]uild/
 /[Bb]uilds/
 
-# resources folder (binaries like test vids)
-/[Rr]esource/
-/[Rr]esources/
-
 # folder for storing YOLO models
 /model/
 
