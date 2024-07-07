@@ -20,6 +20,28 @@ private:
     bool verbose;
 
     void test();
+    void initTestVariables();
+    void testVehicleWatcherGui(int greenFramesToCheck, int redFramesToCheck);
+    void testVehicleWatcherHeadless(int greenFramesToCheck,
+                                    int redFramesToCheck);
+    void testPedestrianWatcherGui(int redFramesToCheck);
+    void testPedestrianWatcherHeadless(int redFramesToCheck);
+    void compareVehicleResults();
+    void comparePedestrianResults();
+
+    // GUI mode results for test comparison
+    int greenCountGui;
+    float greenDensityGui;
+    int redCountGui;
+    float redDensityGui;
+    int pedCountGui;
+
+    // Headless mode results for test comparison
+    int greenCountHeadless;
+    float greenDensityHeadless;
+    int redCountHeadless;
+    float redDensityHeadless;
+    int pedCountHeadless;
 };
 
 #endif
