@@ -69,7 +69,20 @@ done
 
 # Download the TrafficEZ file from the latest release
 log "Fetching TrafficEZ file URL from latest release"
-TRAFFIC_EZ_URL=$(curl -s $RELEASE_URL | grep browser_download_url | grep TrafficEZ | cut -d '"' -f 4)
+TRAFFIC_EZ_URL=$(curl -s $RELEASE_URL | grep browser_download_url | grep -o 'https://github.com[^"]*/TrafficEZ"')
+
+# Remove trailing quote from the URL
+TRAFFIC_EZ_URL=${TRAFFIC_EZ_URL%\"}
+
+# Debug: Print the extracted URL
+log "Extracted TrafficEZ URL: $TRAFFIC_EZ_URL"
+
+# Check if the URL is not empty
+if [[ -z "$TRAFFIC_EZ_URL" ]]; then
+    log "Failed to extract TrafficEZ URL"
+    exit 1
+fi
+
 log "Downloading TrafficEZ"
 if curl -L -o "$RESOURCES_DIR/TrafficEZ" "$TRAFFIC_EZ_URL"; then
     log "Successfully downloaded TrafficEZ"
