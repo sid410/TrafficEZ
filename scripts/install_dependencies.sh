@@ -27,6 +27,8 @@ sudo ln -s -f ../libv4l1-videodev.h videodev.h
 cd "$cwd"
 
 sudo apt -y install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+sudo apt -y install gstreamer1.0-tools gstreamer1.0-plugins-base 
+sudo apt -y install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly
 sudo apt -y install libgtk2.0-dev libtbb-dev libcanberra-gtk-module libcanberra-gtk3-module
 sudo apt -y install qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
 sudo apt -y install libatlas-base-dev
