@@ -5,28 +5,28 @@
 TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
                                bool calib,
-                               bool verbose)
+                               bool verbose,
+                               bool test)
     : configFile(configFile)
     , debugMode(debug)
     , calibMode(calib)
     , verbose(verbose)
+    , testMode(test)
 {}
 
 void TrafficManager::start()
 {
-    std::cout << "TrafficManager starting...\n";
-    std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
-    std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
-    std::cout << "Verbose Mode: " << (verbose ? "true" : "false") << "\n";
-
-    bool testMode = true;
-
     if(testMode)
     {
         test();
         std::cout << "\nTest Successful!!\n";
         exit(EXIT_SUCCESS);
     }
+
+    std::cout << "TrafficManager starting...\n";
+    std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
+    std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
+    std::cout << "Verbose Mode: " << (verbose ? "true" : "false") << "\n";
 
     MultiprocessTraffic multiprocessTraffic(configFile, debugMode, verbose);
 

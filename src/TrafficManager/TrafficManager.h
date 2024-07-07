@@ -9,7 +9,8 @@ public:
     TrafficManager(const std::string& configFile,
                    bool debug,
                    bool calib,
-                   bool verbose);
+                   bool verbose,
+                   bool test);
 
     void start();
 
@@ -18,6 +19,7 @@ private:
     bool debugMode;
     bool calibMode;
     bool verbose;
+    bool testMode;
 
     void test();
     void initTestVariables();
