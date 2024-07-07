@@ -1,8 +1,8 @@
 #!/bin/bash
 
-root_dir="$(pwd)/.."
+root_dir="$(dirname "$(dirname "$(readlink -f "$0")")")"
 resources_dir="$root_dir/resources"
-clean_script="$(dirname "$0")/clean_resources.sh"
+clean_script="$root_dir/scripts/clean_resources.sh"
 
 $clean_script
 
