@@ -31,6 +31,10 @@ jobs:
       run: |
         ./scripts/install_opencv.sh
 
+    # install xvfb for virtual framebuffer to test OpenCV's imshow
+    - name: Install xvfb
+      run: sudo apt-get install -y xvfb
+
     - name: Configure the Project for Release
       run: |
         cmake -DCMAKE_BUILD_TYPE=Release \
@@ -81,7 +85,7 @@ jobs:
         EXECUTABLE_NAME=$(basename ${{ env.EXECUTABLE_PATH }})
         ORIGINAL_PATH=$(pwd)
         cd ${{ github.workspace }}/resources
-        ./$EXECUTABLE_NAME -t
+        xvfb-run -a ./$EXECUTABLE_NAME -t
         cd $ORIGINAL_PATH
 
     - name: Create or Update Versioned Release
