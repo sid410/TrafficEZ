@@ -79,6 +79,7 @@ jobs:
         cp ${{ env.EXECUTABLE_PATH }} ${{ github.workspace }}/resources/
         export LD_LIBRARY_PATH=${{ github.workspace }}/util/onnxruntime/lib:$LD_LIBRARY_PATH
         EXECUTABLE_NAME=$(basename ${{ env.EXECUTABLE_PATH }})
+        ls -l ${{ github.workspace }}/resources
         ${{ github.workspace }}/resources/$EXECUTABLE_NAME -t
 
     - name: Create or Update Versioned Release
