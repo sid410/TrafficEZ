@@ -1,4 +1,4 @@
-name: Build and Deploy for Release and Documentation
+name: Build/Test/Deploy for Release and Documentation
 
 on:
   push:
@@ -9,29 +9,31 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Required Packages
+    - name: Install Doxygen Required Packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake doxygen graphviz curl libcurl4-openssl-dev
+        sudo apt-get install -y doxygen graphviz
 
-    # We need to add these manually to make the opencv action below work
     - name: Add Missing APT Keys
       run: |
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
-        sudo apt-get update
+        ./scripts/add_apt_keys.sh
 
-    - name: Setup opencv
-      uses: Dovyski/setup-opencv-action@v1.1
-      with:
-        opencv-version: '4.9.0'
-        opencv-extra-modules: false
-        install-deps: false
+    - name: Install Dependencies
+      run: |
+        ./scripts/install_dependencies.sh
+
+    - name: Install OpenCV
+      run: |
+        ./scripts/install_opencv.sh
+
+    # install xvfb for virtual framebuffer to test OpenCV's imshow
+    - name: Install xvfb
+      run: sudo apt-get install -y xvfb
 
     - name: Configure the Project for Release
       run: |
@@ -74,6 +76,17 @@ jobs:
         echo "EXECUTABLE_PATH=$EXECUTABLE_PATH" >> $GITHUB_ENV
         echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
         echo "RELEASE_NAME=$EXECUTABLE_NAME" >> $GITHUB_ENV
+
+    - name: Test Built Executable
+      run: |
+        ./scripts/copy_test_files.sh
+        cp ${{ env.EXECUTABLE_PATH }} ${{ github.workspace }}/resources/
+        export LD_LIBRARY_PATH=${{ github.workspace }}/util/onnxruntime/lib:$LD_LIBRARY_PATH
+        EXECUTABLE_NAME=$(basename ${{ env.EXECUTABLE_PATH }})
+        ORIGINAL_PATH=$(pwd)
+        cd ${{ github.workspace }}/resources
+        xvfb-run -a ./$EXECUTABLE_NAME -t
+        cd $ORIGINAL_PATH
 
     - name: Create or Update Versioned Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'

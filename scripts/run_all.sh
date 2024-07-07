@@ -2,5 +2,5 @@
 
 # Shortcut to run all: clean, calib then debug
 
-./clean.sh
+./clean_build.sh
 ./calib_debug.sh

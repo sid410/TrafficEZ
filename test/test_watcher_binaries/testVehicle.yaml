@@ -1,0 +1,42 @@
+calibration_points:
+  - x: 769
+    y: 644
+  - x: 1196
+    y: 577
+  - x: 831
+    y: 345
+  - x: 675
+    y: 347
+lanes_dimension:
+  - length: 50
+    width: 20
+segmentation_model: yolov8n-seg.onnx
+pipeline_config:
+  - type: Grayscale
+  - type: GaussianBlur
+    parameters:
+      kernelSize: 5
+      sigma: 9
+  - type: MOG2BackgroundSubtraction
+    parameters:
+      history: 150
+      varThreshold: 16
+      varThresholdGen: 9
+      nMixtures: 5
+      detectShadows: true
+      shadowValue: 200
+  - type: Threshold
+    parameters:
+      thresholdValue: 200
+      maxValue: 255
+      thresholdType: 0
+  - type: Dilation
+    parameters:
+      morphShape: 2
+      kernelSize: 5
+      iterations: 4
+  - type: Erosion
+    parameters:
+      morphShape: 2
+      kernelSize: 3
+      iterations: 5
