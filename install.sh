@@ -7,7 +7,7 @@ echo
 BASE_URL="https://raw.githubusercontent.com/sid410/TrafficEZ/main"
 SCRIPTS_URL="$BASE_URL/scripts"
 CONFIGS_URL="https://api.github.com/repos/sid410/TrafficEZ/contents/sample_configs"
-RELEASE_URL="https://github.com/sid410/TrafficEZ/releases/latest"
+RELEASE_URL="https://api.github.com/repos/sid410/TrafficEZ/releases/latest"
 
 # The array of scripts to download and run
 scripts=("add_apt_keys.sh" "install_dependencies.sh" "install_opencv.sh")
@@ -36,9 +36,8 @@ for script in "${scripts[@]}"; do
 done
 
 # Download the ORT shared library
-log "Fetching latest release asset URL"
-ASSET_URL=$(curl -sL $RELEASE_URL | grep -oP 'href="\K[^"]*libonnxruntime\.so\.1\.17\.1' | head -n 1)
-ASSET_URL="https://github.com${ASSET_URL}"
+log "Fetching latest release asset URL for libonnxruntime.so.1.17.1"
+ASSET_URL=$(curl -s $RELEASE_URL | grep browser_download_url | grep libonnxruntime.so.1.17.1 | cut -d '"' -f 4)
 log "Downloading latest release asset: libonnxruntime.so.1.17.1"
 if curl -L -o "$INSTALL_DIR/libonnxruntime.so.1.17.1" "$ASSET_URL"; then
     log "Successfully downloaded: libonnxruntime.so.1.17.1"
@@ -70,8 +69,7 @@ done
 
 # Download the TrafficEZ file from the latest release
 log "Fetching TrafficEZ file URL from latest release"
-TRAFFIC_EZ_URL=$(curl -sL $RELEASE_URL | grep -oP 'href="\K[^"]*TrafficEZ' | head -n 1)
-TRAFFIC_EZ_URL="https://github.com${TRAFFIC_EZ_URL}"
+TRAFFIC_EZ_URL=$(curl -s $RELEASE_URL | grep browser_download_url | grep TrafficEZ | cut -d '"' -f 4)
 log "Downloading TrafficEZ"
 if curl -L -o "$RESOURCES_DIR/TrafficEZ" "$TRAFFIC_EZ_URL"; then
     log "Successfully downloaded TrafficEZ"
