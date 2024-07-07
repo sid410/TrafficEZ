@@ -4,6 +4,32 @@ Smart Traffic Solution using Computer Vision for Edge devices.
 
 Author: Isidro Butaslac
 
+## Installation
+
+Check if `curl` is installed:
+
+```bash
+curl --version
+```
+
+If not, install with:
+
+```bash
+sudo apt-get install curl
+```
+
+Download the installer and make it executable:
+
+```bash
+curl -sL "https://github.com/sid410/TrafficEZ/releases/latest" | grep -oP 'href="\K[^"]*install.sh' | head -n 1 | xargs -I {} curl -L -o "./install.sh" "https://github.com{}" && chmod +x ./install.sh
+```
+
+Then run the installer:
+
+```bash
+./install.sh
+```
+
 ## Documentation
 
 <https://imb410.github.io/TrafficEZ-Documentation/>
