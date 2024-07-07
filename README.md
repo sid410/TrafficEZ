@@ -18,15 +18,16 @@ If not, install with:
 sudo apt-get install curl
 ```
 
-Download the installer and make it executable:
+Download the installer:
 
 ```bash
-curl -sL "https://github.com/sid410/TrafficEZ/releases/latest" | grep -oP 'href="\K[^"]*install.sh' | head -n 1 | xargs -I {} curl -L -o "./install.sh" "https://github.com{}" && chmod +x ./install.sh
+curl -L -o install.sh $(curl -s https://api.github.com/repos/sid410/TrafficEZ/releases/latest | grep browser_download_url | grep install.sh | cut -d '"' -f 4)
 ```
 
-Then run the installer:
+Make it executable then run:
 
 ```bash
+chmod +x ./install.sh
 ./install.sh
 ```
 
