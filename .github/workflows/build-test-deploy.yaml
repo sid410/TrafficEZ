@@ -115,3 +115,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       run: |
         gh release upload ${{ env.TAG_NAME }} ${{ github.workspace }}/util/onnxruntime/lib/libonnxruntime.so.1.17.1 --clobber
+
+    - name: Upload Install Script
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      run: |
+        gh release upload ${{ env.TAG_NAME }} ${{ github.workspace }}/install.sh --clobber
