@@ -1,6 +1,10 @@
 #include "TrafficManager.h"
 #include "MultiprocessTraffic.h"
 #include "WatcherSpawner.h"
+#include <azure_c_shared_utility/platform.h>
+#include <iothub_client.h>
+#include <iothub_message.h>
+#include <iothubtransportmqtt.h>
 
 static const char* connectionString = "HostName=trafficez.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=P9kfF3Inx9wxpKM90Xdf9CTR8Z5XGGZDHAIoTJnwVeA=";
 
