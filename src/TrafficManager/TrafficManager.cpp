@@ -2,6 +2,38 @@
 #include "MultiprocessTraffic.h"
 #include "WatcherSpawner.h"
 
+static const char* connectionString = "HostName=trafficez.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=P9kfF3Inx9wxpKM90Xdf9CTR8Z5XGGZDHAIoTJnwVeA=";
+
+void sendMessage(const char* message)
+{
+    IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(connectionString, MQTT_Protocol);
+    if (iotHubClientHandle == nullptr)
+    {
+        printf("Failed to create IoT Hub client handle\n");
+        return;
+    }
+
+    IOTHUB_MESSAGE_HANDLE messageHandle = IoTHubMessage_CreateFromString(message);
+    if (messageHandle == nullptr)
+    {
+        printf("Failed to create message handle\n");
+        IoTHubClient_LL_Destroy(iotHubClientHandle);
+        return;
+    }
+
+    if (IoTHubClient_LL_SendEventAsync(iotHubClientHandle, messageHandle, nullptr, nullptr) != IOTHUB_CLIENT_OK)
+    {
+        printf("Failed to send message\n");
+    }
+    else
+    {
+        printf("Message sent successfully\n");
+    }
+
+    IoTHubMessage_Destroy(messageHandle);
+    IoTHubClient_LL_Destroy(iotHubClientHandle);
+}
+
 TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
                                bool calib,
@@ -12,6 +44,7 @@ TrafficManager::TrafficManager(const std::string& configFile,
     , calibMode(calib)
     , verbose(verbose)
     , testMode(test)
+    , sendMessage("{\"vehicleCount\": 100, \"density\": 30}");
 {}
 
 void TrafficManager::start()
