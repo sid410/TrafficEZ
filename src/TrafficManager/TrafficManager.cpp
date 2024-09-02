@@ -6,12 +6,14 @@ TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
                                bool calib,
                                bool verbose,
-                               bool test)
+                               bool test,
+                               bool standby)
     : configFile(configFile)
     , debugMode(debug)
     , calibMode(calib)
     , verbose(verbose)
     , testMode(test)
+    , standbyMode(standby)
 {}
 
 void TrafficManager::start()
@@ -23,10 +25,17 @@ void TrafficManager::start()
         exit(EXIT_SUCCESS);
     }
 
+    if(standbyMode)
+    {
+        standby();
+        std::cout << "\nTraffic light on standby...\n";
+    }
+
     std::cout << "TrafficManager starting...\n";
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
     std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
     std::cout << "Verbose Mode: " << (verbose ? "true" : "false") << "\n";
+    std::cout << "Standby Mode: " << (standbyMode ? "true" : "false") << "\n";
 
     MultiprocessTraffic multiprocessTraffic(configFile, debugMode, verbose);
 
@@ -267,4 +276,20 @@ void TrafficManager::comparePedestrianResults()
                      "different results!\n";
         exit(EXIT_FAILURE);
     }
+}
+
+void TrafficManager::standby()
+{
+    // To add relay initialization here.
+    // The relay URL should be read.
+   
+    std::cout << "Starting Flashing Yellow Light Mode..." << std::endl;
+    // relay.startFlashingYellow(500); // 500 ms on/off duration
+    
+    // Press Enter to stop flashing
+    // std::cin.get();
+    // relay.stopFlashingYellow();
+    
+    // std::cout << "Flashing Yellow Light Mode Stopped." << std::endl;
+    // exit(EXIT_SUCCESS);
 }

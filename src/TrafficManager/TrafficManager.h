@@ -2,6 +2,7 @@
 #define TRAFFIC_MANAGER_H
 
 #include <string>
+#include "RelayController.h"
 
 class TrafficManager
 {
@@ -10,18 +11,22 @@ public:
                    bool debug,
                    bool calib,
                    bool verbose,
-                   bool test);
+                   bool test,
+                   bool standby);
 
     void start();
 
 private:
+    RelayController relay;
     std::string configFile;
     bool debugMode;
     bool calibMode;
     bool verbose;
     bool testMode;
+    bool standbyMode;
 
     void test();
+    void standby();
     void initTestVariables();
     void testVehicleWatcherGui(int greenFramesToCheck, int redFramesToCheck);
     void testVehicleWatcherHeadless(int greenFramesToCheck,

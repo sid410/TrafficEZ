@@ -18,9 +18,14 @@ public:
     void setPhaseCycle(int cycle);
     void executePhase();
     void executeTransitionPhase();
+    void startFlashingYellow(int flashDuration);   
+    void stopFlashingYellow();
 
 private:
     bool verbose;
+    bool flashing;
+
+    std::vector<int> yellowRelayPins {3, 6, 9, 12};
 
     CURL* curl;
     std::string baseUrl;
@@ -40,6 +45,7 @@ private:
     std::vector<PhaseMessageType>
     deriveTransitionPhase(const std::vector<PhaseMessageType>& currentPhase,
                           const std::vector<PhaseMessageType>& nextPhase);
+
 };
 
 #endif

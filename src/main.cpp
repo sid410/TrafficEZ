@@ -23,11 +23,17 @@ int main(int argc, char* argv[])
         "v,verbose",
         "Verbose mode",
         cxxopts::value<bool>()->default_value("false"))(
-        "t,test", "Test mode", cxxopts::value<bool>()->default_value("false"))(
+        "t,test", 
+        "Test mode", 
+        cxxopts::value<bool>()->default_value("false"))(
         "j,jconf",
         "Junction config",
         cxxopts::value<std::string>()->default_value("junction_config.yaml"))(
-        "h,help", "Print usage");
+        "h,help", "Print usage",
+        cxxopts::value<std::string>()->default_value("false"))(
+        "s,standby", 
+        "Standby mode"
+        );
 
     auto result = options.parse(argc, argv);
 
@@ -41,6 +47,7 @@ int main(int argc, char* argv[])
     bool calib = result["calib"].as<bool>();
     bool verbose = result["verbose"].as<bool>();
     bool test = result["test"].as<bool>();
+    bool standby = result["standby"].as<bool>();
     std::string configFile = result["jconf"].as<std::string>();
 
     if(verbose)
@@ -50,7 +57,7 @@ int main(int argc, char* argv[])
         std::cout << "Number of CPU cores: " << cv::getNumberOfCPUs() << "\n";
     }
 
-    TrafficManager trafficManager(configFile, debug, calib, verbose, test);
+    TrafficManager trafficManager(configFile, debug, calib, verbose, test, standby);
     trafficManager.start();
 
     return 0;
