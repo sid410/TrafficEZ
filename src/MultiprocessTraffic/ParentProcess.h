@@ -70,6 +70,7 @@ private:
     setDefaultPhaseDensities(std::vector<std::vector<float>>& phaseDensities);
     void
     updatePhaseDurations(const std::vector<std::vector<float>>& phaseDensities);
+    void sendMessageToIoTHub1(const std::string& message);
 
     void closeUnusedPipes();
 };
