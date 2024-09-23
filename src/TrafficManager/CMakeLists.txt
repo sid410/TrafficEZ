@@ -1,4 +1,5 @@
 add_library(TrafficManager TrafficManager.cpp)
+setup_azureiothub(TrafficManager)
 
 target_include_directories(
   TrafficManager
