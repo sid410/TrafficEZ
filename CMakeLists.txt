@@ -9,6 +9,7 @@ include(${CMAKE_SOURCE_DIR}/CMakeSettings.cmake)
 
 # Need to have CURL installed locally
 find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 # Need to have OpenCV installed locally If OpenCV is not in your environment
 # variables, do: set(OpenCV_DIR /path/to/opencv/build)

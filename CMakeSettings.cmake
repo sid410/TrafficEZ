@@ -1,5 +1,6 @@
 include(CheckCXXCompilerFlag)
 
+
 # Set C++ standard
 set(COMMON_CXX_STANDARD 17)
 set(COMMON_CXX_FLAGS "")
@@ -9,11 +10,13 @@ if(COMPILER_SUPPORTS_CXX17)
   list(APPEND COMMON_CXX_FLAGS "-std=c++17")
 endif()
 
+
 # Compile options for other functions to follow
 function(setup_common_compile_options TARGET)
   target_compile_features(${TARGET} PRIVATE cxx_std_${COMMON_CXX_STANDARD})
   target_compile_options(${TARGET} PRIVATE ${COMMON_CXX_FLAGS})
 endfunction()
+
 
 function(setup_currdir_opencv TARGET)
   setup_common_compile_options(${TARGET})
@@ -22,6 +25,7 @@ function(setup_currdir_opencv TARGET)
   target_link_libraries(${TARGET} PRIVATE ${OpenCV_LIBS})
 endfunction()
 
+
 function(setup_yaml_libstatic TARGET)
   setup_common_compile_options(${TARGET})
   target_include_directories(${TARGET}
@@ -29,6 +33,7 @@ function(setup_yaml_libstatic TARGET)
   target_link_libraries(
     ${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/util/yaml-cpp/lib/libyaml-cpp.a)
 endfunction()
+
 
 function(setup_onnxruntime TARGET)
   setup_common_compile_options(${TARGET})
@@ -39,12 +44,14 @@ function(setup_onnxruntime TARGET)
     PRIVATE ${CMAKE_SOURCE_DIR}/util/onnxruntime/lib/libonnxruntime.so)
 endfunction()
 
+
 function(setup_ort_api TARGET)
   setup_common_compile_options(${TARGET})
   target_include_directories(${TARGET}
                              PUBLIC ${CMAKE_SOURCE_DIR}/util/OrtApiWrapper)
   target_link_libraries(${TARGET} PRIVATE OrtApiWrapper)
 endfunction()
+
 
 function(setup_ort_segmentation TARGET)
   setup_common_compile_options(${TARGET})
@@ -53,12 +60,14 @@ function(setup_ort_segmentation TARGET)
   target_link_libraries(${TARGET} PRIVATE SegmentationModule)
 endfunction()
 
+
 function(setup_fps_helper TARGET)
   setup_common_compile_options(${TARGET})
   target_include_directories(${TARGET}
                              PUBLIC ${CMAKE_SOURCE_DIR}/util/FPSHelper)
   target_link_libraries(${TARGET} PRIVATE FPSHelper)
 endfunction()
+
 
 function(setup_videostreamer TARGET)
   setup_common_compile_options(${TARGET})
@@ -68,6 +77,7 @@ function(setup_videostreamer TARGET)
   target_link_libraries(${TARGET} PRIVATE VideoStreamer TransformPerspective)
 endfunction()
 
+
 function(setup_videostreamer_calib TARGET)
   setup_common_compile_options(${TARGET})
   target_include_directories(
@@ -76,6 +86,7 @@ function(setup_videostreamer_calib TARGET)
   target_link_libraries(${TARGET} PRIVATE CalibrateVideoStreamer
                                           TransformPerspective)
 endfunction()
+
 
 function(setup_hullrecognition TARGET)
   setup_common_compile_options(${TARGET})
@@ -88,21 +99,23 @@ function(setup_hullrecognition TARGET)
                                           PreprocessPipeline)
 endfunction()
 
+
 function(setup_azureiothub TARGET)
   setup_common_compile_options(${TARGET})
   target_include_directories(
-    ${TARGET}
-    PUBLIC ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/iothub_client/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/umqtt/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/c-utility/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/pal/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/deps/parson)
-  target_link_libraries(${TARGET} 
-    PRIVATE ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/iothub_client/libiothub_client.a
-            ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/umqtt/libumqtt.a
-            ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/c-utility/libaziotsharedutil.a
-            ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/deps/parson/libparson.a
-            /usr/lib/x86_64-linux-gnu/libssl.a
-            /usr/lib/x86_64-linux-gnu/libcrypto.a
-            /usr/lib/x86_64-linux-gnu/libpthread.a)
+    ${TARGET} PUBLIC 
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/iothub_client/inc
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/umqtt/inc
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/c-utility/inc
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/pal/inc
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/deps/parson)
+  target_link_libraries(
+    ${TARGET} PRIVATE 
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/iothub_client/libiothub_client.a
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/umqtt/libumqtt.a
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/c-utility/libaziotsharedutil.a
+      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/deps/parson/libparson.a
+      /usr/lib/x86_64-linux-gnu/libssl.a
+      /usr/lib/x86_64-linux-gnu/libcrypto.a
+      /usr/lib/x86_64-linux-gnu/libpthread.a)
 endfunction()

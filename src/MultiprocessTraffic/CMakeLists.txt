@@ -1,7 +1,6 @@
 add_library(MultiprocessTraffic MultiprocessTraffic.cpp ParentProcess.cpp
                                 ChildProcess.cpp PhaseMessageType.cpp)
 setup_yaml_libstatic(MultiprocessTraffic)
-setup_azureiothub(MultiprocessTraffic)
 
 target_include_directories(
   MultiprocessTraffic

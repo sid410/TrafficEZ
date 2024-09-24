@@ -30,7 +30,6 @@ private:
     void testPedestrianWatcherHeadless(int redFramesToCheck);
     void compareVehicleResults();
     void comparePedestrianResults();
-    void sendMessageToIoTHub(const std::string& message);
 
     // GUI mode results for test comparison
     int greenCountGui;
