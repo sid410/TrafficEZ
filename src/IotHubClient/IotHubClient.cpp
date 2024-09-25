@@ -1,19 +1,24 @@
 #include "IotHubClient.h"
+#include <yaml-cpp/yaml.h>
+
 
 // Function to URL-encode a string
 std::string IotHubClient::urlEncode(const std::string& value)
 {
     std::string encoded;
     char buf[4];
-    for(unsigned char c : value)
+    
+    // Loop through each character in the input string
+    for (unsigned char c : value)
     {
-        if(std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~')
+        // Append valid URL characters directly, otherwise encode
+        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~')
         {
             encoded += c;
         }
         else
         {
-            std::sprintf(buf, "%%%02X", c);
+            std::sprintf(buf, "%%%02X", c);  // Format non-URL-safe characters as %XX
             encoded += buf;
         }
     }
@@ -21,43 +26,53 @@ std::string IotHubClient::urlEncode(const std::string& value)
 }
 
 // Function to decode a Base64 encoded string
-std::string IotHubClient::base64_decode(const std::string& in)
+std::string IotHubClient::base64Decode(const std::string& in)
 {
-    BIO *bio, *b64;
-    std::string out;
-
-    b64 = BIO_new(BIO_f_base64());
-    bio = BIO_new_mem_buf(in.data(), in.size());
+    // Initialize BIO for Base64 decoding
+    BIO* bio = BIO_new_mem_buf(in.data(), static_cast<int>(in.size()));
+    BIO* b64 = BIO_new(BIO_f_base64());
     bio = BIO_push(b64, bio);
 
-    char buffer[512];
-    int decodedSize = BIO_read(bio, buffer, sizeof(buffer));
-    out.assign(buffer, decodedSize);
+    // Temporary buffer to hold decoded data
+    std::string out;
+    out.resize(in.size());  // Reserve enough space to handle decoded data
 
+    // Decode Base64 into the buffer
+    int decodedSize = BIO_read(bio, out.data(), static_cast<int>(out.size()));
+
+    // Resize string to match actual decoded size
+    out.resize(decodedSize);
+
+    // Free allocated BIO resources
     BIO_free_all(bio);
+    
     return out;
 }
 
 // Function to encode a string in Base64
-std::string IotHubClient::base64_encode(const std::string& in)
+std::string IotHubClient::base64Encode(const std::string& in)
 {
-    BIO *bio, *b64;
-    BUF_MEM* bufferPtr;
-    std::string out;
+    BIO* b64 = BIO_new(BIO_f_base64());
+    BIO* bio = BIO_new(BIO_s_mem());  // Create memory buffer
+    bio = BIO_push(b64, bio);         // Chain Base64 filter to memory buffer
 
-    b64 = BIO_new(BIO_f_base64());
-    bio = BIO_new(BIO_s_mem());
-    bio = BIO_push(b64, bio);
-    BIO_write(bio, in.data(), in.size());
-    BIO_flush(bio);
+    // Write input data to BIO for encoding
+    BIO_write(bio, in.data(), static_cast<int>(in.size()));
+    BIO_flush(bio);  // Ensure all data is written to the buffer
+
+    // Get the pointer to the encoded data
+    BUF_MEM* bufferPtr;
     BIO_get_mem_ptr(bio, &bufferPtr);
 
-    out.assign(bufferPtr->data, bufferPtr->length - 1);
-    out.push_back('\0'); // Ensure null-terminated string
-    BIO_free_all(bio);
+    // Construct the output string from encoded data
+    std::string out(bufferPtr->data, bufferPtr->length);
 
+    // Free BIO resources
+    BIO_free_all(bio);
+    
     return out;
 }
+
 
 // Function to generate a SAS token
 std::string IotHubClient::generateSASToken(const std::string& resourceUri,
@@ -75,7 +90,7 @@ std::string IotHubClient::generateSASToken(const std::string& resourceUri,
     std::string stringToSign = encodedResourceUri + "\n" + std::to_string(expiry);
 
     // Decode the key from Base64
-    std::string decodedKey = base64_decode(key);
+    std::string decodedKey = base64Decode(key);
 
     // Generate the HMAC-SHA256 signature
     unsigned char hmac[EVP_MAX_MD_SIZE];
@@ -88,7 +103,7 @@ std::string IotHubClient::generateSASToken(const std::string& resourceUri,
          hmac,
          &hmacLength);
 
-    std::string signature = base64_encode(std::string(reinterpret_cast<char*>(hmac), hmacLength));
+    std::string signature = base64Encode(std::string(reinterpret_cast<char*>(hmac), hmacLength));
 
     // Create the SAS token
     std::string token = "SharedAccessSignature sr=" + encodedResourceUri +
@@ -108,14 +123,6 @@ void IotHubClient::sendMessageToIoTHub(const std::string& message)
 {
     CURL* curl;
     CURLcode res;
-
-    // Connection string details
-    std::string connectionString = "HostName=trafficez-hub.azure-devices.net;DeviceId=trafficez;SharedAccessKey=maEm8zZSYL3UV0wLlhQcvCicXKTmnlbRDAIoTBlsUcU=";
-    std::string deviceId = "trafficez";
-
-    // Extract Hostname and SharedAccessKey from connection string
-    std::string hostname = "trafficez-hub.azure-devices.net";
-    std::string sharedAccessKey = "maEm8zZSYL3UV0wLlhQcvCicXKTmnlbRDAIoTBlsUcU=";
 
     std::string resourceUri = "https://" + hostname + "/devices/" + deviceId;
     std::string sasToken = generateSASToken(resourceUri, sharedAccessKey);
@@ -152,4 +159,21 @@ void IotHubClient::sendMessageToIoTHub(const std::string& message)
     }
 
     curl_global_cleanup();
+}
+
+void IotHubClient::loadIotConfig()
+{
+
+    try {
+            // Load YAML file
+            YAML::Node config = YAML::LoadFile(iConfigFile);
+
+            // Retrieve parameters from YAML file
+            hostname = config["hostname"].as<std::string>();
+            deviceId = config["deviceId"].as<std::string>();
+            sharedAccessKey = config["sharedAccessKey"].as<std::string>();
+
+        } catch (const std::exception& e) {
+            std::cerr << "Error loading IoT configuration from YAML: " << e.what() << std::endl;
+        }
 }

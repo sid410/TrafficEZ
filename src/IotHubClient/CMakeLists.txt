@@ -1,0 +1,3 @@
+add_library(IotHubClient IotHubClient.cpp)
+setup_azureiothub(IotHubClient)
+setup_yaml_libstatic(IotHubClient)

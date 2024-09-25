@@ -18,17 +18,17 @@ void TrafficManager::start()
 {
     if(testMode)
     {
-        iotHubClient.sendMessageToIoTHub("Testing Mode...\n");
+        client.sendMessageToIoTHub("Testing Mode...\n");
         test();
         std::string testSuccess = "\nTest Successful!!\n";
         std::cout << testSuccess;
-        iotHubClient.sendMessageToIoTHub(testSuccess);
+        client.sendMessageToIoTHub(testSuccess);
         exit(EXIT_SUCCESS);
     }
 
     std::string startMessage = "TrafficManager starting...\n";
     std::cout << startMessage;
-    iotHubClient.sendMessageToIoTHub(startMessage);
+    client.sendMessageToIoTHub(startMessage);
 
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
     std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
