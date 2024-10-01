@@ -2,6 +2,7 @@
 #include "MultiprocessTraffic.h"
 #include "WatcherSpawner.h"
 
+
 TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
                                bool calib,
@@ -18,11 +19,11 @@ void TrafficManager::start()
 {
     if(testMode)
     {
-        client.sendMessageToIoTHub("Testing Mode...\n");
+        // client.sendMessageToIoTHub("Testing Mode...\n");
         test();
         std::string testSuccess = "\nTest Successful!!\n";
         std::cout << testSuccess;
-        client.sendMessageToIoTHub(testSuccess);
+        // client.sendMessageToIoTHub(testSuccess);
         exit(EXIT_SUCCESS);
     }
 
@@ -94,6 +95,7 @@ void TrafficManager::testVehicleWatcherGui(int greenFramesToCheck,
     greenCountGui = vehicleWatcher->getInstanceCount();
     greenDensityGui = vehicleWatcher->getTrafficDensity();
 
+    // std::string greenVehicleCount = "Green Vehicle count: " << greenCountGui << "\n";
     std::cout << "Green Vehicle count: " << greenCountGui << "\n";
     std::cout << "Green Vehicle density: " << greenDensityGui << "\n";
 

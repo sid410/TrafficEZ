@@ -3,6 +3,8 @@
 
 #include <string>
 #include "IotHubClient.h"
+// #include <nlohmann/json.hpp>
+
 
 class TrafficManager
 {
@@ -17,6 +19,7 @@ public:
 
 private:
     IotHubClient client;
+    
     std::string configFile;
     bool debugMode;
     bool calibMode;
