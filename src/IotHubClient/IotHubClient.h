@@ -16,6 +16,7 @@ private:
     std::string iConfigFile = "iothub_config.yaml";
     std::string hostname;
     std::string deviceId;
+    std::string sharedAccessKeyName;
     std::string sharedAccessKey;
     unsigned char* digest;
 

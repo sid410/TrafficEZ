@@ -114,15 +114,15 @@ void IotHubClient::sendMessageToIoTHub(const std::string& message) {
     CURLcode res;
 
     std::string resourceUri = "https://" + hostname + "/devices/" + deviceId;
-    std::string sasToken = generateSASToken(resourceUri, sharedAccessKey);
+    std::string sasToken = generateSASToken(resourceUri, sharedAccessKey, sharedAccessKeyName);
     std::cout << "SAS Token: " << sasToken << "\n\n";
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
 
     if (curl) {
-        // std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/events?api-version=2021-04-12";
-        std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/devicebound?api-version=2021-04-12";
+        std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/events?api-version=2021-04-12";
+        // std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/devicebound?api-version=2021-04-12";
         std::cout << "Sending message to URL: " << url << std::endl;
 
         struct curl_slist* headers = nullptr;
@@ -161,17 +161,32 @@ void IotHubClient::sendMessageToIoTHub(const std::string& message) {
 }
 
 void IotHubClient::loadIotConfig() {
-    try {
+        try {
         // Load YAML file
         YAML::Node config = YAML::LoadFile(iConfigFile);
 
-        // Retrieve parameters from YAML file
+        // Check if required parameters are available
+        if (!config["hostname"] || !config["deviceId"] || !config["sharedAccessKey"]) {
+            throw std::runtime_error("Missing required IoT Hub configuration parameters in YAML file.");
+        }
+
+        // Retrieve required parameters from YAML file
         hostname = config["hostname"].as<std::string>();
         deviceId = config["deviceId"].as<std::string>();
         sharedAccessKey = config["sharedAccessKey"].as<std::string>();
 
+        // Check if the optional parameter sharedAccessKeyName is present
+        if (config["sharedAccessKeyName"]) {
+            sharedAccessKeyName = config["sharedAccessKeyName"].as<std::string>();
+        } else {
+            // Optionally assign a default value or handle the absence of this parameter
+            sharedAccessKeyName = ""; // Set to an empty string or handle accordingly
+            // std::cout << "Warning: sharedAccessKeyName is not provided in the configuration file, using default value." << std::endl;
+        }
+
         std::string connectionString = "HostName=" + hostname + 
                                        ";DeviceId=" + deviceId + 
+                                       ";SharedAccessKeyName=" + sharedAccessKeyName +
                                        ";SharedAccessKey=" + sharedAccessKey + "\n";
         
         // Checking the fetched parameters
