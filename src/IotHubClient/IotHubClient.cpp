@@ -121,8 +121,9 @@ void IotHubClient::sendMessageToIoTHub(const std::string& message) {
     curl = curl_easy_init();
 
     if (curl) {
-        std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/events?api-version=2021-04-12";
+        // std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/events?api-version=2021-04-12";
         // std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/devicebound?api-version=2021-04-12";
+        std::string url = "https://" + hostname + "/devices/" + deviceId + "/messages/devicebound?api-version=2020-09-30";
         std::cout << "Sending message to URL: " << url << std::endl;
 
         struct curl_slist* headers = nullptr;
