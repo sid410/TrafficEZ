@@ -7,6 +7,7 @@ add_subdirectory(SegmentationModule)
 add_subdirectory(MultiprocessTraffic)
 add_subdirectory(RelayController)
 add_subdirectory(IotHubClient)
+add_subdirectory(HttpRequests)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 setup_currdir_opencv(${EXECUTABLE_NAME})

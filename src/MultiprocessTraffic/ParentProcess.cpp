@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <limits>
 #include <numeric>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -56,6 +55,24 @@ ParentProcess::ParentProcess(int numVehicle,
 
 void ParentProcess::run()
 {
+    // testing post request
+    postUrl = "https://55qdnlqk-7079.asse.devtunnels.ms/Report";
+    headers = {{"accept", "text/plain"},
+               {"Content-Type", "application/json-patch+json"}};
+    jsonData = R"({
+        "density": 100,
+        "dateTime": "2024-10-03T11:05:34Z"
+    })";
+    success = client.sendPostRequest(postUrl, jsonData, headers);
+    if(success)
+    {
+        std::cout << "POST request sent successfully!" << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to send POST request." << std::endl;
+    }
+
     relay.initialize(phases, relayUrl, verbose);
 
     int phaseIndex = 0;

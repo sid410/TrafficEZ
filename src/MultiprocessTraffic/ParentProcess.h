@@ -1,6 +1,7 @@
 #ifndef PARENT_PROCESS_H
 #define PARENT_PROCESS_H
 
+#include "HttpPostClient.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
 #include "RelayController.h"
@@ -32,6 +33,12 @@ private:
 
     RelayController relay;
     std::string relayUrl;
+
+    HttpPostClient client;
+    std::string postUrl;
+    std::string jsonData;
+    std::map<std::string, std::string> headers;
+    bool success;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;
