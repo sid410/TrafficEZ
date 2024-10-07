@@ -1,3 +1,4 @@
 add_library(
     HttpRequests
-        HttpPostClient.cpp)
+        HttpPostClient.cpp 
+        HttpPostClientAsync.cpp)
