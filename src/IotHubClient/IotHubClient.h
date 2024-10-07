@@ -6,7 +6,8 @@
 class IotHubClient
 {
 public:
-    IotHubClient() {
+    IotHubClient()
+    {
         loadIotConfig();
     }
 
@@ -24,12 +25,11 @@ private:
     static std::string base64Decode(const std::string& in);
     static std::string base64Encode(const unsigned char* input, int length);
     static std::string base64EncodeForSas(const std::string& input);
-    static std::string generateSASToken(const std::string& resourceUri, 
-                                        const std::string& key, 
+    static std::string generateSASToken(const std::string& resourceUri,
+                                        const std::string& key,
                                         const std::string& policyName);
 
     void loadIotConfig();
-
 };
 
 #endif

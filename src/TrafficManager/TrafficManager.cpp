@@ -29,7 +29,7 @@ void TrafficManager::start()
 
     std::string startMessage = "TrafficManager starting...\n";
     std::cout << startMessage;
-    client.sendMessageToIoTHub(startMessage);
+    // client.sendMessageToIoTHub(startMessage);
 
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
     std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
