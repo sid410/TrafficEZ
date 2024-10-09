@@ -224,7 +224,7 @@ void IotHubClient::loadIotConfig()
             ";SharedAccessKey=" + sharedAccessKey + "\n";
 
         // Checking the fetched parameters
-        std::cout << "Connection string: " << connectionString;
+        // std::cout << "Connection string: " << connectionString;
     }
     catch(const std::exception& e)
     {
