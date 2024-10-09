@@ -1,10 +1,11 @@
 #ifndef PARENT_PROCESS_H
 #define PARENT_PROCESS_H
 
-#include "HttpPostClient.h"
+#include "HttpPostClientAsync.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
 #include "RelayController.h"
+#include <sstream>
 #include <vector>
 
 class ParentProcess
@@ -34,9 +35,13 @@ private:
     RelayController relay;
     std::string relayUrl;
 
-    HttpPostClient client;
+    int subLocationId = 1; // add in junction_config.yaml
+    std::string name = "ezbox1"; // add in junction_config.yaml
+
+    HttpPostClientAsync clientAsync;
     std::string postUrl;
-    std::string jsonData;
+    std::stringstream jsonData;
+    std::string jsonStr;
     std::map<std::string, std::string> headers;
     bool success;
 
@@ -77,9 +82,10 @@ private:
     setDefaultPhaseDensities(std::vector<std::vector<float>>& phaseDensities);
     void
     updatePhaseDurations(const std::vector<std::vector<float>>& phaseDensities);
-    void sendMessageToIoTHub1(const std::string& message);
 
     void closeUnusedPipes();
+
+    void sendJunctionReport(std::string data);
 };
 
 #endif
