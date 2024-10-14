@@ -4,6 +4,7 @@
 #include <curl/curl.h>
 #include <functional>
 #include <map>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -22,11 +23,12 @@ public:
 
 private:
     void cleanupCurl();
-    void performAsync(CURLM* multi_handle, std::function<void(bool)> callback);
+    void performAsync(std::function<void(bool)> callback);
 
     CURL* curl; // Pointer to the CURL instance
     CURLM* multi_handle; // Multi handle for asynchronous requests
     std::thread worker; // Thread to perform the async request
+    std::mutex curl_mutex; // Mutex for thread safety
 };
 
 #endif // HTTP_POST_CLIENT_ASYNC_H

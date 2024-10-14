@@ -1,6 +1,7 @@
 #include "HttpPostClientAsync.h"
 #include <chrono>
 #include <iostream>
+#include <mutex>
 #include <thread>
 
 HttpPostClientAsync::HttpPostClientAsync()
@@ -22,6 +23,7 @@ void HttpPostClientAsync::sendPostRequestAsync(
     const std::map<std::string, std::string>& headers,
     std::function<void(bool)> callback)
 {
+    std::lock_guard<std::mutex> lock(curl_mutex); // Protecting shared resources
     if(!curl || !multi_handle)
     {
         std::cerr << "CURL not initialized." << std::endl;
@@ -30,6 +32,7 @@ void HttpPostClientAsync::sendPostRequestAsync(
         return;
     }
 
+    // Create and set up the header list
     struct curl_slist* header_list = nullptr;
     for(const auto& header : headers)
     {
@@ -46,15 +49,16 @@ void HttpPostClientAsync::sendPostRequestAsync(
     curl_multi_add_handle(multi_handle, curl);
 
     // Start a new thread to handle the async operation
-    worker = std::thread(
-        &HttpPostClientAsync::performAsync, this, multi_handle, callback);
+    worker = std::thread(&HttpPostClientAsync::performAsync, this, callback);
 
     // Detach the thread to allow it to run independently
     worker.detach();
+
+    // Free the header list after adding it to CURL
+    curl_slist_free_all(header_list);
 }
 
-void HttpPostClientAsync::performAsync(CURLM* multi_handle,
-                                       std::function<void(bool)> callback)
+void HttpPostClientAsync::performAsync(std::function<void(bool)> callback)
 {
     int still_running = 0;
     CURLMcode mc;
@@ -69,7 +73,7 @@ void HttpPostClientAsync::performAsync(CURLM* multi_handle,
                       << std::endl;
             if(callback)
                 callback(false);
-            break;
+            return; // Exit on error
         }
 
         // Wait for activity, with a timeout to avoid busy-looping
@@ -81,7 +85,7 @@ void HttpPostClientAsync::performAsync(CURLM* multi_handle,
                       << std::endl;
             if(callback)
                 callback(false);
-            break;
+            return; // Exit on error
         }
 
         // Simulate doing some work while waiting
@@ -117,6 +121,7 @@ void HttpPostClientAsync::performAsync(CURLM* multi_handle,
 
 void HttpPostClientAsync::cleanupCurl()
 {
+    std::lock_guard<std::mutex> lock(curl_mutex); // Protecting cleanup
     if(curl)
     {
         curl_easy_cleanup(curl);
