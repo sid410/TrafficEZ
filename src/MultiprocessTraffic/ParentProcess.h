@@ -35,13 +35,11 @@ private:
     RelayController relay;
     std::string relayUrl;
 
-    int subLocationId = 1; // add in junction_config.yaml
-    std::string name = "ezbox1"; // add in junction_config.yaml
+    int subLocationId = 3; // add in junction_config.yaml
+    std::string name = "ezbox3"; // add in junction_config.yaml
 
     HttpPostClientAsync clientAsync;
     std::string postUrl;
-    std::stringstream jsonData;
-    std::string jsonStr;
     std::map<std::string, std::string> headers;
     bool success;
 

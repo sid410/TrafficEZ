@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <json.hpp>
 #include <numeric>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -281,16 +282,21 @@ void ParentProcess::updatePhaseDurations(
         std::cout << "----- Density Distribution ------------\n";
     }
 
-    jsonData.str(""); // Clear any existing data
-    jsonData.clear();
-    jsonData << "{ \"subLocationId\": " << subLocationId << ", ";
-    jsonData << "\"name\": \"" << name << "\", ";
-    jsonData << "\"description\": \"Junction Report per Cycle\", ";
-    jsonData << "\"densityDistribution\": [ ";
+    nlohmann::json jsonObj;
+    jsonObj["subLocationId"] = subLocationId;
+    jsonObj["name"] = name;
+    jsonObj["description"] = "Junction Report per Cycle";
+
+    nlohmann::json densityDistributions = nlohmann::json::array();
+    nlohmann::json allocatedTimes = nlohmann::json::array();
 
     for(int phase = 0; phase < phases.size(); ++phase)
     {
-        jsonData << "{ \"phase\": " << phase << ", \"vehicle\": [";
+
+        nlohmann::json phaseData;
+        phaseData["phase"] = phase;
+        phaseData["vehicles"] = nlohmann::json::array();
+        phaseData["pedestrians"] = nlohmann::json::array();
 
         // vehicles data
         for(int child = 0; child < numVehicle; ++child)
@@ -304,15 +310,9 @@ void ParentProcess::updatePhaseDurations(
                           << "\n";
             }
 
-            jsonData << phaseDensities[phase][child];
-            if(child < numVehicle - 1)
-            {
-                jsonData << ", ";
-            }
+            phaseData["vehicles"].push_back(phaseDensities[phase][child]);
         }
         totalDensity += phaseTotals[phase];
-
-        jsonData << "], \"pedestrian\": [";
 
         // pedestrians data
         for(int child = numVehicle; child < numChildren; ++child)
@@ -326,24 +326,17 @@ void ParentProcess::updatePhaseDurations(
                           << "\n";
             }
 
-            jsonData << phaseDensities[phase][child];
-            if(child < numChildren - 1)
-            {
-                jsonData << ", ";
-            }
+            phaseData["pedestrians"].push_back(phaseDensities[phase][child]);
         }
-
-        jsonData << "]}, ";
+        densityDistributions.push_back(phaseData);
     }
 
-    jsonData.seekp(-1, std::ios_base::end); // Remove the last comma
-    jsonData << "], ";
+    jsonObj["densityDistributions"] = densityDistributions;
+
     std::cout << "----------------------------------------------------------\n";
 
     // Update phase durations based on the density ratios
     bool validDurations = true;
-
-    jsonData << "\"allocatedTime\": [";
 
     for(int phase = 0; phase < phases.size(); ++phase)
     {
@@ -372,24 +365,18 @@ void ParentProcess::updatePhaseDurations(
         std::cout << "Phase " << phase << " allocated time: "
                   << phaseDurations[phase] / 1000.0 // Convert to seconds
                   << " seconds.\n";
-
-        jsonData << phaseDurations[phase] / 1000.0;
-        if(phase < phases.size() - 1)
-        {
-            jsonData << ", ";
-        }
+        allocatedTimes.push_back(phaseDurations[phase] / 1000.0);
     }
 
-    jsonData.seekp(-1, std::ios_base::end); // Remove the last comma
-    jsonData << "] }";
-    jsonStr = jsonData.str();
-    // sendJunctionDetailedReport(jsonStr1);
+    jsonObj["allocatedTimes"] = allocatedTimes;
 
     if(verbose)
     {
-        std::cout << "----- Final JSON Data to Send -----\n";
-        std::cout << "Cycle Report \n" << jsonStr << "\n";
+        std::cout << "------------- Final JSON Data to Send -------------\n";
+        std::cout << "Junction Cycle Report \n" << jsonObj.dump() << "\n";
     }
+
+    sendJunctionReport(jsonObj.dump());
 
     std::cout << "----------------------------------------------------------\n";
 
@@ -413,15 +400,28 @@ void ParentProcess::closeUnusedPipes()
 void ParentProcess::sendJunctionReport(std::string data)
 {
 
-    // testing post request
-    postUrl = "https://55qdnlqk-7079.asse.devtunnels.ms/Junction/Report";
+    postUrl = "https://55qdnlqk-5234.asse.devtunnels.ms/Junction/Report";
     headers = {{"accept", "text/plain"},
-               {"Content-Type", "application/json-patch+json"}};
+               {"Content-Type", "application/json; charset=utf-8"}};
 
     if(verbose)
     {
         std::cout << "Sending density and phase time data to server...\n";
     }
 
-    clientAsync.sendPostRequestAsync(postUrl, data, headers);
+    auto callback =
+        [](bool success, int errorCode, const std::string& response) {
+            if(success)
+            {
+                std::cout << "Request successful. Response: " << response
+                          << std::endl;
+            }
+            else
+            {
+                std::cerr << "Request failed with error code: " << errorCode
+                          << std::endl;
+            }
+        };
+
+    clientAsync.sendPostRequestAsync(postUrl, data, headers, callback);
 }

@@ -1,10 +1,8 @@
 #ifndef TRAFFIC_MANAGER_H
 #define TRAFFIC_MANAGER_H
 
-#include <string>
 #include "IotHubClient.h"
-// #include <nlohmann/json.hpp>
-
+#include <string>
 
 class TrafficManager
 {
@@ -19,7 +17,7 @@ public:
 
 private:
     IotHubClient client;
-    
+
     std::string configFile;
     bool debugMode;
     bool calibMode;

@@ -1,13 +1,10 @@
 #include "HttpPostClientAsync.h"
-#include <chrono>
+#include <cstring>
 #include <iostream>
-#include <mutex>
-#include <thread>
 
 HttpPostClientAsync::HttpPostClientAsync()
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
     multi_handle = curl_multi_init();
 }
 
@@ -21,18 +18,22 @@ void HttpPostClientAsync::sendPostRequestAsync(
     const std::string& url,
     const std::string& data,
     const std::map<std::string, std::string>& headers,
-    std::function<void(bool)> callback)
+    std::function<void(bool, int, const std::string&)> callback)
 {
-    std::lock_guard<std::mutex> lock(curl_mutex); // Protecting shared resources
-    if(!curl || !multi_handle)
+    // Lock to ensure thread safety
+    std::lock_guard<std::mutex> lock(curlMutex);
+
+    // Initialize a new CURL handle for this request
+    CURL* curlHandle = curl_easy_init();
+    if(!curlHandle || !multi_handle)
     {
         std::cerr << "CURL not initialized." << std::endl;
         if(callback)
-            callback(false);
+            callback(false, 0, "CURL initialization failed.");
         return;
     }
 
-    // Create and set up the header list
+    // Set up headers
     struct curl_slist* header_list = nullptr;
     for(const auto& header : headers)
     {
@@ -41,24 +42,55 @@ void HttpPostClientAsync::sendPostRequestAsync(
     }
 
     // Set CURL options
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_list);
+    curl_easy_setopt(curlHandle, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, data.c_str());
+    curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, header_list);
+
+    // Prepare the response buffer
+    std::string responseBuffer;
+
+    // Set the write callback
+    curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, writeCallback);
+    curl_easy_setopt(curlHandle,
+                     CURLOPT_WRITEDATA,
+                     &responseBuffer); // Pass the response buffer
+    curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, 10L); // 10 seconds
 
     // Add the easy handle to the multi handle
-    curl_multi_add_handle(multi_handle, curl);
+    curl_multi_add_handle(multi_handle, curlHandle);
 
-    // Start a new thread to handle the async operation
-    worker = std::thread(&HttpPostClientAsync::performAsync, this, callback);
+    // Create a thread to handle the async request
+    std::thread worker(
+        &HttpPostClientAsync::performAsync,
+        this,
+        curlHandle,
+        multi_handle,
+        std::ref(responseBuffer), // Use std::ref to pass by reference
+        callback);
 
-    // Detach the thread to allow it to run independently
+    // Detach the thread so it can run independently
     worker.detach();
-
-    // Free the header list after adding it to CURL
-    curl_slist_free_all(header_list);
 }
 
-void HttpPostClientAsync::performAsync(std::function<void(bool)> callback)
+size_t HttpPostClientAsync::writeCallback(void* contents,
+                                          size_t size,
+                                          size_t nmemb,
+                                          void* userp)
+{
+    // The 'userp' parameter should point to the std::string buffer
+    std::string* out = static_cast<std::string*>(userp);
+    size_t totalSize =
+        size * nmemb; // Calculate the total size of incoming data
+    out->append(static_cast<char*>(contents),
+                totalSize); // Append the data to the output string
+    return totalSize; // Return the size of the processed data
+}
+
+void HttpPostClientAsync::performAsync(
+    CURL* curlHandle,
+    CURLM* multi_handle,
+    std::string& responseBuffer,
+    std::function<void(bool, int, const std::string&)> callback)
 {
     int still_running = 0;
     CURLMcode mc;
@@ -72,11 +104,11 @@ void HttpPostClientAsync::performAsync(std::function<void(bool)> callback)
             std::cerr << "CURLM perform error: " << curl_multi_strerror(mc)
                       << std::endl;
             if(callback)
-                callback(false);
-            return; // Exit on error
+                callback(false, static_cast<int>(mc), "CURLM perform error.");
+            break;
         }
 
-        // Wait for activity, with a timeout to avoid busy-looping
+        // Wait for activity with a timeout to avoid busy-looping
         int numfds = 0;
         mc = curl_multi_wait(multi_handle, nullptr, 0, 1000, &numfds);
         if(mc != CURLM_OK)
@@ -84,8 +116,8 @@ void HttpPostClientAsync::performAsync(std::function<void(bool)> callback)
             std::cerr << "CURLM wait error: " << curl_multi_strerror(mc)
                       << std::endl;
             if(callback)
-                callback(false);
-            return; // Exit on error
+                callback(false, static_cast<int>(mc), "CURLM wait error.");
+            break;
         }
 
         // Simulate doing some work while waiting
@@ -103,31 +135,28 @@ void HttpPostClientAsync::performAsync(std::function<void(bool)> callback)
             if(msg->data.result == CURLE_OK)
             {
                 if(callback)
-                    callback(true);
+                    callback(true, 0, responseBuffer); // Pass response
             }
             else
             {
                 std::cerr << "CURL request failed: "
                           << curl_easy_strerror(msg->data.result) << std::endl;
                 if(callback)
-                    callback(false);
+                    callback(false,
+                             static_cast<int>(msg->data.result),
+                             curl_easy_strerror(
+                                 msg->data.result)); // Pass error message
             }
         }
     }
 
     // Clean up the easy handle after completion
-    curl_multi_remove_handle(multi_handle, curl);
+    curl_multi_remove_handle(multi_handle, curlHandle);
+    curl_easy_cleanup(curlHandle);
 }
 
 void HttpPostClientAsync::cleanupCurl()
 {
-    std::lock_guard<std::mutex> lock(curl_mutex); // Protecting cleanup
-    if(curl)
-    {
-        curl_easy_cleanup(curl);
-        curl = nullptr;
-    }
-
     if(multi_handle)
     {
         curl_multi_cleanup(multi_handle);

@@ -47,6 +47,8 @@ else()
   set(EXECUTABLE_NAME ${PROJECT_NAME_VER})
 endif()
 
+include_directories(include)
+
 add_subdirectory(src)
 add_subdirectory(util/yaml-cpp)
 add_subdirectory(util/FPSHelper)

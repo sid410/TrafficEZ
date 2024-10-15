@@ -15,20 +15,27 @@ public:
     ~HttpPostClientAsync();
 
     // Sends a POST request asynchronously to the specified URL with the given data and optional headers.
-    void
-    sendPostRequestAsync(const std::string& url,
-                         const std::string& data,
-                         const std::map<std::string, std::string>& headers = {},
-                         std::function<void(bool)> callback = nullptr);
+    void sendPostRequestAsync(
+        const std::string& url,
+        const std::string& data,
+        const std::map<std::string, std::string>& headers = {},
+        std::function<void(bool, int, const std::string&)> callback = nullptr);
 
 private:
     void cleanupCurl();
-    void performAsync(std::function<void(bool)> callback);
+    void
+    performAsync(CURL* curlHandle,
+                 CURLM* multi_handle,
+                 std::string& responseBuffer,
+                 std::function<void(bool, int, const std::string&)> callback);
 
-    CURL* curl; // Pointer to the CURL instance
+    static size_t writeCallback(void* contents,
+                                size_t size,
+                                size_t nmemb,
+                                void* userp); // Corrected signature
+
+    std::mutex curlMutex; // Mutex to ensure thread safety
     CURLM* multi_handle; // Multi handle for asynchronous requests
-    std::thread worker; // Thread to perform the async request
-    std::mutex curl_mutex; // Mutex for thread safety
 };
 
 #endif // HTTP_POST_CLIENT_ASYNC_H
