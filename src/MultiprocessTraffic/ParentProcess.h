@@ -1,10 +1,12 @@
 #ifndef PARENT_PROCESS_H
 #define PARENT_PROCESS_H
 
+#include "HttpPostClient.h"
 #include "HttpPostClientAsync.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
 #include "RelayController.h"
+#include <json.hpp>
 #include <sstream>
 #include <vector>
 
@@ -38,6 +40,7 @@ private:
     int subLocationId = 3; // add in junction_config.yaml
     std::string name = "ezbox3"; // add in junction_config.yaml
 
+    HttpPostClient client;
     HttpPostClientAsync clientAsync;
     std::string postUrl;
     std::map<std::string, std::string> headers;
@@ -85,5 +88,4 @@ private:
 
     void sendJunctionReport(std::string data);
 };
-
 #endif

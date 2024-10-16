@@ -3,6 +3,7 @@
 
 #include <curl/curl.h>
 #include <functional>
+#include <json.hpp>
 #include <map>
 #include <mutex>
 #include <string>
@@ -17,7 +18,7 @@ public:
     // Sends a POST request asynchronously to the specified URL with the given data and optional headers.
     void sendPostRequestAsync(
         const std::string& url,
-        const std::string& data,
+        const nlohmann::json& data,
         const std::map<std::string, std::string>& headers = {},
         std::function<void(bool, int, const std::string&)> callback = nullptr);
 
@@ -27,12 +28,11 @@ private:
     performAsync(CURL* curlHandle,
                  CURLM* multi_handle,
                  std::string& responseBuffer,
+                 struct curl_slist* header_list,
                  std::function<void(bool, int, const std::string&)> callback);
 
-    static size_t writeCallback(void* contents,
-                                size_t size,
-                                size_t nmemb,
-                                void* userp); // Corrected signature
+    static size_t
+    writeCallback(void* contents, size_t size, size_t nmemb, std::string* s);
 
     std::mutex curlMutex; // Mutex to ensure thread safety
     CURLM* multi_handle; // Multi handle for asynchronous requests

@@ -56,6 +56,7 @@ ParentProcess::ParentProcess(int numVehicle,
 
 void ParentProcess::run()
 {
+
     relay.initialize(phases, relayUrl, verbose);
 
     int phaseIndex = 0;
@@ -373,7 +374,7 @@ void ParentProcess::updatePhaseDurations(
     if(verbose)
     {
         std::cout << "------------- Final JSON Data to Send -------------\n";
-        std::cout << "Junction Cycle Report \n" << jsonObj.dump() << "\n";
+        std::cout << "Junction Cycle Report \n" << jsonObj.dump(2) << "\n";
     }
 
     sendJunctionReport(jsonObj.dump());
@@ -418,10 +419,11 @@ void ParentProcess::sendJunctionReport(std::string data)
             }
             else
             {
-                std::cerr << "Request failed with error code: " << errorCode
+                std::cerr << "Request failed with error code: " << response
                           << std::endl;
             }
         };
 
-    clientAsync.sendPostRequestAsync(postUrl, data, headers, callback);
+    client.sendPostRequest(postUrl, data, headers);
+    // clientAsync.sendPostRequestAsync(postUrl, data, headers, callback);
 }
