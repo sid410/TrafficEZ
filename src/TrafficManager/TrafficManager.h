@@ -16,8 +16,6 @@ public:
     void start();
 
 private:
-    IotHubClient client;
-
     std::string configFile;
     bool debugMode;
     bool calibMode;

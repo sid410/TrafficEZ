@@ -2,7 +2,6 @@
 #include "MultiprocessTraffic.h"
 #include "WatcherSpawner.h"
 
-
 TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
                                bool calib,
@@ -19,17 +18,12 @@ void TrafficManager::start()
 {
     if(testMode)
     {
-        // client.sendMessageToIoTHub("Testing Mode...\n");
         test();
-        std::string testSuccess = "\nTest Successful!!\n";
-        std::cout << testSuccess;
-        // client.sendMessageToIoTHub(testSuccess);
+        std::cout << "\nTest Successful!!\n";
         exit(EXIT_SUCCESS);
     }
 
-    std::string startMessage = "TrafficManager starting...\n";
-    std::cout << startMessage;
-    // client.sendMessageToIoTHub(startMessage);
+    std::cout << "TrafficManager starting...\n";
 
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
     std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
