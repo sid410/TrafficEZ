@@ -39,7 +39,9 @@ void MultiprocessTraffic::start()
                                 densityMax,
                                 minPhaseDurationMs,
                                 minPedestrianDurationMs,
-                                relayUrl);
+                                relayUrl,
+                                junctionId,
+                                junctionName);
     parentProcess.run();
 }
 
@@ -180,6 +182,7 @@ void MultiprocessTraffic::loadJunctionConfig()
 {
     YAML::Node config = YAML::LoadFile(configFile);
 
+    loadJunctionInfo(config);
     loadPhases(config);
     loadPhaseDurations(config);
     loadDensitySettings(config);
@@ -320,4 +323,16 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
                   << ") or streamLinks(" << streamLinks.size() << ")\n";
         exit(EXIT_FAILURE);
     }
+}
+
+void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
+{
+    if(!config["junctionId"] || !config["junctionName"])
+    {
+        std::cerr << "Missing junction information in configuration file!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    junctionId = config["junctionId"].as<int>();
+    junctionName = config["junctionName"].as<std::string>();
 }

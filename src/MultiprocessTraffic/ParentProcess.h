@@ -26,7 +26,9 @@ public:
                   float densityMax = 50.0f,
                   int minPhaseDurationMs = 5000,
                   int minPedestrianDurationMs = 25000,
-                  std::string relayUrl = "http://192.168.1.4/30000/");
+                  std::string relayUrl = "http://192.168.1.4/30000/",
+                  int junctionId = 1,
+                  std::string junctionName = "");
     void run();
 
 private:
@@ -34,11 +36,11 @@ private:
 
     bool verbose;
 
+    int junctionId;
+    std::string junctionName;
+
     RelayController relay;
     std::string relayUrl;
-
-    int subLocationId = 3; // add in junction_config.yaml
-    std::string name = "ezbox3"; // add in junction_config.yaml
 
     HttpPostClient client;
     HttpPostClientAsync clientAsync;

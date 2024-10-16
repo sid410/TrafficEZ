@@ -22,6 +22,8 @@ public:
 
 private:
     std::string configFile;
+    int junctionId;
+    std::string junctionName;
     bool debug;
     bool verbose;
 
@@ -59,6 +61,7 @@ private:
     void loadDensitySettings(const YAML::Node& config);
     void loadStreamInfo(const YAML::Node& config);
     void loadRelayInfo(const YAML::Node& config);
+    void loadJunctionInfo(const YAML::Node& config);
 
     void setVehicleAndPedestrianCount();
 };

@@ -21,7 +21,9 @@ ParentProcess::ParentProcess(int numVehicle,
                              float densityMax,
                              int minPhaseDurationMs,
                              int minPedestrianDurationMs,
-                             std::string relayUrl)
+                             std::string relayUrl,
+                             int junctionId,
+                             std::string junctionName)
     : numVehicle(numVehicle)
     , numPedestrian(numPedestrian)
     , pipesParentToChild(pipesParentToChild)
@@ -36,6 +38,8 @@ ParentProcess::ParentProcess(int numVehicle,
     , minPhaseDurationMs(minPhaseDurationMs)
     , minPedestrianDurationMs(minPedestrianDurationMs)
     , relayUrl(relayUrl)
+    , junctionId(junctionId)
+    , junctionName(junctionName)
 {
     numChildren = numVehicle + numPedestrian;
 
@@ -284,8 +288,8 @@ void ParentProcess::updatePhaseDurations(
     }
 
     nlohmann::json jsonObj;
-    jsonObj["subLocationId"] = subLocationId;
-    jsonObj["name"] = name;
+    jsonObj["subLocationId"] = junctionId;
+    jsonObj["name"] = junctionName;
     jsonObj["description"] = "Junction Report per Cycle";
 
     nlohmann::json densityDistributions = nlohmann::json::array();
