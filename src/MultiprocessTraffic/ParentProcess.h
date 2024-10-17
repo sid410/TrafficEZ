@@ -53,6 +53,10 @@ private:
     float densityMin;
     float densityMax;
 
+    float healthCheck;
+    float warning = 0;
+    float error = 0;
+
     int minPhaseDurationMs;
     int minPedestrianDurationMs;
     int fullCycleDurationMs;
@@ -89,5 +93,6 @@ private:
     void closeUnusedPipes();
 
     void sendJunctionReport(std::string data);
+    void sendJunctionStatus();
 };
 #endif

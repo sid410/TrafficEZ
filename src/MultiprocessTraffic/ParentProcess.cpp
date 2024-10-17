@@ -287,10 +287,10 @@ void ParentProcess::updatePhaseDurations(
         std::cout << "----- Density Distribution ------------\n";
     }
 
-    nlohmann::json jsonObj;
-    jsonObj["subLocationId"] = junctionId;
-    jsonObj["name"] = junctionName;
-    jsonObj["description"] = "Junction Report per Cycle";
+    nlohmann::json report;
+    report["subLocationId"] = junctionId;
+    report["name"] = junctionName;
+    report["description"] = "Junction Report per Cycle";
 
     nlohmann::json densityDistributions = nlohmann::json::array();
     nlohmann::json allocatedTimes = nlohmann::json::array();
@@ -336,7 +336,7 @@ void ParentProcess::updatePhaseDurations(
         densityDistributions.push_back(phaseData);
     }
 
-    jsonObj["densityDistributions"] = densityDistributions;
+    report["densityDistributions"] = densityDistributions;
 
     std::cout << "----------------------------------------------------------\n";
 
@@ -373,15 +373,16 @@ void ParentProcess::updatePhaseDurations(
         allocatedTimes.push_back(phaseDurations[phase] / 1000.0);
     }
 
-    jsonObj["allocatedTimes"] = allocatedTimes;
+    report["allocatedTimes"] = allocatedTimes;
 
     if(verbose)
     {
-        std::cout << "------------- Final JSON Data to Send -------------\n";
-        std::cout << "Junction Cycle Report \n" << jsonObj.dump(2) << "\n";
+        std::cout << "------------- Final Junction Cycle Report to Send "
+                     "-------------\n";
+        std::cout << report.dump(2) << "\n";
     }
 
-    sendJunctionReport(jsonObj.dump());
+    sendJunctionReport(report.dump());
 
     std::cout << "----------------------------------------------------------\n";
 
@@ -429,5 +430,31 @@ void ParentProcess::sendJunctionReport(std::string data)
         };
 
     client.sendPostRequest(postUrl, data, headers);
+    sendJunctionStatus();
     // clientAsync.sendPostRequestAsync(postUrl, data, headers, callback);
+}
+
+void ParentProcess::sendJunctionStatus()
+{
+    postUrl = "https://55qdnlqk-5234.asse.devtunnels.ms/Junction/Status";
+    headers = {{"accept", "text/plain"},
+               {"Content-Type", "application/json; charset=utf-8"}};
+
+    healthCheck = 100 - (warning + error);
+
+    nlohmann::json status;
+    status["junctionId"] = junctionId;
+    status["name"] = junctionName;
+    status["healthCheck"] = healthCheck;
+    status["warning"] = warning;
+    status["error"] = error;
+
+    if(verbose)
+    {
+        std::cout << "\n------------- Final Junction Cycle Status to Send "
+                     "-------------\n";
+        std::cout << status.dump(2) << "\n";
+    }
+
+    client.sendPostRequest(postUrl, status.dump(), headers);
 }
