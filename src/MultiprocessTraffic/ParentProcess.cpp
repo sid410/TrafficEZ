@@ -68,6 +68,8 @@ void ParentProcess::run()
     std::vector<std::vector<float>> phaseDensities(
         phases.size(), std::vector<float>(numChildren, 0.0));
 
+    sendJunctionStatus();
+
     while(true)
     {
         if(verbose)
@@ -430,7 +432,6 @@ void ParentProcess::sendJunctionReport(std::string data)
         };
 
     client.sendPostRequest(postUrl, data, headers);
-    sendJunctionStatus();
     // clientAsync.sendPostRequestAsync(postUrl, data, headers, callback);
 }
 

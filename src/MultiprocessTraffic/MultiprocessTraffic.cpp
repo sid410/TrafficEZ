@@ -192,6 +192,18 @@ void MultiprocessTraffic::loadJunctionConfig()
     setVehicleAndPedestrianCount();
 }
 
+void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
+{
+    if(!config["junctionId"] || !config["junctionName"])
+    {
+        std::cerr << "Missing junction information in configuration file!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    junctionId = config["junctionId"].as<int>();
+    junctionName = config["junctionName"].as<std::string>();
+}
+
 void MultiprocessTraffic::loadPhases(const YAML::Node& config)
 {
     if(!config["phases"])
@@ -323,16 +335,4 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
                   << ") or streamLinks(" << streamLinks.size() << ")\n";
         exit(EXIT_FAILURE);
     }
-}
-
-void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
-{
-    if(!config["junctionId"] || !config["junctionName"])
-    {
-        std::cerr << "Missing junction information in configuration file!\n";
-        exit(EXIT_FAILURE);
-    }
-
-    junctionId = config["junctionId"].as<int>();
-    junctionName = config["junctionName"].as<std::string>();
 }
