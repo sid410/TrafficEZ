@@ -1,7 +1,6 @@
 #ifndef PARENT_PROCESS_H
 #define PARENT_PROCESS_H
 
-#include "HttpPostClient.h"
 #include "HttpPostClientAsync.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
@@ -42,7 +41,6 @@ private:
     RelayController relay;
     std::string relayUrl;
 
-    HttpPostClient client;
     HttpPostClientAsync clientAsync;
     std::string postUrl;
     std::map<std::string, std::string> headers;

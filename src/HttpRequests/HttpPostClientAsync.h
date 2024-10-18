@@ -18,7 +18,7 @@ public:
     // Sends a POST request asynchronously to the specified URL with the given data and optional headers.
     void sendPostRequestAsync(
         const std::string& url,
-        const nlohmann::json& data,
+        const std::string& data,
         const std::map<std::string, std::string>& headers = {},
         std::function<void(bool, int, const std::string&)> callback = nullptr);
 

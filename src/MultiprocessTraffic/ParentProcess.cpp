@@ -74,7 +74,7 @@ void ParentProcess::run()
     {
         if(verbose)
         {
-            std::cout << "==================== Phase Cycle " << phaseIndex
+            std::cout << "\n==================== Phase Cycle " << phaseIndex
                       << " ======================================\n";
         }
 
@@ -377,13 +377,6 @@ void ParentProcess::updatePhaseDurations(
 
     report["allocatedTimes"] = allocatedTimes;
 
-    if(verbose)
-    {
-        std::cout << "------------- Final Junction Cycle Report to Send "
-                     "-------------\n";
-        std::cout << report.dump(2) << "\n";
-    }
-
     sendJunctionReport(report.dump());
 
     std::cout << "----------------------------------------------------------\n";
@@ -407,7 +400,6 @@ void ParentProcess::closeUnusedPipes()
 
 void ParentProcess::sendJunctionReport(std::string data)
 {
-
     postUrl = "https://55qdnlqk-5234.asse.devtunnels.ms/Junction/Report";
     headers = {{"accept", "text/plain"},
                {"Content-Type", "application/json; charset=utf-8"}};
@@ -426,13 +418,12 @@ void ParentProcess::sendJunctionReport(std::string data)
             }
             else
             {
-                std::cerr << "Request failed with error code: " << response
+                std::cerr << "Request failed with error code: " << errorCode
                           << std::endl;
             }
         };
 
-    client.sendPostRequest(postUrl, data, headers);
-    // clientAsync.sendPostRequestAsync(postUrl, data, headers, callback);
+    (clientAsync.sendPostRequestAsync(postUrl, data, headers, callback));
 }
 
 void ParentProcess::sendJunctionStatus()
@@ -450,6 +441,20 @@ void ParentProcess::sendJunctionStatus()
     status["warning"] = warning;
     status["error"] = error;
 
+    auto callback =
+        [](bool success, int errorCode, const std::string& response) {
+            if(success)
+            {
+                std::cout << "Request successful. Response: " << response
+                          << std::endl;
+            }
+            else
+            {
+                std::cerr << "Request failed with error code: " << errorCode
+                          << std::endl;
+            }
+        };
+
     if(verbose)
     {
         std::cout << "\n------------- Final Junction Cycle Status to Send "
@@ -457,5 +462,9 @@ void ParentProcess::sendJunctionStatus()
         std::cout << status.dump(2) << "\n";
     }
 
-    client.sendPostRequest(postUrl, status.dump(), headers);
+    if(verbose)
+    {
+        std::cout << "Sending junction status to server...\n";
+    }
+    clientAsync.sendPostRequestAsync(postUrl, status.dump(), headers, callback);
 }

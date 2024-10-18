@@ -16,7 +16,7 @@ HttpPostClientAsync::~HttpPostClientAsync()
 
 void HttpPostClientAsync::sendPostRequestAsync(
     const std::string& url,
-    const nlohmann::json& data,
+    const std::string& data,
     const std::map<std::string, std::string>& headers,
     std::function<void(bool, int, const std::string&)> callback)
 {
@@ -53,9 +53,8 @@ void HttpPostClientAsync::sendPostRequestAsync(
     }
 
     // Set CURL options
-    std::string serializedData = data.dump(); // Serialize JSON to string
     curl_easy_setopt(curlHandle, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, serializedData.c_str());
+    curl_easy_setopt(curlHandle, CURLOPT_POSTFIELDS, data);
     curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, header_list);
 
     // Prepare the response buffer
