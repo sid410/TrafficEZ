@@ -40,6 +40,34 @@ void RelayController::setPhaseCycle(int cycle)
     currentCycle = cycle;
 }
 
+const std::unordered_map<PhaseMessageType, std::vector<int>> channelMap = {
+    {PhaseMessageType::RED_PHASE, {0, 3, 6, 9}},
+    {PhaseMessageType::GREEN_PHASE, {1, 4, 7, 10}},
+    {PhaseMessageType::YELLOW_PHASE, {2, 5, 8, 11}},
+    {PhaseMessageType::RED_PED, {12, 14}},
+    {PhaseMessageType::GREEN_PED, {13, 15}}};
+
+std::string RelayController::getHexCommand(const std::vector<int>& onChannels)
+{
+    // Step 1: Initialize a variable to hold the binary value
+    unsigned int binaryValue = 0;
+
+    // Step 2: Set the bits for each ON channel
+    for(int channel : onChannels)
+    {
+        binaryValue |= (1 << channel);
+    }
+
+    // Step 3: Convert the binary value to hexadecimal
+    std::stringstream hexStream;
+    hexStream << std::uppercase << std::hex << binaryValue;
+
+    // Ensure the hex command is 4 characters long
+    std::string hexCommand = hexStream.str();
+    return std::string(4 - hexCommand.length(), '0') +
+           hexCommand; // Padding with zeros
+}
+
 void RelayController::executePhase()
 {
     if(currentCycle < 0 || currentCycle >= phases.size())
@@ -49,34 +77,51 @@ void RelayController::executePhase()
     }
 
     std::vector<PhaseMessageType> phase = phases[currentCycle];
-    int relayIndex = 1;
+    int relayIndex = 0;
+    // int relayIndex = 1;
+    std::vector<int> onChannels = {};
 
     for(const PhaseMessageType& p : phase)
     {
+
         switch(p)
         {
         case GREEN_PHASE:
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, true);
-            controlRelay(relayIndex++, false);
+            relayIndex++;
+            onChannels.push_back(relayIndex++);
+            relayIndex++;
+            // controlRelay(relayIndex++, false);
+            // controlRelay(relayIndex++, true);
+            // controlRelay(relayIndex++, false);
             break;
         case RED_PHASE:
-            controlRelay(relayIndex++, true);
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, false);
+            onChannels.push_back(relayIndex++);
+            relayIndex++;
+            relayIndex++;
+            // controlRelay(relayIndex++, true);
+            // controlRelay(relayIndex++, false);
+            // controlRelay(relayIndex++, false);
             break;
         case GREEN_PED:
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, true);
+            relayIndex++;
+            onChannels.push_back(relayIndex++);
+            // controlRelay(relayIndex++, false);
+            // controlRelay(relayIndex++, true);
             break;
         case RED_PED:
-            controlRelay(relayIndex++, true);
-            controlRelay(relayIndex++, false);
+            onChannels.push_back(relayIndex++);
+            relayIndex++;
+            // controlRelay(relayIndex++, true);
+            // controlRelay(relayIndex++, false);
             break;
         default:
             break;
         }
     }
+
+    std::string hex = getHexCommand(onChannels);
+    std::cout << hex << std::endl;
+    telnet.sendCommand("relay writeall " + hex);
 }
 
 void RelayController::executeTransitionPhase()
@@ -91,39 +136,59 @@ void RelayController::executeTransitionPhase()
     std::vector<PhaseMessageType> transitionPhase =
         deriveTransitionPhase(phases[currentCycle], phases[nextPhaseIndex]);
 
-    int relayIndex = 1;
+    int relayIndex = 0;
+    // int relayIndex = 1;
+    std::vector<int> onChannels = {};
 
     for(const PhaseMessageType& p : transitionPhase)
     {
+
         switch(p)
         {
         case GREEN_PHASE:
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, true);
-            controlRelay(relayIndex++, false);
+            relayIndex++;
+            onChannels.push_back(relayIndex++);
+            relayIndex++;
+            // controlRelay(relayIndex++, false);
+            // controlRelay(relayIndex++, true);
+            // controlRelay(relayIndex++, false);
             break;
         case RED_PHASE:
-            controlRelay(relayIndex++, true);
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, false);
+            onChannels.push_back(relayIndex++);
+            relayIndex++;
+            relayIndex++;
+            // controlRelay(relayIndex++, true);
+            // controlRelay(relayIndex++, false);
+            // controlRelay(relayIndex++, false);
             break;
         case YELLOW_PHASE:
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, true);
+            relayIndex++;
+            relayIndex++;
+            onChannels.push_back(relayIndex++);
+            // controlRelay(relayIndex++, true);
+            // controlRelay(relayIndex++, false);
+            // controlRelay(relayIndex++, false);
             break;
         case GREEN_PED:
-            controlRelay(relayIndex++, false);
-            controlRelay(relayIndex++, true);
+            relayIndex++;
+            onChannels.push_back(relayIndex++);
+            // controlRelay(relayIndex++, false);
+            // controlRelay(relayIndex++, true);
             break;
         case RED_PED:
-            controlRelay(relayIndex++, true);
-            controlRelay(relayIndex++, false);
+            onChannels.push_back(relayIndex++);
+            relayIndex++;
+            // controlRelay(relayIndex++, true);
+            // controlRelay(relayIndex++, false);
             break;
         default:
             break;
         }
     }
+
+    std::string hex = getHexCommand(onChannels);
+    std::cout << hex << std::endl;
+    telnet.sendCommand("relay writeall " + hex);
 }
 
 std::vector<PhaseMessageType> RelayController::deriveTransitionPhase(

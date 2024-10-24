@@ -2,9 +2,9 @@
 #define RELAY_CONTROLLER_H
 
 #include "PhaseMessageType.h"
+#include "TelnetRelayController.h"
 #include <curl/curl.h>
 #include <vector>
-
 class RelayController
 {
 public:
@@ -16,10 +16,13 @@ public:
                     bool verboseMode = false);
 
     void setPhaseCycle(int cycle);
+    static std::string getHexCommand(const std::vector<int>& onChannels);
     void executePhase();
     void executeTransitionPhase();
 
 private:
+    TelnetRelayController telnet;
+
     bool verbose;
 
     CURL* curl;
