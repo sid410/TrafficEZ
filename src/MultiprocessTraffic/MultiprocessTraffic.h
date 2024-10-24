@@ -48,6 +48,8 @@ private:
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
     std::string relayUrl;
+    std::string relayUsername;
+    std::string relayPassword;
 
     static void handleSignal(int signal);
     static MultiprocessTraffic* instance;

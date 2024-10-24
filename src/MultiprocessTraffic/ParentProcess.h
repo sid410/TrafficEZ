@@ -2,9 +2,9 @@
 #define PARENT_PROCESS_H
 
 #include "HttpPostClientAsync.h"
-#include "HttpRelayController.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
+#include "TelnetRelayController.h"
 #include <json.hpp>
 #include <sstream>
 #include <vector>
@@ -33,12 +33,12 @@ public:
 private:
     static constexpr int BUFFER_SIZE = 128;
 
+    TelnetRelayController& relay = TelnetRelayController::getInstance();
     bool verbose;
 
     int junctionId;
     std::string junctionName;
 
-    HttpRelayController relay;
     std::string relayUrl;
 
     HttpPostClientAsync clientAsync;

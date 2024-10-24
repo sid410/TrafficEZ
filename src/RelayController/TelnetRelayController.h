@@ -16,10 +16,21 @@
 class TelnetRelayController
 {
 public:
-    explicit TelnetRelayController(const std::string& ip = "192.168.1.5",
-                                   const std::string& user = "ezadmin",
-                                   const std::string& pass = "ez@dmin");
-    ~TelnetRelayController();
+    static TelnetRelayController& getInstance(
+        const std::string& ip = "",
+        const std::string& user = "",
+        const std::string& pass = "",
+        const std::vector<std::vector<PhaseMessageType>>& phaseData = {},
+        bool verboseMode = false)
+    {
+        static TelnetRelayController instance(
+            ip, user, pass, phaseData, verboseMode);
+        return instance;
+    }
+
+    // Deleted copy constructor and assignment operator
+    TelnetRelayController(const TelnetRelayController&) = delete;
+    TelnetRelayController& operator=(const TelnetRelayController&) = delete;
 
     void sendCommand(const std::string& command);
     std::string receiveResponse(int retries = 5, int timeoutSeconds = 5);
@@ -29,8 +40,8 @@ public:
 
     std::string getHexCommand(const std::vector<int>& onChannels);
 
+    void setPhaseCycle(int cycle);
     void executePhase();
-
     void executeTransitionPhase();
 
     std::vector<PhaseMessageType>
@@ -43,13 +54,22 @@ protected:
     bool reconnect();
 
 private:
+    TelnetRelayController(
+        const std::string& ip,
+        const std::string& user,
+        const std::string& pass,
+        const std::vector<std::vector<PhaseMessageType>>& phaseData,
+        bool verboseMode);
+
+    ~TelnetRelayController();
+
     std::string relayIP;
     std::string username;
     std::string password;
     int sock;
-
-    int currentCycle;
     std::vector<std::vector<PhaseMessageType>> phases;
+    bool verbose;
+    int currentCycle;
 };
 
 #endif

@@ -16,10 +16,13 @@ MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
     , verbose(verbose)
 {
     instance = this;
+    loadJunctionConfig();
+
+    TelnetRelayController& relay = TelnetRelayController::getInstance(
+        relayUrl, relayUsername, relayPassword, phases, verbose);
+
     std::signal(SIGINT, MultiprocessTraffic::handleSignal);
     std::signal(SIGCHLD, MultiprocessTraffic::handleSignal);
-
-    loadJunctionConfig();
 }
 
 void MultiprocessTraffic::start()
@@ -43,6 +46,7 @@ void MultiprocessTraffic::start()
                                 relayUrl,
                                 junctionId,
                                 junctionName);
+
     parentProcess.run();
 }
 
@@ -76,14 +80,14 @@ void MultiprocessTraffic::handleSignal(int signal)
         }
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
 
-        TelnetRelayController telnet;
+        TelnetRelayController& relay = TelnetRelayController::getInstance();
 
-        std::string hex = telnet.getHexCommand({2, 5, 8, 11});
+        std::string hex = relay.getHexCommand({2, 5, 8, 11});
         while(true)
         {
-            telnet.sendCommand("relay writeall " + hex);
+            relay.sendCommand("relay writeall " + hex);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            telnet.sendCommand("reset");
+            relay.sendCommand("reset");
         }
         // exit(EXIT_SUCCESS);
     }
@@ -298,13 +302,16 @@ void MultiprocessTraffic::loadStreamInfo(const YAML::Node& config)
 
 void MultiprocessTraffic::loadRelayInfo(const YAML::Node& config)
 {
-    if(!config["relayUrl"])
+    if(!config["relayUrl"] || !config["relayUsername"] ||
+       !config["relayPassword"])
     {
-        std::cerr << "Missing relay URL in configuration file!\n";
+        std::cerr << "Missing relay info in configuration file!\n";
         exit(EXIT_FAILURE);
     }
 
     relayUrl = config["relayUrl"].as<std::string>();
+    relayUsername = config["relayUsername"].as<std::string>();
+    relayPassword = config["relayPassword"].as<std::string>();
 }
 
 void MultiprocessTraffic::setVehicleAndPedestrianCount()

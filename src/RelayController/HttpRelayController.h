@@ -20,19 +20,18 @@ public:
     void executeTransitionPhase();
 
 private:
+    std::vector<std::vector<PhaseMessageType>> phases;
+    std::string baseUrl;
     bool verbose;
 
     CURL* curl;
-    std::string baseUrl;
 
     int currentCycle;
-    std::vector<std::vector<PhaseMessageType>> phases;
 
     static size_t
     writeCallback(void* contents, size_t size, size_t nmemb, std::string* s);
 
     void sendRequest(const std::string& url);
-
     void turnOnRelay(int relayNumber);
     void turnOffRelay(int relayNumber);
     void controlRelay(int relayNumber, bool turnOn);

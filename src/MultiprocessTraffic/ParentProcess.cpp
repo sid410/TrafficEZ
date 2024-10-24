@@ -60,15 +60,12 @@ ParentProcess::ParentProcess(int numVehicle,
 
 void ParentProcess::run()
 {
-
-    relay.initialize(phases, relayUrl, verbose);
-
     int phaseIndex = 0;
 
     std::vector<std::vector<float>> phaseDensities(
         phases.size(), std::vector<float>(numChildren, 0.0));
 
-    sendJunctionStatus();
+    // sendJunctionStatus();
 
     while(true)
     {
@@ -388,7 +385,7 @@ void ParentProcess::updatePhaseDurations(
                      "-------------\n";
         std::cout << report.dump(2) << "\n";
     }
-    sendJunctionReport(report.dump());
+    // sendJunctionReport(report.dump());
 
     std::cout << "----------------------------------------------------------\n";
 
@@ -456,8 +453,11 @@ void ParentProcess::sendJunctionStatus()
 
 void ParentProcess::setCommonHeaders()
 {
-    headers = {{"accept", "text/plain"},
-               {"Content-Type", "application/json; charset=utf-8"}};
+    headers = {
+        {"accept", "text/plain"},
+        {"Content-Type", "application/json; charset=utf-8"},
+        //{"TSecretKey", "TrafficEz-001-002-003-004"}
+    };
 }
 
 void ParentProcess::handlePostCallback(bool success,

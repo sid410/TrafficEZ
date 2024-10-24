@@ -24,12 +24,17 @@ bool waitForData(int sock, int timeoutSeconds)
     return false;
 }
 
-TelnetRelayController::TelnetRelayController(const std::string& ip,
-                                             const std::string& user,
-                                             const std::string& pass)
+TelnetRelayController::TelnetRelayController(
+    const std::string& ip,
+    const std::string& user,
+    const std::string& pass,
+    const std::vector<std::vector<PhaseMessageType>>& phaseData,
+    bool verboseMode)
     : relayIP(ip)
     , username(user)
     , password(pass)
+    , phases(phaseData)
+    , verbose(verboseMode)
     , sock(-1)
 {
 
@@ -197,6 +202,16 @@ TelnetRelayController::getHexCommand(const std::vector<int>& onChannels)
     // Ensure the hex command is 4 characters long
     std::string hexCommand = hexStream.str();
     return std::string(4 - hexCommand.length(), '0') + hexCommand;
+}
+
+void TelnetRelayController::setPhaseCycle(int cycle)
+{
+    if(cycle < 0 || cycle >= phases.size())
+    {
+        std::cerr << "Invalid phase cycle: " << cycle << std::endl;
+        return;
+    }
+    currentCycle = cycle;
 }
 
 void TelnetRelayController::executePhase()
