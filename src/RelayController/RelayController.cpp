@@ -49,23 +49,19 @@ const std::unordered_map<PhaseMessageType, std::vector<int>> channelMap = {
 
 std::string RelayController::getHexCommand(const std::vector<int>& onChannels)
 {
-    // Step 1: Initialize a variable to hold the binary value
     unsigned int binaryValue = 0;
 
-    // Step 2: Set the bits for each ON channel
     for(int channel : onChannels)
     {
         binaryValue |= (1 << channel);
     }
 
-    // Step 3: Convert the binary value to hexadecimal
     std::stringstream hexStream;
-    hexStream << std::uppercase << std::hex << binaryValue;
+    hexStream << std::hex << binaryValue; // hex should be lowercase
 
     // Ensure the hex command is 4 characters long
     std::string hexCommand = hexStream.str();
-    return std::string(4 - hexCommand.length(), '0') +
-           hexCommand; // Padding with zeros
+    return std::string(4 - hexCommand.length(), '0') + hexCommand;
 }
 
 void RelayController::executePhase()
@@ -78,7 +74,6 @@ void RelayController::executePhase()
 
     std::vector<PhaseMessageType> phase = phases[currentCycle];
     int relayIndex = 0;
-    // int relayIndex = 1;
     std::vector<int> onChannels = {};
 
     for(const PhaseMessageType& p : phase)
