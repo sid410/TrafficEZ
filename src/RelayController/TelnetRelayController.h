@@ -1,6 +1,7 @@
 #ifndef TELNET_RELAY_CONTROLLER_H
 #define TELNET_RELAY_CONTROLLER_H
 
+#include "PhaseMessageType.h"
 #include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
@@ -8,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 #define PORT 23
 
@@ -25,6 +27,16 @@ public:
     void turnOffRelay(int relayNumber);
     std::string getRelayStatus();
 
+    std::string getHexCommand(const std::vector<int>& onChannels);
+
+    void executePhase();
+
+    void executeTransitionPhase();
+
+    std::vector<PhaseMessageType>
+    deriveTransitionPhase(const std::vector<PhaseMessageType>& currentPhase,
+                          const std::vector<PhaseMessageType>& nextPhase);
+
 protected:
     bool connectToRelay();
     bool authenticate();
@@ -35,6 +47,9 @@ private:
     std::string username;
     std::string password;
     int sock;
+
+    int currentCycle;
+    std::vector<std::vector<PhaseMessageType>> phases;
 };
 
 #endif

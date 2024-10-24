@@ -2,9 +2,9 @@
 #define PARENT_PROCESS_H
 
 #include "HttpPostClientAsync.h"
+#include "HttpRelayController.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
-#include "RelayController.h"
 #include <json.hpp>
 #include <sstream>
 #include <vector>
@@ -38,7 +38,7 @@ private:
     int junctionId;
     std::string junctionName;
 
-    RelayController relay;
+    HttpRelayController relay;
     std::string relayUrl;
 
     HttpPostClientAsync clientAsync;
@@ -47,6 +47,8 @@ private:
 
     nlohmann::json report;
     nlohmann::json status;
+
+    float phaseTime;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;

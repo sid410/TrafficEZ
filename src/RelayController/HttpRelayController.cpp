@@ -1,9 +1,9 @@
-#include "RelayController.h"
+#include "HttpRelayController.h"
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
-RelayController::RelayController()
+HttpRelayController::HttpRelayController()
     : currentCycle(0)
     , verbose(false)
 {
@@ -11,7 +11,7 @@ RelayController::RelayController()
     curl = curl_easy_init();
 }
 
-RelayController::~RelayController()
+HttpRelayController::~HttpRelayController()
 {
     if(curl)
     {
@@ -20,7 +20,7 @@ RelayController::~RelayController()
     curl_global_cleanup();
 }
 
-void RelayController::initialize(
+void HttpRelayController::initialize(
     const std::vector<std::vector<PhaseMessageType>>& phaseData,
     const std::string& baseUrl,
     bool verboseMode)
@@ -30,7 +30,7 @@ void RelayController::initialize(
     verbose = verboseMode;
 }
 
-void RelayController::setPhaseCycle(int cycle)
+void HttpRelayController::setPhaseCycle(int cycle)
 {
     if(cycle < 0 || cycle >= phases.size())
     {
@@ -40,31 +40,7 @@ void RelayController::setPhaseCycle(int cycle)
     currentCycle = cycle;
 }
 
-const std::unordered_map<PhaseMessageType, std::vector<int>> channelMap = {
-    {PhaseMessageType::RED_PHASE, {0, 3, 6, 9}},
-    {PhaseMessageType::GREEN_PHASE, {1, 4, 7, 10}},
-    {PhaseMessageType::YELLOW_PHASE, {2, 5, 8, 11}},
-    {PhaseMessageType::RED_PED, {12, 14}},
-    {PhaseMessageType::GREEN_PED, {13, 15}}};
-
-std::string RelayController::getHexCommand(const std::vector<int>& onChannels)
-{
-    unsigned int binaryValue = 0;
-
-    for(int channel : onChannels)
-    {
-        binaryValue |= (1 << channel);
-    }
-
-    std::stringstream hexStream;
-    hexStream << std::hex << binaryValue; // hex should be lowercase
-
-    // Ensure the hex command is 4 characters long
-    std::string hexCommand = hexStream.str();
-    return std::string(4 - hexCommand.length(), '0') + hexCommand;
-}
-
-void RelayController::executePhase()
+void HttpRelayController::executePhase()
 {
     if(currentCycle < 0 || currentCycle >= phases.size())
     {
@@ -73,53 +49,37 @@ void RelayController::executePhase()
     }
 
     std::vector<PhaseMessageType> phase = phases[currentCycle];
-    int relayIndex = 0;
-    std::vector<int> onChannels = {};
+    int relayIndex = 1;
 
     for(const PhaseMessageType& p : phase)
     {
-
         switch(p)
         {
         case GREEN_PHASE:
-            relayIndex++;
-            onChannels.push_back(relayIndex++);
-            relayIndex++;
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
             break;
         case RED_PHASE:
-            onChannels.push_back(relayIndex++);
-            relayIndex++;
-            relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, false);
             break;
         case GREEN_PED:
-            relayIndex++;
-            onChannels.push_back(relayIndex++);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
             break;
         case RED_PED:
-            onChannels.push_back(relayIndex++);
-            relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
             break;
         default:
             break;
         }
     }
-
-    std::string hex = getHexCommand(onChannels);
-    std::cout << hex << std::endl;
-    telnet.sendCommand("relay writeall " + hex);
 }
 
-void RelayController::executeTransitionPhase()
+void HttpRelayController::executeTransitionPhase()
 {
     if(currentCycle < 0 || currentCycle >= phases.size())
     {
@@ -131,62 +91,42 @@ void RelayController::executeTransitionPhase()
     std::vector<PhaseMessageType> transitionPhase =
         deriveTransitionPhase(phases[currentCycle], phases[nextPhaseIndex]);
 
-    int relayIndex = 0;
-    // int relayIndex = 1;
-    std::vector<int> onChannels = {};
+    int relayIndex = 1;
 
     for(const PhaseMessageType& p : transitionPhase)
     {
-
         switch(p)
         {
         case GREEN_PHASE:
-            relayIndex++;
-            onChannels.push_back(relayIndex++);
-            relayIndex++;
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
             break;
         case RED_PHASE:
-            onChannels.push_back(relayIndex++);
-            relayIndex++;
-            relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, false);
             break;
         case YELLOW_PHASE:
-            relayIndex++;
-            relayIndex++;
-            onChannels.push_back(relayIndex++);
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
             break;
         case GREEN_PED:
-            relayIndex++;
-            onChannels.push_back(relayIndex++);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
             break;
         case RED_PED:
-            onChannels.push_back(relayIndex++);
-            relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
+            controlRelay(relayIndex++, true);
+            controlRelay(relayIndex++, false);
             break;
         default:
             break;
         }
     }
-
-    std::string hex = getHexCommand(onChannels);
-    std::cout << hex << std::endl;
-    telnet.sendCommand("relay writeall " + hex);
 }
 
-std::vector<PhaseMessageType> RelayController::deriveTransitionPhase(
+std::vector<PhaseMessageType> HttpRelayController::deriveTransitionPhase(
     const std::vector<PhaseMessageType>& currentPhase,
     const std::vector<PhaseMessageType>& nextPhase)
 {
@@ -215,10 +155,10 @@ std::vector<PhaseMessageType> RelayController::deriveTransitionPhase(
     return transitionPhase;
 }
 
-size_t RelayController::writeCallback(void* contents,
-                                      size_t size,
-                                      size_t nmemb,
-                                      std::string* s)
+size_t HttpRelayController::writeCallback(void* contents,
+                                          size_t size,
+                                          size_t nmemb,
+                                          std::string* s)
 {
     size_t newLength = size * nmemb;
     try
@@ -232,7 +172,7 @@ size_t RelayController::writeCallback(void* contents,
     return newLength;
 }
 
-void RelayController::sendRequest(const std::string& url)
+void HttpRelayController::sendRequest(const std::string& url)
 {
     if(curl)
     {
@@ -240,7 +180,7 @@ void RelayController::sendRequest(const std::string& url)
 
         curl_easy_setopt(curl, CURLOPT_URL, (baseUrl + url).c_str());
         curl_easy_setopt(
-            curl, CURLOPT_WRITEFUNCTION, RelayController::writeCallback);
+            curl, CURLOPT_WRITEFUNCTION, HttpRelayController::writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
         CURLcode res = curl_easy_perform(curl);
@@ -258,7 +198,7 @@ void RelayController::sendRequest(const std::string& url)
     }
 }
 
-void RelayController::turnOnRelay(int relayNumber)
+void HttpRelayController::turnOnRelay(int relayNumber)
 {
     if(relayNumber < 1 || relayNumber > 16)
     {
@@ -274,7 +214,7 @@ void RelayController::turnOnRelay(int relayNumber)
     sendRequest(url.str());
 }
 
-void RelayController::turnOffRelay(int relayNumber)
+void HttpRelayController::turnOffRelay(int relayNumber)
 {
     if(relayNumber < 1 || relayNumber > 16)
     {
@@ -290,7 +230,7 @@ void RelayController::turnOffRelay(int relayNumber)
     sendRequest(url.str());
 }
 
-void RelayController::controlRelay(int relayNumber, bool turnOn)
+void HttpRelayController::controlRelay(int relayNumber, bool turnOn)
 {
     if(turnOn)
     {

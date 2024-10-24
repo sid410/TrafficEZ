@@ -1,5 +1,4 @@
 #include "MultiprocessTraffic.h"
-#include "RelayController.h"
 #include "TelnetRelayController.h"
 #include <csignal>
 #include <cstring>
@@ -77,9 +76,9 @@ void MultiprocessTraffic::handleSignal(int signal)
         }
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
 
-        std::string hex = RelayController::getHexCommand({2, 5, 8, 11});
         TelnetRelayController telnet;
 
+        std::string hex = telnet.getHexCommand({2, 5, 8, 11});
         while(true)
         {
             telnet.sendCommand("relay writeall " + hex);

@@ -230,6 +230,11 @@ void ParentProcess::processDensityByPhaseType(PhaseMessageType phaseType,
 void ParentProcess::handlePhaseTimer(int phaseIndex)
 {
     int remainingTime = phaseDurations[phaseIndex] / 1000;
+    phaseTime = phaseDurations[phaseIndex] / 1000;
+    if(verbose)
+    {
+        std::cout << "Phase " << phaseIndex << " Duration: " << phaseTime;
+    }
 
     while(remainingTime > 0)
     {
@@ -301,6 +306,7 @@ void ParentProcess::updatePhaseDurations(
 
         nlohmann::json phaseData;
         phaseData["phase"] = phase;
+        phaseData["phaseDuration"].push_back(phaseTime);
         phaseData["vehicles"] = nlohmann::json::array();
         phaseData["pedestrians"] = nlohmann::json::array();
 
