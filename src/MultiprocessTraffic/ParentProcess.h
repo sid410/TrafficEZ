@@ -44,7 +44,9 @@ private:
     HttpPostClientAsync clientAsync;
     std::string postUrl;
     std::map<std::string, std::string> headers;
-    bool success;
+
+    nlohmann::json report;
+    nlohmann::json status;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;
@@ -92,5 +94,9 @@ private:
 
     void sendJunctionReport(std::string data);
     void sendJunctionStatus();
+    void setCommonHeaders();
+    void handlePostCallback(bool success,
+                            int errorCode,
+                            const std::string& response);
 };
 #endif

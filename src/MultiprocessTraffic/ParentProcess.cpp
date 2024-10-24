@@ -289,7 +289,6 @@ void ParentProcess::updatePhaseDurations(
         std::cout << "----- Density Distribution ------------\n";
     }
 
-    nlohmann::json report;
     report["subLocationId"] = junctionId;
     report["name"] = junctionName;
     report["description"] = "Junction Report per Cycle";
@@ -377,6 +376,12 @@ void ParentProcess::updatePhaseDurations(
 
     report["allocatedTimes"] = allocatedTimes;
 
+    if(verbose)
+    {
+        std::cout << "\n------------- Final Junction Cycle Report to Send "
+                     "-------------\n";
+        std::cout << report.dump(2) << "\n";
+    }
     sendJunctionReport(report.dump());
 
     std::cout << "----------------------------------------------------------\n";
@@ -401,59 +406,36 @@ void ParentProcess::closeUnusedPipes()
 void ParentProcess::sendJunctionReport(std::string data)
 {
     postUrl = "https://55qdnlqk-5234.asse.devtunnels.ms/Junction/Report";
-    headers = {{"accept", "text/plain"},
-               {"Content-Type", "application/json; charset=utf-8"}};
+    setCommonHeaders();
 
-    if(verbose)
-    {
-        std::cout << "Sending density and phase time data to server...\n";
-    }
+    auto callback = std::bind(&ParentProcess::handlePostCallback,
+                              this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3);
 
-    auto callback =
-        [](bool success, int errorCode, const std::string& response) {
-            if(success)
-            {
-                std::cout << "Request successful. Response: " << response
-                          << std::endl;
-            }
-            else
-            {
-                std::cerr << "Request failed with error code: " << errorCode
-                          << std::endl;
-            }
-        };
-
+    std::cout << "Sending density and phase time data to server...\n";
     (clientAsync.sendPostRequestAsync(postUrl, data, headers, callback));
 }
 
 void ParentProcess::sendJunctionStatus()
 {
     postUrl = "https://55qdnlqk-5234.asse.devtunnels.ms/Junction/Status";
-    headers = {{"accept", "text/plain"},
-               {"Content-Type", "application/json; charset=utf-8"}};
+    setCommonHeaders();
 
     healthCheck = 100 - (warning + error);
 
-    nlohmann::json status;
     status["junctionId"] = junctionId;
     status["name"] = junctionName;
     status["healthCheck"] = healthCheck;
     status["warning"] = warning;
     status["error"] = error;
 
-    auto callback =
-        [](bool success, int errorCode, const std::string& response) {
-            if(success)
-            {
-                std::cout << "Request successful. Response: " << response
-                          << std::endl;
-            }
-            else
-            {
-                std::cerr << "Request failed with error code: " << errorCode
-                          << std::endl;
-            }
-        };
+    auto callback = std::bind(&ParentProcess::handlePostCallback,
+                              this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3);
 
     if(verbose)
     {
@@ -462,9 +444,27 @@ void ParentProcess::sendJunctionStatus()
         std::cout << status.dump(2) << "\n";
     }
 
-    if(verbose)
-    {
-        std::cout << "Sending junction status to server...\n";
-    }
+    std::cout << "Sending junction status to server...\n";
     clientAsync.sendPostRequestAsync(postUrl, status.dump(), headers, callback);
+}
+
+void ParentProcess::setCommonHeaders()
+{
+    headers = {{"accept", "text/plain"},
+               {"Content-Type", "application/json; charset=utf-8"}};
+}
+
+void ParentProcess::handlePostCallback(bool success,
+                                       int errorCode,
+                                       const std::string& response)
+{
+    if(success)
+    {
+        std::cout << "Request successful. Response: " << response << std::endl;
+    }
+    else
+    {
+        std::cerr << "Request failed with error code: " << errorCode
+                  << std::endl;
+    }
 }
