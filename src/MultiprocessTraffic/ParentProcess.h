@@ -2,6 +2,7 @@
 #define PARENT_PROCESS_H
 
 #include "HttpPostClientAsync.h"
+#include "MultiprocessTraffic.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
 #include "TelnetRelayController.h"
@@ -34,8 +35,9 @@ private:
     static constexpr int BUFFER_SIZE = 128;
 
     TelnetRelayController& relay = TelnetRelayController::getInstance();
-    bool verbose;
 
+    bool verbose;
+    bool isStandby = false;
     int junctionId;
     std::string junctionName;
 
@@ -47,8 +49,6 @@ private:
 
     nlohmann::json report;
     nlohmann::json status;
-
-    float phaseTime;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;

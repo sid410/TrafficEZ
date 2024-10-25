@@ -28,7 +28,6 @@ public:
         return instance;
     }
 
-    // Deleted copy constructor and assignment operator
     TelnetRelayController(const TelnetRelayController&) = delete;
     TelnetRelayController& operator=(const TelnetRelayController&) = delete;
 
@@ -36,6 +35,7 @@ public:
     std::string receiveResponse(int retries = 5, int timeoutSeconds = 5);
     void turnOnRelay(int relayNumber);
     void turnOffRelay(int relayNumber);
+    void turnOnAllRelay(std::vector<int> channels);
     std::string getRelayStatus();
 
     std::string getHexCommand(const std::vector<int>& onChannels);
@@ -47,6 +47,8 @@ public:
     std::vector<PhaseMessageType>
     deriveTransitionPhase(const std::vector<PhaseMessageType>& currentPhase,
                           const std::vector<PhaseMessageType>& nextPhase);
+
+    bool standbyMode();
 
 protected:
     bool connectToRelay();

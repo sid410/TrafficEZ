@@ -1,9 +1,18 @@
 #include "TelnetRelayController.h"
+#include <bits/this_thread_sleep.h>
 #include <sstream>
 #include <sys/select.h>
+#include <unistd.h>
 #include <unordered_map>
 
 #define PORT 23
+
+const std::unordered_map<PhaseMessageType, std::vector<int>> channelMap = {
+    {PhaseMessageType::RED_PHASE, {0, 3, 6, 9}},
+    {PhaseMessageType::GREEN_PHASE, {1, 4, 7, 10}},
+    {PhaseMessageType::YELLOW_PHASE, {2, 5, 8, 11}},
+    {PhaseMessageType::RED_PED, {12, 14}},
+    {PhaseMessageType::GREEN_PED, {13, 15}}};
 
 bool waitForData(int sock, int timeoutSeconds)
 {
@@ -41,13 +50,11 @@ TelnetRelayController::TelnetRelayController(
     if(!connectToRelay())
     {
         std::cerr << "Failed to connect to relay module!" << std::endl;
-        exit(EXIT_FAILURE);
     }
 
     if(!authenticate())
     {
         std::cerr << "Failed to authenticate with relay module!" << std::endl;
-        exit(EXIT_FAILURE);
     }
 }
 
@@ -153,7 +160,7 @@ std::string TelnetRelayController::receiveResponse(int retries,
 
 void TelnetRelayController::turnOnRelay(int relayNumber)
 {
-    if(relayNumber < 1 || relayNumber > 16)
+    if(relayNumber < 0 || relayNumber > 15)
     {
         std::cerr << "Invalid relay number: " << relayNumber << std::endl;
         return;
@@ -164,7 +171,7 @@ void TelnetRelayController::turnOnRelay(int relayNumber)
 
 void TelnetRelayController::turnOffRelay(int relayNumber)
 {
-    if(relayNumber < 1 || relayNumber > 16)
+    if(relayNumber < 0 || relayNumber > 15)
     {
         std::cerr << "Invalid relay number: " << relayNumber << std::endl;
         return;
@@ -173,18 +180,18 @@ void TelnetRelayController::turnOffRelay(int relayNumber)
     sendCommand("relay off " + std::to_string(relayNumber));
 }
 
+void TelnetRelayController::turnOnAllRelay(std::vector<int> relayNumbers)
+{
+    std::string hex = getHexCommand(relayNumbers);
+    std::cout << "Sent Command: " << hex << std::endl;
+    TelnetRelayController::sendCommand("relay writeall " + hex);
+}
+
 std::string TelnetRelayController::getRelayStatus()
 {
     sendCommand("relay readall");
     return receiveResponse();
 }
-
-const std::unordered_map<PhaseMessageType, std::vector<int>> channelMap = {
-    {PhaseMessageType::RED_PHASE, {0, 3, 6, 9}},
-    {PhaseMessageType::GREEN_PHASE, {1, 4, 7, 10}},
-    {PhaseMessageType::YELLOW_PHASE, {2, 5, 8, 11}},
-    {PhaseMessageType::RED_PED, {12, 14}},
-    {PhaseMessageType::GREEN_PED, {13, 15}}};
 
 std::string
 TelnetRelayController::getHexCommand(const std::vector<int>& onChannels)
@@ -235,38 +242,26 @@ void TelnetRelayController::executePhase()
             relayIndex++;
             onChannels.push_back(relayIndex++);
             relayIndex++;
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
             break;
         case RED_PHASE:
             onChannels.push_back(relayIndex++);
             relayIndex++;
             relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, false);
             break;
         case GREEN_PED:
             relayIndex++;
             onChannels.push_back(relayIndex++);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
             break;
         case RED_PED:
             onChannels.push_back(relayIndex++);
             relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
             break;
         default:
             break;
         }
     }
 
-    std::string hex = getHexCommand(onChannels);
-    std::cout << hex << std::endl;
-    TelnetRelayController::sendCommand("relay writeall " + hex);
+    turnOnAllRelay(onChannels);
 }
 
 void TelnetRelayController::executeTransitionPhase()
@@ -282,7 +277,6 @@ void TelnetRelayController::executeTransitionPhase()
         deriveTransitionPhase(phases[currentCycle], phases[nextPhaseIndex]);
 
     int relayIndex = 0;
-    // int relayIndex = 1;
     std::vector<int> onChannels = {};
 
     for(const PhaseMessageType& p : transitionPhase)
@@ -294,46 +288,31 @@ void TelnetRelayController::executeTransitionPhase()
             relayIndex++;
             onChannels.push_back(relayIndex++);
             relayIndex++;
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
             break;
         case RED_PHASE:
             onChannels.push_back(relayIndex++);
             relayIndex++;
             relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, false);
             break;
         case YELLOW_PHASE:
             relayIndex++;
             relayIndex++;
             onChannels.push_back(relayIndex++);
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, false);
             break;
         case GREEN_PED:
             relayIndex++;
             onChannels.push_back(relayIndex++);
-            // controlRelay(relayIndex++, false);
-            // controlRelay(relayIndex++, true);
             break;
         case RED_PED:
             onChannels.push_back(relayIndex++);
             relayIndex++;
-            // controlRelay(relayIndex++, true);
-            // controlRelay(relayIndex++, false);
             break;
         default:
             break;
         }
     }
 
-    std::string hex = getHexCommand(onChannels);
-    std::cout << hex << std::endl;
-    TelnetRelayController::sendCommand("relay writeall " + hex);
+    turnOnAllRelay(onChannels);
 }
 
 std::vector<PhaseMessageType> TelnetRelayController::deriveTransitionPhase(
@@ -363,4 +342,16 @@ std::vector<PhaseMessageType> TelnetRelayController::deriveTransitionPhase(
     }
 
     return transitionPhase;
+}
+
+bool TelnetRelayController::standbyMode()
+{
+    std::string hex = getHexCommand({2, 5, 8, 11});
+    while(true)
+    {
+        sendCommand("relay writeall " + hex);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        sendCommand("reset");
+    }
+    exit(EXIT_SUCCESS);
 }

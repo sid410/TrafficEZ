@@ -18,7 +18,7 @@ MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
     instance = this;
     loadJunctionConfig();
 
-    TelnetRelayController& relay = TelnetRelayController::getInstance(
+    TelnetRelayController::getInstance(
         relayUrl, relayUsername, relayPassword, phases, verbose);
 
     std::signal(SIGINT, MultiprocessTraffic::handleSignal);
@@ -81,15 +81,7 @@ void MultiprocessTraffic::handleSignal(int signal)
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
 
         TelnetRelayController& relay = TelnetRelayController::getInstance();
-
-        std::string hex = relay.getHexCommand({2, 5, 8, 11});
-        while(true)
-        {
-            relay.sendCommand("relay writeall " + hex);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            relay.sendCommand("reset");
-        }
-        // exit(EXIT_SUCCESS);
+        relay.standbyMode();
     }
 }
 
