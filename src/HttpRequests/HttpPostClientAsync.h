@@ -35,6 +35,7 @@ private:
     writeCallback(void* contents, size_t size, size_t nmemb, std::string* s);
 
     std::mutex curlMutex; // Mutex to ensure thread safety
+    std::mutex curlMultiMutex;
     CURLM* multi_handle; // Multi handle for asynchronous requests
 };
 
