@@ -92,6 +92,7 @@ bool TelnetRelayController::connectToRelay()
         return false;
     }
 
+    std::cout << "Connected to relay at " << relayIP << std::endl;
     return true;
 }
 
@@ -184,13 +185,35 @@ void TelnetRelayController::turnOnAllRelay(std::vector<int> relayNumbers)
 {
     std::string hex = getHexCommand(relayNumbers);
     std::cout << "Sent Command: " << hex << std::endl;
-    TelnetRelayController::sendCommand("relay writeall " + hex);
+    sendCommand("relay writeall " + hex);
+}
+
+void TelnetRelayController::turnOffAllRelay()
+{
+    sendCommand("reset");
 }
 
 std::string TelnetRelayController::getRelayStatus()
 {
     sendCommand("relay readall");
     return receiveResponse();
+}
+
+std::vector<int>
+TelnetRelayController::getOnChannelsFromStatus(const std::string& relayStatus)
+{
+    unsigned int binaryValue = std::stoul(relayStatus, nullptr, 16);
+    std::vector<int> onChannels;
+
+    for(int channel = 0; channel < 16; ++channel)
+    {
+        if(binaryValue & (1 << channel))
+        {
+            onChannels.push_back(channel);
+        }
+    }
+
+    return onChannels;
 }
 
 std::string

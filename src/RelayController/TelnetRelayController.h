@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
+#include <mutex>
 #include <netdb.h>
 #include <stdexcept>
 #include <string>
@@ -36,7 +37,10 @@ public:
     void turnOnRelay(int relayNumber);
     void turnOffRelay(int relayNumber);
     void turnOnAllRelay(std::vector<int> channels);
+    void turnOffAllRelay();
     std::string getRelayStatus();
+
+    std::vector<int> getOnChannelsFromStatus(const std::string& relayStatus);
 
     std::string getHexCommand(const std::vector<int>& onChannels);
 
@@ -72,6 +76,7 @@ private:
     std::vector<std::vector<PhaseMessageType>> phases;
     bool verbose;
     int currentCycle;
+    std::mutex connectionMutex;
 };
 
 #endif

@@ -41,6 +41,10 @@ ParentProcess::ParentProcess(int numVehicle,
     , junctionId(junctionId)
     , junctionName(junctionName)
 {
+    headers = {{"accept", "text/plain"},
+               {"Content-Type", "application/json; charset=utf-8"},
+               {"TSecretKey", "TrafficEz-001-002-003-004"}};
+
     numChildren = numVehicle + numPedestrian;
 
     originalPhaseDurations = phaseDurations;
@@ -75,7 +79,12 @@ void ParentProcess::run()
                       << " ======================================\n";
         }
 
-        if(!isStandby)
+        if(isStandby)
+        {
+            std::cout << "Switching to Standby Mode...\n";
+            relay.standbyMode();
+        }
+        else
         {
             relay.setPhaseCycle(phaseIndex);
             relay.executePhase();
@@ -89,11 +98,6 @@ void ParentProcess::run()
 
             handlePhaseTimer(phaseIndex);
             transitionToNextPhase(phaseIndex, phaseDensities);
-        }
-        else
-        {
-            std::cout << "Switching to Standby Mode...\n";
-            relay.standbyMode();
         }
     }
 
@@ -305,6 +309,7 @@ void ParentProcess::updatePhaseDurations(
     report["name"] = junctionName;
     report["description"] = "Junction Report per Cycle";
 
+    nlohmann::json densityDistributions = nlohmann::json::array();
     nlohmann::json phaseCycleData = nlohmann::json::array();
     nlohmann::json phaseCycleDurations = nlohmann::json::array();
     nlohmann::json nextPhaseCycleDurations = nlohmann::json::array();
@@ -314,7 +319,7 @@ void ParentProcess::updatePhaseDurations(
     {
         float phaseDuration = phaseDurations[phase] / 1000.0;
         phaseData["phase"] = phase;
-        phaseData["phaseDuration"] = phaseDuration;
+        // phaseData["phaseDuration"] = phaseDuration;
         phaseData["vehicles"] = nlohmann::json::array();
         phaseData["pedestrians"] = nlohmann::json::array();
 
@@ -334,7 +339,7 @@ void ParentProcess::updatePhaseDurations(
             phaseData["vehicles"].push_back(phaseDensities[phase][child]);
         }
         totalDensity += phaseTotals[phase];
-        report["totalVehicleDensity"] = totalDensity;
+        // report["totalVehicleDensity"] = totalDensity;
 
         // pedestrians data
         for(int child = numVehicle; child < numChildren; ++child)
@@ -351,10 +356,13 @@ void ParentProcess::updatePhaseDurations(
             phaseData["pedestrians"].push_back(phaseDensities[phase][child]);
         }
         totalPedestrianDensity += pedestrianTotals[phase];
-        report["totalPedestrianDensity"] = totalPedestrianDensity;
+        densityDistributions.push_back(phaseData);
+        // report["totalPedestrianDensity"] = totalPedestrianDensity;
     }
-    report["phaseCycleDurations"].push_back(phaseCycleDurations);
-    report["totalPhaseCycleDensity"] = totalDensity + totalPedestrianDensity;
+    report["densityDistributions"] = densityDistributions;
+
+    // report["phaseCycleDurations"].push_back(phaseCycleDurations);
+    // report["totalPhaseCycleDensity"] = totalDensity + totalPedestrianDensity;
 
     std::cout << "----------------------------------------------------------\n";
 
@@ -403,12 +411,12 @@ void ParentProcess::updatePhaseDurations(
     {
         float allocatedTime = (phaseDurations[phase] / 1000.0);
         nextPhaseCycleDurations.push_back(allocatedTime);
-        phaseData["nextPhaseDuration"] = allocatedTime;
+        // phaseData["nextPhaseDuration"] = allocatedTime;
     }
-    report["nextPhaseCycleDurations"] = nextPhaseCycleDurations;
+    // report["nextPhaseCycleDurations"] = nextPhaseCycleDurations;
+    report["allocatedTimes"] = nextPhaseCycleDurations;
 
-    phaseCycleData.push_back(phaseData);
-    report["phaseCycleData"] = phaseCycleData;
+    // report["phaseCycleData"] = phaseCycleData;
 
     if(verbose)
     {
@@ -431,22 +439,19 @@ void ParentProcess::closeUnusedPipes()
 void ParentProcess::sendJunctionReport(std::string data)
 {
     postUrl = "https://55qdnlqk-5234.asse.devtunnels.ms/Junction/Report";
-    setCommonHeaders();
 
+    std::cout << "Sending density and phase time data to server...\n";
     auto callback = std::bind(&ParentProcess::handlePostCallback,
                               this,
                               std::placeholders::_1,
                               std::placeholders::_2,
                               std::placeholders::_3);
-
-    std::cout << "Sending density and phase time data to server...\n";
     (clientAsync.sendPostRequestAsync(postUrl, data, headers, callback));
 }
 
 void ParentProcess::sendJunctionStatus()
 {
     postUrl = "https://55qdnlqk-5234.asse.devtunnels.ms/Junction/Status";
-    setCommonHeaders();
 
     healthCheck = 100 - (warning + error);
 
@@ -456,12 +461,6 @@ void ParentProcess::sendJunctionStatus()
     status["warning"] = warning;
     status["error"] = error;
 
-    auto callback = std::bind(&ParentProcess::handlePostCallback,
-                              this,
-                              std::placeholders::_1,
-                              std::placeholders::_2,
-                              std::placeholders::_3);
-
     if(verbose)
     {
         std::cout << "\n------------- Final Junction Cycle Status to Send "
@@ -470,14 +469,13 @@ void ParentProcess::sendJunctionStatus()
     }
 
     std::cout << "Sending junction status to server...\n";
-    clientAsync.sendPostRequestAsync(postUrl, status.dump(), headers, callback);
-}
+    auto callback = std::bind(&ParentProcess::handlePostCallback,
+                              this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3);
 
-void ParentProcess::setCommonHeaders()
-{
-    headers = {{"accept", "text/plain"},
-               {"Content-Type", "application/json; charset=utf-8"},
-               {"TSecretKey", "TrafficEz-001-002-003-004"}};
+    clientAsync.sendPostRequestAsync(postUrl, status.dump(), headers, callback);
 }
 
 void ParentProcess::handlePostCallback(bool success,

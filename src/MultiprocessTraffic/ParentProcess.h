@@ -38,9 +38,9 @@ private:
 
     bool verbose;
     bool isStandby = false;
+
     int junctionId;
     std::string junctionName;
-
     std::string relayUrl;
 
     HttpPostClientAsync clientAsync;
@@ -96,7 +96,6 @@ private:
 
     void sendJunctionReport(std::string data);
     void sendJunctionStatus();
-    void setCommonHeaders();
     void handlePostCallback(bool success,
                             int errorCode,
                             const std::string& response);
