@@ -60,6 +60,9 @@ void MultiprocessTraffic::handleSignal(int signal)
 
     if(signal == SIGINT)
     {
+        TelnetRelayController& relay = TelnetRelayController::getInstance();
+        relay.turnOffAllRelay();
+
         std::cout << "\nInterrupt signal received.\n";
         for(pid_t pid : instance->childPids)
         {
