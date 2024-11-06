@@ -79,26 +79,18 @@ void ParentProcess::run()
                       << " ======================================\n";
         }
 
-        if(isStandby)
+        telnetRelay.setPhaseCycle(phaseIndex);
+        telnetRelay.executePhase();
+
+        sendPhaseMessagesToChildren(phaseIndex);
+
+        if(!receivePrevDensitiesFromChildren(phaseIndex, phaseDensities))
         {
-            std::cout << "Switching to Standby Mode...\n";
-            telnetRelay.standbyMode();
+            setDefaultPhaseDensities(phaseDensities);
         }
-        else
-        {
-            telnetRelay.setPhaseCycle(phaseIndex);
-            telnetRelay.executePhase();
 
-            sendPhaseMessagesToChildren(phaseIndex);
-
-            if(!receivePrevDensitiesFromChildren(phaseIndex, phaseDensities))
-            {
-                setDefaultPhaseDensities(phaseDensities);
-            }
-
-            handlePhaseTimer(phaseIndex);
-            transitionToNextPhase(phaseIndex, phaseDensities);
-        }
+        handlePhaseTimer(phaseIndex);
+        transitionToNextPhase(phaseIndex, phaseDensities);
     }
 
     for(int i = 0; i < numChildren; ++i)
