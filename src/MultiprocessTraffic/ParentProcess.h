@@ -37,7 +37,6 @@ private:
     TelnetRelayController& telnetRelay = TelnetRelayController::getInstance();
 
     bool verbose;
-    bool isStandby = false;
 
     int junctionId;
     std::string junctionName;
@@ -99,5 +98,6 @@ private:
     void handlePostCallback(bool success,
                             int errorCode,
                             const std::string& response);
+    static void handleSignal(int );
 };
 #endif
