@@ -82,12 +82,12 @@ void ParentProcess::run()
         if(isStandby)
         {
             std::cout << "Switching to Standby Mode...\n";
-            relay.standbyMode();
+            telnetRelay.standbyMode();
         }
         else
         {
-            relay.setPhaseCycle(phaseIndex);
-            relay.executePhase();
+            telnetRelay.setPhaseCycle(phaseIndex);
+            telnetRelay.executePhase();
 
             sendPhaseMessagesToChildren(phaseIndex);
 
@@ -255,7 +255,7 @@ void ParentProcess::handlePhaseTimer(int phaseIndex)
 
         if(remainingTime == 5)
         {
-            relay.executeTransitionPhase();
+            telnetRelay.executeTransitionPhase();
         }
 
         --remainingTime;

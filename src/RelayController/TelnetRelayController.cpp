@@ -376,5 +376,5 @@ bool TelnetRelayController::standbyMode()
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         sendCommand("reset");
     }
-    exit(EXIT_SUCCESS);
+    // exit(EXIT_SUCCESS);
 }

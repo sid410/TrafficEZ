@@ -60,8 +60,9 @@ void MultiprocessTraffic::handleSignal(int signal)
 
     if(signal == SIGINT)
     {
-        TelnetRelayController& relay = TelnetRelayController::getInstance();
-        relay.turnOffAllRelay();
+        TelnetRelayController& telnetRelay =
+            TelnetRelayController::getInstance();
+        telnetRelay.turnOffAllRelay();
 
         std::cout << "\nInterrupt signal received.\n";
         for(pid_t pid : instance->childPids)
@@ -83,8 +84,9 @@ void MultiprocessTraffic::handleSignal(int signal)
         }
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
 
-        TelnetRelayController& relay = TelnetRelayController::getInstance();
-        relay.standbyMode();
+        TelnetRelayController& telnetRelay =
+            TelnetRelayController::getInstance();
+        telnetRelay.standbyMode();
     }
 }
 

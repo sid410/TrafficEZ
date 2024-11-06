@@ -34,7 +34,7 @@ public:
 private:
     static constexpr int BUFFER_SIZE = 128;
 
-    TelnetRelayController& relay = TelnetRelayController::getInstance();
+    TelnetRelayController& telnetRelay = TelnetRelayController::getInstance();
 
     bool verbose;
     bool isStandby = false;
