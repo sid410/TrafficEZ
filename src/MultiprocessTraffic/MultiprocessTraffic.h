@@ -7,6 +7,7 @@
 #include "Pipe.h"
 #include <yaml-cpp/yaml.h>
 
+#include <queue>
 #include <sys/types.h>
 #include <vector>
 
@@ -18,9 +19,15 @@ public:
                         bool verbose = false);
 
     void start();
+    void parentProcessThread();
     void calibrate();
 
 private:
+    static std::queue<std::string> commandQueue;
+    static std::mutex queueMutex;
+    static int forkCount;
+    static const int maxForkCount = 5;
+
     std::string configFile;
     int junctionId;
     std::string junctionName;
@@ -30,6 +37,7 @@ private:
     int numChildren;
     int numVehicle;
     int numPedestrian;
+    int respawnRetries = 5;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;
