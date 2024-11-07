@@ -7,4 +7,5 @@ target_include_directories(
          ${CMAKE_CURRENT_SOURCE_DIR}/../MultiprocessTraffic
          ${CMAKE_CURRENT_SOURCE_DIR}/../IotHubClient)
 
-target_link_libraries(TrafficManager PRIVATE WatcherSpawner MultiprocessTraffic IotHubClient)
+target_link_libraries(TrafficManager PRIVATE WatcherSpawner MultiprocessTraffic
+                                             IotHubClient)

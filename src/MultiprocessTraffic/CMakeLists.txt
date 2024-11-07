@@ -10,5 +10,4 @@ target_include_directories(
          ${CMAKE_CURRENT_SOURCE_DIR}/../HttpRequests)
 
 target_link_libraries(MultiprocessTraffic PRIVATE WatcherSpawner
-                                                  RelayController
-                                                  HttpRequests)
+                                                  RelayController HttpRequests)
