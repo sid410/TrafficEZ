@@ -98,6 +98,6 @@ private:
     void handlePostCallback(bool success,
                             int errorCode,
                             const std::string& response);
-    static void handleSignal(int );
+    static void handleSignal(int signal);
 };
 #endif
