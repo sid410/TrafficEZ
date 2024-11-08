@@ -65,6 +65,7 @@ ParentProcess::ParentProcess(int numVehicle,
 void ParentProcess::run()
 {
     int phaseIndex = 0;
+    int cycle = 0;
 
     std::vector<std::vector<float>> phaseDensities(
         phases.size(), std::vector<float>(numChildren, 0.0));
@@ -73,9 +74,13 @@ void ParentProcess::run()
 
     while(true)
     {
+        // increment cycle by 1 when phaseIndex is 0
+        phaseIndex == 0 ? cycle++ : cycle;
+        std::cout << cycle << std::endl;
         if(verbose)
         {
-            std::cout << "\n==================== Phase Cycle " << phaseIndex
+            std::cout << "\n==================== Cycle: " << cycle
+                      << " Phase: " << phaseIndex
                       << " ======================================\n";
         }
 
@@ -103,11 +108,6 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
 {
     for(int i = 0; i < numChildren; ++i)
     {
-        if(verbose)
-        {
-            std::cout << "Parent: Sending phase message to child " << i << ": "
-                      << phases[phaseIndex][i] << "\n";
-        }
 
         std::string phaseString;
         switch(phases[phaseIndex][i])
@@ -136,6 +136,12 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
             std::cerr << "Parent: Failed to write to pipe: " << strerror(errno)
                       << "\n";
             break;
+        }
+
+        if(verbose)
+        {
+            std::cout << "Parent: Sending phase message to child " << i << ": "
+                      << phaseString << "\n";
         }
     }
 }
