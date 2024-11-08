@@ -80,10 +80,8 @@ float VehicleGui::getTrafficDensity()
     {
         float totalTime = fpsHelper.endSample() / 1000;
         float flow = hullTracker.getTotalHullArea() / totalTime;
-
-        density = (flow == 0)
-                      ? 0
-                      : flow / (hullTracker.getAveragedSpeed() * laneWidth);
+        float average = hullTracker.getAveragedSpeed();
+        density = (flow == 0) ? 0 : flow / (average * laneWidth);
 
         hullTracker.resetTrackerVariables();
     }

@@ -88,23 +88,3 @@ function(setup_hullrecognition TARGET)
                                           PreprocessPipeline)
 endfunction()
 
-function(setup_azureiothub TARGET)
-  setup_common_compile_options(${TARGET})
-  target_include_directories(
-    ${TARGET}
-    PUBLIC ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/iothub_client/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/umqtt/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/c-utility/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/pal/inc
-           ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/deps/parson)
-  target_link_libraries(
-    ${TARGET}
-    PRIVATE
-      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/iothub_client/libiothub_client.a
-      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/umqtt/libumqtt.a
-      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/c-utility/libaziotsharedutil.a
-      ${CMAKE_SOURCE_DIR}/lib/azure-iot-sdk-c/cmake/deps/parson/libparson.a
-      /usr/lib/x86_64-linux-gnu/libssl.a
-      /usr/lib/x86_64-linux-gnu/libcrypto.a
-      /usr/lib/x86_64-linux-gnu/libpthread.a)
-endfunction()

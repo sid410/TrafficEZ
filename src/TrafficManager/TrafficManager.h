@@ -1,7 +1,6 @@
 #ifndef TRAFFIC_MANAGER_H
 #define TRAFFIC_MANAGER_H
 
-#include "IotHubClient.h"
 #include <string>
 
 class TrafficManager
