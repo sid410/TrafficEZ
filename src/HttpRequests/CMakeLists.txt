@@ -1,3 +1,3 @@
-add_library(HttpRequests HttpPostClient.cpp HttpPostClientAsync.cpp)
+add_library(HttpRequests HttpPostClientAsync.cpp)
 
-target_link_libraries(HttpRequests CURL::libcurl)
+target_link_libraries(HttpRequests PRIVATE curl)
