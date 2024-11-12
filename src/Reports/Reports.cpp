@@ -10,7 +10,11 @@ Reports::Reports(std::string httpUrl,
     , junctionId(junctionId)
     , junctionName(junctionName)
     , verbose(verboseMode)
-{}
+{
+    headers = {{"accept", "text/plain"},
+               {"Content-Type", "application/json; charset=utf-8"},
+               {"TSecretKey", tSecretKey}};
+}
 
 void Reports::sendJunctionReport(std::string& data)
 {
@@ -19,11 +23,7 @@ void Reports::sendJunctionReport(std::string& data)
     std::cout << "Sending density and phase time data to server...\n";
 
     HttpClient client(url);
-    client
-        .postAsync(endpoint, data, headers)
-        // .then([](const std::string& response) {
-        //     std::cout << "Response: " << response << std::endl;
-        // });
+    client.postAsync(endpoint, data, headers)
         .then([](const std::string& response) {
             if(!response.empty())
                 std::cout << "Response: " << response << std::endl;
@@ -54,11 +54,7 @@ void Reports::sendJunctionStatus()
     std::cout << "Sending junction status to server...\n";
 
     HttpClient client(url);
-    client
-        .postAsync(endpoint, status.dump(), headers)
-        // .then([](const std::string& response) {
-        //     std::cout << "Response: " << response << std::endl;
-        // });
+    client.postAsync(endpoint, status.dump(), headers)
         .then([](const std::string& response) {
             if(!response.empty())
                 std::cout << "Response: " << response << std::endl;
