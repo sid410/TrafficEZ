@@ -87,4 +87,3 @@ function(setup_hullrecognition TARGET)
   target_link_libraries(${TARGET} PRIVATE HullDetector HullTracker
                                           PreprocessPipeline)
 endfunction()
-
