@@ -6,4 +6,5 @@ target_include_directories(
          ${CMAKE_CURRENT_SOURCE_DIR}/../WatcherSpawner
          ${CMAKE_CURRENT_SOURCE_DIR}/../MultiprocessTraffic)
 
-target_link_libraries(TrafficManager PRIVATE WatcherSpawner MultiprocessTraffic)
+target_link_libraries(TrafficManager PRIVATE WatcherSpawner MultiprocessTraffic
+                                             crypto ssl)

@@ -1,0 +1,3 @@
+add_library(HttpRequests HttpPostClientAsync.cpp)
+
+target_link_libraries(HttpRequests PRIVATE curl)

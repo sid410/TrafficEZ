@@ -11,6 +11,8 @@
 # doc folders
 /[Dd]oc/
 /[Dd]ocs/
+/[Ll]og/
+/[Ll]ogs/
 
 # generated Doxyfile from template
 Doxyfile

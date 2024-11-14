@@ -7,6 +7,7 @@
 #include "Pipe.h"
 #include <yaml-cpp/yaml.h>
 
+#include <queue>
 #include <sys/types.h>
 #include <vector>
 
@@ -18,16 +19,24 @@ public:
                         bool verbose = false);
 
     void start();
+    void parentProcessThread();
     void calibrate();
 
 private:
+    static std::queue<std::string> commandQueue;
+    static std::mutex queueMutex;
+    static int forkCount;
+    static const int maxForkCount = 5;
+
     std::string configFile;
+
     bool debug;
     bool verbose;
 
     int numChildren;
     int numVehicle;
     int numPedestrian;
+    int respawnRetries = 5;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;
@@ -45,7 +54,13 @@ private:
 
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
+    std::string junctionId;
+    std::string junctionName;
     std::string relayUrl;
+    std::string relayUsername;
+    std::string relayPassword;
+    std::string httpUrl;
+    std::string tSecretKey;
 
     static void handleSignal(int signal);
     static MultiprocessTraffic* instance;
@@ -59,6 +74,8 @@ private:
     void loadDensitySettings(const YAML::Node& config);
     void loadStreamInfo(const YAML::Node& config);
     void loadRelayInfo(const YAML::Node& config);
+    void loadJunctionInfo(const YAML::Node& config);
+    void loadHttpInfo(const YAML::Node& config);
 
     void setVehicleAndPedestrianCount();
 };

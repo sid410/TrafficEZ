@@ -1,4 +1,6 @@
 #include "MultiprocessTraffic.h"
+#include "Reports.h"
+#include "TelnetRelayController.h"
 #include <csignal>
 #include <cstring>
 #include <iostream>
@@ -6,6 +8,10 @@
 #include <unistd.h>
 
 MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
+
+std::queue<std::string> MultiprocessTraffic::commandQueue;
+std::mutex MultiprocessTraffic::queueMutex;
+int MultiprocessTraffic::forkCount = 0;
 
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
@@ -15,10 +21,16 @@ MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
     , verbose(verbose)
 {
     instance = this;
+    loadJunctionConfig();
+
+    TelnetRelayController::getInstance(
+        relayUrl, relayUsername, relayPassword, phases, verbose);
+
+    Reports::getInstance(
+        httpUrl, tSecretKey, junctionId, junctionName, verbose);
+
     std::signal(SIGINT, MultiprocessTraffic::handleSignal);
     std::signal(SIGCHLD, MultiprocessTraffic::handleSignal);
-
-    loadJunctionConfig();
 }
 
 void MultiprocessTraffic::start()
@@ -26,6 +38,34 @@ void MultiprocessTraffic::start()
     createPipes();
     forkChildren();
 
+    std::thread parentThread(&MultiprocessTraffic::parentProcessThread, this);
+
+    std::unique_lock<std::mutex> lock(queueMutex);
+    while(true)
+    {
+        // Wait until the queue is not empty
+        while(commandQueue.empty())
+        {
+            // Release the lock temporarily to avoid busy waiting
+            lock.unlock();
+            std::this_thread::yield();
+            lock.lock();
+        }
+        std::cout << commandQueue.size() << std::endl;
+        std::string command = commandQueue.front();
+        commandQueue.pop();
+
+        if(command == "forkChildren")
+        {
+            forkChildren();
+        }
+    }
+
+    parentThread.join();
+}
+
+void MultiprocessTraffic::parentProcessThread()
+{
     ParentProcess parentProcess(numVehicle,
                                 numPedestrian,
                                 pipesParentToChild,
@@ -39,7 +79,10 @@ void MultiprocessTraffic::start()
                                 densityMax,
                                 minPhaseDurationMs,
                                 minPedestrianDurationMs,
-                                relayUrl);
+                                relayUrl,
+                                junctionId,
+                                junctionName);
+
     parentProcess.run();
 }
 
@@ -53,6 +96,10 @@ void MultiprocessTraffic::handleSignal(int signal)
 
     if(signal == SIGINT)
     {
+        TelnetRelayController& telnetRelay =
+            TelnetRelayController::getInstance();
+        telnetRelay.turnOffAllRelay();
+
         std::cout << "\nInterrupt signal received.\n";
         for(pid_t pid : instance->childPids)
         {
@@ -71,8 +118,14 @@ void MultiprocessTraffic::handleSignal(int signal)
             std::cout << "Killing Child PID: " << pid << "\n";
             kill(pid, SIGTERM);
         }
-        std::cout << "Exiting Parent PID: " << getpid() << "\n";
-        exit(EXIT_SUCCESS);
+
+        if(forkCount < maxForkCount)
+        {
+            commandQueue.push("forkChildren");
+            ++forkCount;
+
+            std::cerr << "Re-forking children processes." << std::endl;
+        };
     }
 }
 
@@ -180,13 +233,40 @@ void MultiprocessTraffic::loadJunctionConfig()
 {
     YAML::Node config = YAML::LoadFile(configFile);
 
+    loadJunctionInfo(config);
     loadPhases(config);
     loadPhaseDurations(config);
     loadDensitySettings(config);
     loadStreamInfo(config);
     loadRelayInfo(config);
+    loadHttpInfo(config);
 
     setVehicleAndPedestrianCount();
+}
+
+void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
+{
+
+    if(!config["junctionId"] || !config["junctionName"])
+    {
+        std::cerr << "Missing junction information in configuration file!"
+                  << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    junctionId = config["junctionId"].as<std::string>();
+    junctionName = config["junctionName"].as<std::string>();
+}
+
+void MultiprocessTraffic::loadHttpInfo(const YAML::Node& config)
+{
+    if(!config["httpUrl"] || !config["tSecretKey"])
+    {
+        std::cerr << "Missing HTTP configuration information." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    httpUrl = config["httpUrl"].as<std::string>();
+    tSecretKey = config["tSecretKey"].as<std::string>();
 }
 
 void MultiprocessTraffic::loadPhases(const YAML::Node& config)
@@ -272,13 +352,16 @@ void MultiprocessTraffic::loadStreamInfo(const YAML::Node& config)
 
 void MultiprocessTraffic::loadRelayInfo(const YAML::Node& config)
 {
-    if(!config["relayUrl"])
+    if(!config["relayUrl"] || !config["relayUsername"] ||
+       !config["relayPassword"])
     {
-        std::cerr << "Missing relay URL in configuration file!\n";
+        std::cerr << "Missing relay info in configuration file!\n";
         exit(EXIT_FAILURE);
     }
 
     relayUrl = config["relayUrl"].as<std::string>();
+    relayUsername = config["relayUsername"].as<std::string>();
+    relayPassword = config["relayPassword"].as<std::string>();
 }
 
 void MultiprocessTraffic::setVehicleAndPedestrianCount()
