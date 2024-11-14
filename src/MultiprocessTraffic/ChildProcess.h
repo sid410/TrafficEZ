@@ -49,7 +49,9 @@ private:
                             Watcher* watcher,
                             bool& isStateGreen);
 
-    void sendDensityToParent(float density);
+    void sendDensityAndVehiclesToParent(
+        float density, std::unordered_map<std::string, int> vehicles = {});
+
     void closeUnusedPipes();
 };
 

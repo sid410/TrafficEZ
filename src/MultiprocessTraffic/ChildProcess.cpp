@@ -145,7 +145,12 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
     case RED_PHASE: {
         // send the previous green vehicle density
         float density = watcher->getTrafficDensity();
-        sendDensityToParent(density);
+        // sendDensityToParent(density);
+
+        std::unordered_map<std::string, int> vehicles =
+            watcher->getVehicleTypeAndCount();
+
+        sendDensityAndVehiclesToParent(density, vehicles);
 
         isStateGreen = false;
         watcher->setCurrentTrafficState(TrafficState::RED_PHASE);
@@ -156,7 +161,8 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
         // send the previous red vehicle density
         watcher->processFrame();
         float density = watcher->getTrafficDensity();
-        sendDensityToParent(density);
+
+        sendDensityAndVehiclesToParent(density);
 
         isStateGreen = true;
         watcher->setCurrentTrafficState(TrafficState::GREEN_PHASE);
@@ -167,13 +173,15 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
         // send the waiting pedestrian count
         watcher->processFrame();
         float density = watcher->getInstanceCount();
-        sendDensityToParent(density);
+        sendDensityAndVehiclesToParent(density);
+
         break;
     }
 
     case GREEN_PED: {
         // ignore the already walking pedestrian
-        sendDensityToParent(0.0f);
+        sendDensityAndVehiclesToParent(0.0f);
+
         break;
     }
 
@@ -185,14 +193,43 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
     }
 }
 
-void ChildProcess::sendDensityToParent(float density)
+void ChildProcess::sendDensityAndVehiclesToParent(
+    float density, std::unordered_map<std::string, int> vehicles)
 {
     char buffer[BUFFER_SIZE];
-    snprintf(buffer, sizeof(buffer), "%.2f", density);
+    snprintf(buffer, sizeof(buffer), "%.2f;", density); // Format density
+
+    // Convert vehicle counts to string
+    std::ostringstream oss;
+    for(const auto& entry : vehicles)
+    {
+        oss << entry.first << ":" << entry.second << ",";
+    }
+
+    // Remove trailing comma if necessary
+    std::string vehicleData = oss.str();
+    if(!vehicleData.empty() && vehicleData.back() == ',')
+    {
+        vehicleData.pop_back();
+    }
+
+    std::string combinedData = std::string(buffer) + vehicleData;
+
+    if(combinedData.size() >= BUFFER_SIZE)
+    {
+        std::cerr
+            << "Data exceeds buffer size, consider increasing BUFFER_SIZE.\n";
+        return;
+    }
+
+    strncpy(buffer, combinedData.c_str(), BUFFER_SIZE - 1);
+    buffer[BUFFER_SIZE - 1] = '\0'; // Null-terminate buffer
+
     if(write(pipeChildToParent.fds[1], buffer, strlen(buffer) + 1) == -1)
     {
         std::cerr << "Child " << childIndex
-                  << ": Failed to write to pipe: " << strerror(errno) << "\n";
+                  << ": Failed to write data to pipe: " << strerror(errno)
+                  << "\n";
     }
 }
 
