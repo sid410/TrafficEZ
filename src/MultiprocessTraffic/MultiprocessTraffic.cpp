@@ -1,4 +1,5 @@
 #include "MultiprocessTraffic.h"
+#include "Reports.h"
 #include "TelnetRelayController.h"
 #include <csignal>
 #include <cstring>
@@ -24,6 +25,9 @@ MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
 
     TelnetRelayController::getInstance(
         relayUrl, relayUsername, relayPassword, phases, verbose);
+
+    Reports::getInstance(
+        httpUrl, tSecretKey, junctionId, junctionName, verbose);
 
     std::signal(SIGINT, MultiprocessTraffic::handleSignal);
     std::signal(SIGCHLD, MultiprocessTraffic::handleSignal);
