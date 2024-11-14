@@ -177,7 +177,8 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
             if(verbose)
             {
-                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+                std::cout << "Vehicle Child " << pipeIndex << " PID: " << pid
+                          << "\n";
             }
         }
         ++pipeIndex;
@@ -206,7 +207,8 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
             if(verbose)
             {
-                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+                std::cout << "Pedestrian Child " << pipeIndex << " PID: " << pid
+                          << "\n";
             }
         }
         ++pipeIndex;
