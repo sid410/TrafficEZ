@@ -29,8 +29,7 @@ private:
     static const int maxForkCount = 5;
 
     std::string configFile;
-    int junctionId;
-    std::string junctionName;
+
     bool debug;
     bool verbose;
 
@@ -55,9 +54,13 @@ private:
 
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
+    std::string junctionId;
+    std::string junctionName;
     std::string relayUrl;
     std::string relayUsername;
     std::string relayPassword;
+    std::string httpUrl;
+    std::string tSecretKey;
 
     static void handleSignal(int signal);
     static MultiprocessTraffic* instance;
@@ -72,6 +75,7 @@ private:
     void loadStreamInfo(const YAML::Node& config);
     void loadRelayInfo(const YAML::Node& config);
     void loadJunctionInfo(const YAML::Node& config);
+    void loadHttpInfo(const YAML::Node& config);
 
     void setVehicleAndPedestrianCount();
 };

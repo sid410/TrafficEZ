@@ -242,41 +242,27 @@ void MultiprocessTraffic::loadJunctionConfig()
 
 void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
 {
-    try
-    {
-        if(!config["junctionId"] || !config["junctionName"])
-        {
-            throw std::runtime_error(
-                "Missing junction information in configuration file!");
-        }
 
-        junctionId = config["junctionId"].as<std::string>();
-        junctionName = config["junctionName"].as<std::string>();
-    }
-    catch(const std::exception& e)
+    if(!config["junctionId"] || !config["junctionName"])
     {
-        std::cerr << "Error loading junction config: " << e.what() << std::endl;
+        std::cerr << "Missing junction information in configuration file!"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    junctionId = config["junctionId"].as<std::string>();
+    junctionName = config["junctionName"].as<std::string>();
 }
 
 void MultiprocessTraffic::loadHttpInfo(const YAML::Node& config)
 {
-    try
+    if(!config["httpUrl"] || !config["tSecretKey"])
     {
-        if(!config["httpUrl"] || !config["tSecretKey"])
-        {
-            throw std::runtime_error("Missing HTTP configuration information.");
-        }
-
-        httpUrl = config["httpUrl"].as<std::string>();
-        tSecretKey = config["tSecretKey"].as<std::string>();
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << "Error loading HTTP config: " << e.what() << std::endl;
+        std::cerr << "Missing HTTP configuration information." << std::endl;
         exit(EXIT_FAILURE);
     }
+    httpUrl = config["httpUrl"].as<std::string>();
+    tSecretKey = config["tSecretKey"].as<std::string>();
 }
 
 void MultiprocessTraffic::loadPhases(const YAML::Node& config)
