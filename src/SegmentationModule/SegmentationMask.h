@@ -5,7 +5,9 @@
 #include "ISegmentationStrategy.h"
 #include <memory>
 #include <opencv2/opencv.hpp>
-
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 class SegmentationMask
 {
 public:
@@ -24,12 +26,18 @@ public:
     int getContourCount(const cv::Mat& mask);
     int getDetectionResultSize();
 
+    std::unordered_map<std::string, int> getClassTypeAndCounts();
+
 private:
     bool isModelInitialized;
     std::unique_ptr<AutoBackendOnnx> model;
     std::unique_ptr<ISegmentationStrategy> segmentationStrategy;
 
     int detectionResultCount;
+    std::unordered_map<std::string, int> countsByClassType;
+
+    std::unordered_map<std::string, int>
+    getCountsByClassType(const std::vector<YoloResults>& filteredResults);
 };
 
 #endif
