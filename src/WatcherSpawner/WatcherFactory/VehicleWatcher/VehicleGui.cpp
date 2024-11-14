@@ -143,3 +143,17 @@ void VehicleGui::processSegmentationState()
     cv::imshow(streamWindow + " segMask", warpedMask);
     // cv::waitKey(0);
 }
+
+std::unordered_map<std::string, int> VehicleGui::getVehicleTypeAndCount()
+{
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        return {};
+    }
+    else if(currentTrafficState == TrafficState::RED_PHASE)
+    {
+        return segmentation.getClassTypeAndCounts();
+    }
+
+    return {};
+}

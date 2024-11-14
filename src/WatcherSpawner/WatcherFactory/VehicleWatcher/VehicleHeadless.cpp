@@ -110,3 +110,17 @@ void VehicleHeadless::processSegmentationState()
     // still need to update warpedMask for getWhiteArea method
     warpedMask = videoStreamer.applyPerspective(segMask, warpPerspective);
 }
+
+std::unordered_map<std::string, int> VehicleHeadless::getVehicleTypeAndCount()
+{
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        return {};
+    }
+    else if(currentTrafficState == TrafficState::RED_PHASE)
+    {
+        return segmentation.getClassTypeAndCounts();
+    }
+
+    return {};
+}

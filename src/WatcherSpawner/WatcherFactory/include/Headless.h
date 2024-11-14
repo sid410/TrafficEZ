@@ -4,6 +4,7 @@
 #include "TrafficState.h"
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 class Headless
 {
@@ -31,6 +32,12 @@ public:
     }
 
     virtual int getInstanceCount()
+    {
+        std::cerr << "This method has no implementation. \nEXITING...\n\n";
+        exit(EXIT_FAILURE);
+    }
+
+    virtual std::unordered_map<std::string, int> getVehicleTypeAndCount()
     {
         std::cerr << "This method has no implementation. \nEXITING...\n\n";
         exit(EXIT_FAILURE);

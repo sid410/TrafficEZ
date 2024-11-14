@@ -17,6 +17,7 @@ public:
     void setCurrentTrafficState(TrafficState state) override;
     float getTrafficDensity() override;
     int getInstanceCount() override;
+    std::unordered_map<std::string, int> getVehicleTypeAndCount() override;
 
 private:
     Gui* gui;

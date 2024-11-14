@@ -25,6 +25,7 @@ public:
     void display() override;
     float getTrafficDensity() override;
     int getInstanceCount() override;
+    std::unordered_map<std::string, int> getVehicleTypeAndCount() override;
 
 private:
     VideoStreamer videoStreamer;
