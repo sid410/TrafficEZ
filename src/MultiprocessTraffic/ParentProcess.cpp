@@ -147,38 +147,6 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
     }
 }
 
-// bool ParentProcess::receivePrevDensitiesFromChildren(
-//     int phaseIndex, std::vector<std::vector<float>>& phaseDensities)
-// {
-//     char buffer[BUFFER_SIZE];
-
-//     int previousPhaseIndex =
-//         (phaseIndex == 0) ? phases.size() - 1 : phaseIndex - 1;
-
-//     for(int i = 0; i < numChildren; ++i)
-//     {
-//         float density;
-//         std::unordered_map<std::string, int> vehicles;
-//         if(!readDataFromChild(i, density, vehicles))
-//         {
-//             return false;
-//         }
-
-//         PhaseMessageType previousPhaseType = phases[previousPhaseIndex][i];
-//         processDensityByPhaseType(previousPhaseType, density);
-//         density = std::clamp(density, densityMin, densityMax);
-
-//         if(verbose)
-//         {
-//             std::cout << "Previous child " << i << " data: " << density << "\n";
-//         }
-
-//         phaseDensities[previousPhaseIndex][i] = density;
-//     }
-
-//     return true;
-// }
-
 bool ParentProcess::receivePrevDataFromChildren(
     int phaseIndex,
     std::vector<std::vector<float>>& phaseDensities,
@@ -214,40 +182,6 @@ bool ParentProcess::receivePrevDataFromChildren(
 
     return true;
 }
-// bool ParentProcess::readDensityFromChild(int childIndex, float& density)
-// {
-//     char buffer[BUFFER_SIZE];
-//     int bytesRead =
-//         read(pipesChildToParent[childIndex].fds[0], buffer, sizeof(buffer) - 1);
-//     if(bytesRead <= 0)
-//     {
-//         std::cerr << "Parent: Failed to read from pipe or EOF reached: "
-//                   << strerror(errno) << "\n";
-//         return false;
-//     }
-//     buffer[bytesRead] = '\0'; // Ensure null termination
-
-//     try
-//     {
-//         density = std::stof(buffer);
-//     }
-//     catch(const std::invalid_argument&)
-//     {
-//         std::cerr << "Parent: Invalid density value received from child "
-//                   << childIndex << "\n";
-//         return false;
-//     }
-
-//     if(std::isnan(density) || (std::isnan(density) && std::signbit(density)))
-//     {
-//         std::cerr << "Parent: Detected NaN or negative NaN in traffic density "
-//                      "from child "
-//                   << childIndex << "\n";
-//         return false;
-//     }
-
-//     return true;
-// }
 
 bool ParentProcess::readDataFromChild(
     int childIndex,
