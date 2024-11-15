@@ -115,7 +115,12 @@ std::unordered_map<std::string, int> VehicleHeadless::getVehicleTypeAndCount()
 {
     if(currentTrafficState == TrafficState::GREEN_PHASE)
     {
-        return {};
+        int hullCount = hullTracker.getHullCount();
+        if(hullCount < 1)
+        {
+            return {};
+        }
+        return {{"unknown", hullCount}};
     }
     else if(currentTrafficState == TrafficState::RED_PHASE)
     {
