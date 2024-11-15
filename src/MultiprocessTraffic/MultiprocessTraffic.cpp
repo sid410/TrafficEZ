@@ -125,11 +125,11 @@ void MultiprocessTraffic::forkChildren()
         }
         else if(pid == 0)
         {
-            ChildProcess childProcess(pipeIndex,
-                                      pipesParentToChild[pipeIndex],
-                                      pipesChildToParent[pipeIndex],
-                                      verbose);
-            childProcess.runVehicle(
+            ChildProcess vehicleProcess(pipeIndex,
+                                        pipesParentToChild[pipeIndex],
+                                        pipesChildToParent[pipeIndex],
+                                        verbose);
+            vehicleProcess.runVehicle(
                 debug, streamConfigs[pipeIndex], streamLinks[pipeIndex]);
             exit(EXIT_SUCCESS);
         }
@@ -138,7 +138,8 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
             if(verbose)
             {
-                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+                std::cout << "Vehicle Child " << pipeIndex << " PID: " << pid
+                          << "\n";
             }
         }
         ++pipeIndex;
@@ -154,11 +155,11 @@ void MultiprocessTraffic::forkChildren()
         }
         else if(pid == 0)
         {
-            ChildProcess childProcess(pipeIndex,
-                                      pipesParentToChild[pipeIndex],
-                                      pipesChildToParent[pipeIndex],
-                                      verbose);
-            childProcess.runPedestrian(
+            ChildProcess pedestrianProcess(pipeIndex,
+                                           pipesParentToChild[pipeIndex],
+                                           pipesChildToParent[pipeIndex],
+                                           verbose);
+            pedestrianProcess.runPedestrian(
                 debug, streamConfigs[pipeIndex], streamLinks[pipeIndex]);
             exit(EXIT_SUCCESS);
         }
@@ -167,7 +168,8 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
             if(verbose)
             {
-                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+                std::cout << "Pedestrian Child " << pipeIndex << " PID: " << pid
+                          << "\n";
             }
         }
         ++pipeIndex;

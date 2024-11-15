@@ -362,7 +362,7 @@ void ParentProcess::updatePhaseDurations(
     ;
 
     nlohmann::json nextCyclePhaseDurations = nlohmann::json::array();
-    nlohmann::json CycleData = nlohmann::json::array();
+    nlohmann::json cycleData = nlohmann::json::array();
     nlohmann::json phaseData;
 
     for(int phase = 0; phase < phases.size(); ++phase)
@@ -431,7 +431,7 @@ void ParentProcess::updatePhaseDurations(
         }
         totalPedestrianCount += pedestrianTotals[phase];
         phaseData["pedestrianLaneCounts"] = pedestrianLaneCounts;
-        CycleData.push_back(phaseData);
+        cycleData.push_back(phaseData);
     }
 
     std::cout << "----------------------------------------------------------\n";
@@ -484,7 +484,7 @@ void ParentProcess::updatePhaseDurations(
         nextCyclePhaseDurations.push_back(allocatedTime);
     }
     junctionReport["nextCyclePhaseDurations"] = nextCyclePhaseDurations;
-    junctionReport["CycleData"] = CycleData;
+    junctionReport["cycleData"] = cycleData;
 
     if(verbose)
     {
