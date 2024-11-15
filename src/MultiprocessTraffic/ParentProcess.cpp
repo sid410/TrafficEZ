@@ -497,16 +497,3 @@ void ParentProcess::closeUnusedPipes()
         close(pipesChildToParent[i].fds[1]);
     }
 }
-
-void ParentProcess::handleSignal(int signal)
-{
-    if(signal == SIGCHLD)
-    {
-        std::cout << "\nOne of the children unexpectedly crashed. Setting "
-                     "relay to standby mode.\n";
-
-        TelnetRelayController& telnetRelay =
-            TelnetRelayController::getInstance();
-        telnetRelay.standbyMode();
-    }
-}

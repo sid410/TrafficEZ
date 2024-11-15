@@ -22,11 +22,6 @@ public:
     void calibrate();
 
 private:
-    static std::queue<std::string> commandQueue;
-    static std::mutex queueMutex;
-    static int forkCount;
-    static const int maxForkCount = 5;
-
     std::string configFile;
 
     bool debug;
@@ -35,7 +30,6 @@ private:
     int numChildren;
     int numVehicle;
     int numPedestrian;
-    int respawnRetries = 5;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;

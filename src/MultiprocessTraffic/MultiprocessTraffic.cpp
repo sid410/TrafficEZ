@@ -9,10 +9,6 @@
 
 MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
 
-std::queue<std::string> MultiprocessTraffic::commandQueue;
-std::mutex MultiprocessTraffic::queueMutex;
-int MultiprocessTraffic::forkCount = 0;
-
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
                                          bool verbose)
