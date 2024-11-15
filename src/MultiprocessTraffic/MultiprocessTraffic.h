@@ -19,7 +19,6 @@ public:
                         bool verbose = false);
 
     void start();
-    void parentProcessThread();
     void calibrate();
 
 private:
