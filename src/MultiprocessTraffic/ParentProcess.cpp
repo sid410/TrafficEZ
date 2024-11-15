@@ -233,8 +233,11 @@ bool ParentProcess::readDataFromChild(
 
     if(!vehicleData.empty())
     {
-        std::cout << "Parent: Vehicle data received from child " << childIndex
-                  << "\n";
+        if(verbose)
+        {
+            std::cout << "Parent: Vehicle data received from child "
+                      << childIndex << "\n";
+        }
     }
 
     vehicles.clear();
@@ -347,7 +350,8 @@ void ParentProcess::updatePhaseDurations(
 
     if(verbose)
     {
-        std::cout << "----- Density Distribution ------------\n";
+        std::cout << "----- Cycle " << cycle
+                  << " Density Distribution ------------\n";
     }
 
     nlohmann::json junctionReport;
@@ -389,8 +393,11 @@ void ParentProcess::updatePhaseDurations(
 
             for(const auto& entry : phaseVehicles[phase][child])
             {
-                std::cout << "  " << entry.first << ": " << entry.second
-                          << std::endl;
+                if(verbose)
+                {
+                    std::cout << "  " << entry.first << ": " << entry.second
+                              << std::endl;
+                }
 
                 nlohmann::json vehicle;
                 vehicle["type"] = entry.first;
