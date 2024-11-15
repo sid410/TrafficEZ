@@ -20,7 +20,10 @@ void Reports::sendJunctionReport(std::string& data)
 {
     endpoint = "/Junction/Report";
 
-    std::cout << "Sending density and phase time data to server...\n";
+    if(verbose)
+    {
+        std::cout << "Sending density and phase time data to server...\n";
+    }
 
     HttpClient client(url);
     client.postAsync(endpoint, data, headers)
@@ -50,8 +53,8 @@ void Reports::sendJunctionStatus()
     if(verbose)
     {
         std::cout << status.dump(2) << std::endl;
+        std::cout << "Sending junction status to server...\n";
     }
-    std::cout << "Sending junction status to server...\n";
 
     HttpClient client(url);
     client.postAsync(endpoint, status.dump(), headers)
@@ -63,7 +66,4 @@ void Reports::sendJunctionStatus()
         });
 }
 
-Reports::~Reports()
-{
-    std::cout << "Exiting...\n";
-}
+Reports::~Reports() {}

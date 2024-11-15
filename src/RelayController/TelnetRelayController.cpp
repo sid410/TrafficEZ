@@ -155,7 +155,10 @@ std::string TelnetRelayController::receiveResponse(int retries,
         }
     }
 
-    std::cout << "Full response received: " << fullResponse << std::endl;
+    if(verbose)
+    {
+        std::cout << "Full response received: " << fullResponse << std::endl;
+    }
     return fullResponse;
 }
 
@@ -184,7 +187,10 @@ void TelnetRelayController::turnOffRelay(int relayNumber)
 void TelnetRelayController::turnOnAllRelay(std::vector<int> relayNumbers)
 {
     std::string hex = getHexCommand(relayNumbers);
-    std::cout << "Sent Command: " << hex << std::endl;
+    if(verbose)
+    {
+        std::cout << "Sent Command: " << hex << std::endl;
+    }
     sendCommand("relay writeall " + hex);
 }
 

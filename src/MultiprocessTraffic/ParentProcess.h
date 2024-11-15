@@ -100,7 +100,5 @@ private:
             phaseVehicles);
 
     void closeUnusedPipes();
-
-    static void handleSignal(int signal);
 };
 #endif

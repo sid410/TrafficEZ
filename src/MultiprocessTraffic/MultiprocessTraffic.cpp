@@ -9,10 +9,6 @@
 
 MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
 
-std::queue<std::string> MultiprocessTraffic::commandQueue;
-std::mutex MultiprocessTraffic::queueMutex;
-int MultiprocessTraffic::forkCount = 0;
-
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
                                          bool verbose)
@@ -38,34 +34,6 @@ void MultiprocessTraffic::start()
     createPipes();
     forkChildren();
 
-    std::thread parentThread(&MultiprocessTraffic::parentProcessThread, this);
-
-    std::unique_lock<std::mutex> lock(queueMutex);
-    while(true)
-    {
-        // Wait until the queue is not empty
-        while(commandQueue.empty())
-        {
-            // Release the lock temporarily to avoid busy waiting
-            lock.unlock();
-            std::this_thread::yield();
-            lock.lock();
-        }
-        std::cout << commandQueue.size() << std::endl;
-        std::string command = commandQueue.front();
-        commandQueue.pop();
-
-        if(command == "forkChildren")
-        {
-            forkChildren();
-        }
-    }
-
-    parentThread.join();
-}
-
-void MultiprocessTraffic::parentProcessThread()
-{
     ParentProcess parentProcess(numVehicle,
                                 numPedestrian,
                                 pipesParentToChild,
@@ -118,14 +86,7 @@ void MultiprocessTraffic::handleSignal(int signal)
             std::cout << "Killing Child PID: " << pid << "\n";
             kill(pid, SIGTERM);
         }
-
-        if(forkCount < maxForkCount)
-        {
-            commandQueue.push("forkChildren");
-            ++forkCount;
-
-            std::cerr << "Re-forking children processes." << std::endl;
-        };
+        exit(EXIT_SUCCESS);
     }
 }
 
