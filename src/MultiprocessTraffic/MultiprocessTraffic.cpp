@@ -86,6 +86,7 @@ void MultiprocessTraffic::handleSignal(int signal)
             std::cout << "Killing Child PID: " << pid << "\n";
             kill(pid, SIGTERM);
         }
+        std::cout << "Exiting Parent PID: " << getpid() << "\n";
         exit(EXIT_SUCCESS);
     }
 }
