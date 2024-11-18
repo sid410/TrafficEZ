@@ -143,12 +143,11 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
     {
 
     case RED_PHASE: {
-        // send the previous green vehicle density
-        float density = watcher->getTrafficDensity();
-        // sendDensityToParent(density);
-
         std::unordered_map<std::string, int> vehicles =
             watcher->getVehicleTypeAndCount();
+
+        // send the previous green vehicle density
+        float density = watcher->getTrafficDensity();
 
         sendDensityAndVehiclesToParent(density, vehicles);
 
@@ -158,11 +157,14 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
     }
 
     case GREEN_PHASE: {
+        std::unordered_map<std::string, int> vehicles =
+            watcher->getVehicleTypeAndCount();
+
         // send the previous red vehicle density
         watcher->processFrame();
         float density = watcher->getTrafficDensity();
 
-        sendDensityAndVehiclesToParent(density);
+        sendDensityAndVehiclesToParent(density, vehicles);
 
         isStateGreen = true;
         watcher->setCurrentTrafficState(TrafficState::GREEN_PHASE);
