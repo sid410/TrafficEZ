@@ -22,7 +22,7 @@ ParentProcess::ParentProcess(int numVehicle,
                              int minPhaseDurationMs,
                              int minPedestrianDurationMs,
                              std::string relayUrl,
-                             std::string junctionId,
+                             int junctionId,
                              std::string junctionName)
     : numVehicle(numVehicle)
     , numPedestrian(numPedestrian)
@@ -71,7 +71,7 @@ void ParentProcess::run()
             phases.size(),
             std::vector<std::unordered_map<std::string, int>>(numChildren));
 
-    report.sendJunctionStatus();
+    // report.sendJunctionStatus();
 
     while(true)
     {
@@ -357,9 +357,8 @@ void ParentProcess::updatePhaseDurations(
     nlohmann::json junctionReport;
     junctionReport["subLocationId"] = junctionId;
     junctionReport["name"] = junctionName;
-    junctionReport["description"] =
-        junctionId + " Report: Cycle " + std::to_string(cycle);
-    ;
+    junctionReport["description"] = "Junction " + std::to_string(junctionId) +
+                                    " Report: Cycle " + std::to_string(cycle);
 
     nlohmann::json nextCyclePhaseDurations = nlohmann::json::array();
     nlohmann::json cycleData = nlohmann::json::array();
@@ -488,8 +487,9 @@ void ParentProcess::updatePhaseDurations(
 
     if(verbose)
     {
-        std::cout << "\n------------- " + junctionId + " Report: Cycle " +
-                         std::to_string(cycle) + " to Send -------------\n";
+        std::cout << "\n------------- Junction " << junctionId
+                  << " Report: Cycle " + std::to_string(cycle) +
+                         " to Send -------------\n";
         std::cout << junctionReport.dump(2) << "\n";
     }
     std::string reportData = junctionReport.dump();

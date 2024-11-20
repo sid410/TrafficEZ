@@ -47,7 +47,7 @@ private:
 
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
-    std::string junctionId;
+    int junctionId;
     std::string junctionName;
     std::string relayUrl;
     std::string relayUsername;
