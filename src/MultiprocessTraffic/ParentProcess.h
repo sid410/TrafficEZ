@@ -27,8 +27,8 @@ public:
                   float densityMax = 50.0f,
                   int minPhaseDurationMs = 5000,
                   int minPedestrianDurationMs = 25000,
-                  std::string relayUrl = "http://192.168.1.4/30000/",
-                  std::string junctionId = "",
+                  std::string relayUrl = "192.168.1.5",
+                  int junctionId = 1,
                   std::string junctionName = "");
     void run();
 
@@ -40,7 +40,7 @@ private:
 
     bool verbose;
     int cycle;
-    std::string junctionId;
+    int junctionId;
     std::string junctionName;
     std::string relayUrl;
 
