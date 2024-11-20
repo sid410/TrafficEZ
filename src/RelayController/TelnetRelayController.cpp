@@ -50,11 +50,13 @@ TelnetRelayController::TelnetRelayController(
     if(!connectToRelay())
     {
         std::cerr << "Failed to connect to relay module!" << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     if(!authenticate())
     {
         std::cerr << "Failed to authenticate with relay module!" << std::endl;
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -373,14 +375,33 @@ std::vector<PhaseMessageType> TelnetRelayController::deriveTransitionPhase(
     return transitionPhase;
 }
 
-bool TelnetRelayController::standbyMode()
+bool TelnetRelayController::standbyMode(int durationMs)
 {
+    if(verbose)
+    {
+        std::cout << "Switching to standby mode...\n";
+    }
     std::string hex = getHexCommand({2, 5, 8, 11});
+    auto startTime = std::chrono::steady_clock::now();
+
     while(true)
     {
         sendCommand("relay writeall " + hex);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         sendCommand("reset");
+
+        // If a duration is provided, exit after the specified time
+        if(durationMs != -1)
+        {
+            auto elapsedTime = std::chrono::steady_clock::now() - startTime;
+            if(std::chrono::duration_cast<std::chrono::milliseconds>(
+                   elapsedTime)
+                   .count() >= durationMs)
+            {
+                break;
+            }
+        }
     }
-    // exit(EXIT_SUCCESS);
+
+    return true;
 }

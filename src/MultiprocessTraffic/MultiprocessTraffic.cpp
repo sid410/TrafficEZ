@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
+int MultiprocessTraffic::standbyDuration = 60000; //milliseconds
 
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
@@ -66,9 +67,11 @@ void MultiprocessTraffic::handleSignal(int signal)
     {
         TelnetRelayController& telnetRelay =
             TelnetRelayController::getInstance();
+
+        // Turn off all relays before exiting
         telnetRelay.turnOffAllRelay();
 
-        std::cout << "\nInterrupt signal received.\n";
+        std::cout << "\nInterrupt signal received. Turning off all relays...\n";
         for(pid_t pid : instance->childPids)
         {
             std::cout << "Killing Child PID: " << pid << "\n";
@@ -80,14 +83,46 @@ void MultiprocessTraffic::handleSignal(int signal)
 
     if(signal == SIGCHLD)
     {
+        static std::mutex standbyMutex;
+
+        pid_t pid;
+        while((pid = waitpid(-1, nullptr, WNOHANG)) > 0)
+        {
+            std::cout << "Reaped Child PID: " << pid << "\n";
+            // Remove the terminated child PID from the child list
+            instance->childPids.erase(std::remove(instance->childPids.begin(),
+                                                  instance->childPids.end(),
+                                                  pid),
+                                      instance->childPids.end());
+        }
+
+        // Ensure that the standby mode logic is not entered concurrently
+        std::lock_guard<std::mutex> lock(standbyMutex);
+
+        TelnetRelayController& telnetRelay =
+            TelnetRelayController::getInstance();
+
+        // Enter standby mode, flashing yellow relay for standbyDuration before proceeding
+        telnetRelay.standbyMode(standbyDuration);
+
+        // Sleep for a short time to ensure relay off
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        telnetRelay.turnOffAllRelay();
+
         std::cout << "\nOne of the children unexpectedly crashed.\n";
+        // Kill remaining child processes
         for(pid_t pid : instance->childPids)
         {
             std::cout << "Killing Child PID: " << pid << "\n";
-            kill(pid, SIGTERM);
+            if(kill(pid, SIGTERM) == -1)
+            {
+                std::cerr << "Failed to kill child PID: " << pid
+                          << ", error: " << strerror(errno) << "\n";
+            }
         }
+
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
-        exit(EXIT_SUCCESS);
+        exit(EXIT_SUCCESS); // Exit the parent process
     }
 }
 
@@ -287,6 +322,17 @@ void MultiprocessTraffic::loadPhaseDurations(const YAML::Node& config)
     {
         std::cerr << "Size of phase info and duration do not match!\n";
         exit(EXIT_FAILURE);
+    }
+
+    if(config["standbyDuration"])
+    {
+        standbyDuration = config["standbyDuration"].as<int>();
+    }
+    else
+    {
+        standbyDuration = 60000; // Default value in milliseconds
+        std::cerr << "standbyDuration not provided, using default: "
+                  << standbyDuration << std::endl;
     }
 }
 

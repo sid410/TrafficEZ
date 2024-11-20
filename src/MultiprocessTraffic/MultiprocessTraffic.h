@@ -7,6 +7,7 @@
 #include "Pipe.h"
 #include <yaml-cpp/yaml.h>
 
+#include <mutex>
 #include <queue>
 #include <sys/types.h>
 #include <vector>
@@ -20,6 +21,7 @@ public:
 
     void start();
     void calibrate();
+    static int standbyDuration;
 
 private:
     std::string configFile;
