@@ -10,7 +10,7 @@ class Reports
 public:
     static Reports& getInstance(const std::string& httpUrl = "",
                                 const std::string& tSecretKey = "",
-                                const std::string& junctionId = "",
+                                const int& junctionId = 1,
                                 const std::string junctionName = "",
                                 bool verboseMode = false)
     {
@@ -28,7 +28,7 @@ public:
 private:
     Reports(const std::string httpUrl,
             const std::string tSecretKey,
-            const std::string junctionId,
+            const int junctionId,
             const std::string junctionName,
             bool verboseMode);
     ~Reports();
@@ -36,7 +36,7 @@ private:
     void handleResponse(const std::string& response);
 
     bool verbose;
-    std::string junctionId;
+    int junctionId;
     std::string junctionName;
 
     std::string url;

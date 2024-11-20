@@ -218,19 +218,33 @@ void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
         exit(EXIT_FAILURE);
     }
 
-    junctionId = config["junctionId"].as<std::string>();
+    junctionId = config["junctionId"].as<int>();
     junctionName = config["junctionName"].as<std::string>();
 }
 
 void MultiprocessTraffic::loadHttpInfo(const YAML::Node& config)
 {
-    if(!config["httpUrl"] || !config["tSecretKey"])
+    if(config["httpUrl"])
     {
-        std::cerr << "Missing HTTP configuration information." << std::endl;
-        exit(EXIT_FAILURE);
+        httpUrl = config["httpUrl"].as<std::string>();
     }
-    httpUrl = config["httpUrl"].as<std::string>();
-    tSecretKey = config["tSecretKey"].as<std::string>();
+    else
+    {
+        httpUrl = "https://55qdnlqk-5234.asse.devtunnels.ms"; // Default value
+        std::cerr << "httpUrl not provided, using default: " << httpUrl
+                  << std::endl;
+    }
+
+    if(config["tSecretKey"])
+    {
+        tSecretKey = config["tSecretKey"].as<std::string>();
+    }
+    else
+    {
+        tSecretKey = "TrafficEz-001-002-003-004"; // Default value
+        std::cerr << "tSecretKey not provided, using default: " << tSecretKey
+                  << std::endl;
+    }
 }
 
 void MultiprocessTraffic::loadPhases(const YAML::Node& config)

@@ -2,7 +2,7 @@
 
 Reports::Reports(std::string httpUrl,
                  std::string tSecretKey,
-                 std::string junctionId,
+                 int junctionId,
                  std::string junctionName,
                  bool verboseMode)
     : url(httpUrl)
