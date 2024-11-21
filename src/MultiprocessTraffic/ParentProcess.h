@@ -1,7 +1,6 @@
 #ifndef PARENT_PROCESS_H
 #define PARENT_PROCESS_H
 
-#include "HttpPostClientAsync.h"
 #include "MultiprocessTraffic.h"
 #include "PhaseMessageType.h"
 #include "Pipe.h"
@@ -43,10 +42,6 @@ private:
     int junctionId;
     std::string junctionName;
     std::string relayUrl;
-
-    HttpPostClientAsync clientAsync;
-    std::string postUrl;
-    std::map<std::string, std::string> headers;
 
     float densityMultiplierGreenPhase;
     float densityMultiplierRedPhase;

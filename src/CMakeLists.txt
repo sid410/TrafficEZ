@@ -6,7 +6,6 @@ add_subdirectory(HullRecognitionModule)
 add_subdirectory(SegmentationModule)
 add_subdirectory(MultiprocessTraffic)
 add_subdirectory(RelayController)
-add_subdirectory(HttpRequests)
 add_subdirectory(Reports)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
