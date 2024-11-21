@@ -1,3 +1,6 @@
+junctionId: 1
+junctionName: "ezbox1"
+
 phases:
   - ["GREEN_PHASE", "RED_PHASE", "GREEN_PHASE", "RED_PHASE", "GREEN_PED", "RED_PED"]
   - ["GREEN_PHASE", "GREEN_PHASE", "RED_PHASE", "RED_PHASE", "RED_PED", "RED_PED"]
@@ -8,6 +11,8 @@ phaseDurations:
   - 25000
   - 35000
 
+standbyDuration: 60000
+
 densityMultiplierGreenPhase: 10.0
 densityMultiplierRedPhase: 0.3
 densityMin: 0.0
@@ -16,11 +21,16 @@ minPhaseDurationMs: 5000
 minPedestrianDurationMs: 25000
 
 streamInfo:
-  - ["vehicle0.yaml", "rtsp://172.31.1.144:8554/vehicle0"]
-  - ["vehicle1.yaml", "rtsp://172.31.1.144:8554/vehicle1"]
-  - ["vehicle2.yaml", "rtsp://172.31.1.144:8554/vehicle2"]
-  - ["vehicle3.yaml", "rtsp://172.31.1.144:8554/vehicle3"]
-  - ["pedestrian0.yaml", "rtsp://172.31.1.144:8555/pedestrian0"]
-  - ["pedestrian1.yaml", "rtsp://172.31.1.144:8555/pedestrian1"]
+  - ["vehicle0.yaml", "rtsp://admin:eztraffic24@@172.16.0.50/media/video3/multicast/vehicle0"]
+  - ["vehicle1.yaml", "rtsp://admin:eztraffic24@@172.16.0.50/media/video3/multicast/vehicle1"]
+  - ["vehicle2.yaml", "rtsp://admin:eztraffic24@@172.16.0.50/media/video3/multicast/vehicle2"]
+  - ["vehicle3.yaml", "rtsp://admin:eztraffic24@@172.16.0.50/media/video3/multicast/vehicle3"]
+  - ["pedestrian0.yaml", "rtsp://admin:eztraffic24@@172.16.0.50/media/video3/multicast/pedestrian0"]
+  - ["pedestrian1.yaml", "rtsp://admin:eztraffic24@@172.16.0.50/media/video3/multicast/pedestrian1"]
 
-relayUrl: "http://192.168.1.4/30000/"
+relayUrl: "192.168.1.5"
+relayUsername: "ezadmin"
+relayPassword: "ez@dmin"
+
+httpUrl: "https://55qdnlqk-5234.asse.devtunnels.ms"
+tSecretKey: "TrafficEz-001-002-003-004"
