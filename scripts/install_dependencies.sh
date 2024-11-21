@@ -43,6 +43,9 @@ sudo apt -y install python3-dev python3-numpy
 sudo apt -y install curl libcurl4-openssl-dev
 
 #cpprestskd dependencies
+sudo apt -y install libboost-atomic-dev libboost-thread-dev libboost-system-dev 
+sudo apt -y libboost-date-time-dev libboost-regex-dev libboost-filesystem-dev libboost-random-dev
+sudo apt -y libboost-chrono-dev libboost-serialization-dev libwebsocketpp-dev openssl libssl-dev
 sudo apt -y install libcpprest-dev
 
 echo "##### Dependencies Installed #####"
