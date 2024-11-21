@@ -15,5 +15,4 @@ setup_currdir_opencv(${EXECUTABLE_NAME})
 target_include_directories(${EXECUTABLE_NAME}
                            PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE TrafficManager
-                                                 cpprestsdk::cpprest)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE TrafficManager)
