@@ -27,6 +27,7 @@ public:
                   int minPhaseDurationMs = 5000,
                   int minPedestrianDurationMs = 25000,
                   std::string relayUrl = "192.168.1.5",
+                  int subLocationId = 1,
                   int junctionId = 1,
                   std::string junctionName = "");
     void run();
@@ -39,6 +40,7 @@ private:
 
     bool verbose;
     int cycle;
+    int subLocationId;
     int junctionId;
     std::string junctionName;
     std::string relayUrl;

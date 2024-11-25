@@ -22,6 +22,7 @@ ParentProcess::ParentProcess(int numVehicle,
                              int minPhaseDurationMs,
                              int minPedestrianDurationMs,
                              std::string relayUrl,
+                             int subLocationId,
                              int junctionId,
                              std::string junctionName)
     : numVehicle(numVehicle)
@@ -38,6 +39,7 @@ ParentProcess::ParentProcess(int numVehicle,
     , minPhaseDurationMs(minPhaseDurationMs)
     , minPedestrianDurationMs(minPedestrianDurationMs)
     , relayUrl(relayUrl)
+    , subLocationId(subLocationId)
     , junctionId(junctionId)
     , junctionName(junctionName)
 {
@@ -355,7 +357,7 @@ void ParentProcess::updatePhaseDurations(
     }
 
     nlohmann::json junctionReport;
-    junctionReport["subLocationId"] = junctionId;
+    junctionReport["subLocationId"] = subLocationId;
     junctionReport["name"] = junctionName;
     junctionReport["description"] = "Junction " + std::to_string(junctionId) +
                                     " Report: Cycle " + std::to_string(cycle);
@@ -367,6 +369,7 @@ void ParentProcess::updatePhaseDurations(
     for(int phase = 0; phase < phases.size(); ++phase)
     {
         float phaseDuration = phaseDurations[phase] / 1000.0;
+        phaseData["junctionId"] = junctionId;
         phaseData["phase"] = phase;
         phaseData["phaseDuration"] = phaseDuration;
 

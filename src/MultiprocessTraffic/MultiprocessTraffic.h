@@ -49,6 +49,7 @@ private:
 
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
+    int subLocationId;
     int junctionId;
     std::string junctionName;
     std::string relayUrl;

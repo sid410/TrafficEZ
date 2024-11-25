@@ -51,6 +51,7 @@ void MultiprocessTraffic::start()
                                 minPhaseDurationMs,
                                 minPedestrianDurationMs,
                                 relayUrl,
+                                subLocationId,
                                 junctionId,
                                 junctionName);
 
@@ -248,13 +249,15 @@ void MultiprocessTraffic::loadJunctionConfig()
 void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
 {
 
-    if(!config["junctionId"] || !config["junctionName"])
+    if(!config["subLocationId"] || !config["junctionId"] ||
+       !config["junctionName"])
     {
         std::cerr << "Missing junction information in configuration file!"
                   << std::endl;
         exit(EXIT_FAILURE);
     }
 
+    subLocationId = config["subLocationId"].as<int>();
     junctionId = config["junctionId"].as<int>();
     junctionName = config["junctionName"].as<std::string>();
 }
