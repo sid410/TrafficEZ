@@ -42,4 +42,8 @@ sudo apt -y install libtbbmalloc2
 sudo apt -y install python3-dev python3-numpy
 sudo apt -y install curl libcurl4-openssl-dev
 
+#cpprestskd dependencies
+sudo apt -y install libboost-all-dev libwebsocketpp-dev openssl libssl-dev
+sudo apt -y install libcpprest-dev
+
 echo "##### Dependencies Installed #####"

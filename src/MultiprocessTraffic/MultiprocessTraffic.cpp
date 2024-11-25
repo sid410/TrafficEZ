@@ -1,11 +1,16 @@
 #include "MultiprocessTraffic.h"
+#include "Reports.h"
+#include "TelnetRelayController.h"
+#include <chrono>
 #include <csignal>
 #include <cstring>
 #include <iostream>
 #include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
 
 MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
+int MultiprocessTraffic::standbyDuration = 60000; //milliseconds
 
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
@@ -15,10 +20,16 @@ MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
     , verbose(verbose)
 {
     instance = this;
+    loadJunctionConfig();
+
+    TelnetRelayController::getInstance(
+        relayUrl, relayUsername, relayPassword, phases, verbose);
+
+    Reports::getInstance(
+        httpUrl, tSecretKey, junctionId, junctionName, verbose);
+
     std::signal(SIGINT, MultiprocessTraffic::handleSignal);
     std::signal(SIGCHLD, MultiprocessTraffic::handleSignal);
-
-    loadJunctionConfig();
 }
 
 void MultiprocessTraffic::start()
@@ -39,7 +50,11 @@ void MultiprocessTraffic::start()
                                 densityMax,
                                 minPhaseDurationMs,
                                 minPedestrianDurationMs,
-                                relayUrl);
+                                relayUrl,
+                                subLocationId,
+                                junctionId,
+                                junctionName);
+
     parentProcess.run();
 }
 
@@ -53,7 +68,13 @@ void MultiprocessTraffic::handleSignal(int signal)
 
     if(signal == SIGINT)
     {
-        std::cout << "\nInterrupt signal received.\n";
+        TelnetRelayController& telnetRelay =
+            TelnetRelayController::getInstance();
+
+        // Turn off all relays before exiting
+        telnetRelay.turnOffAllRelay();
+
+        std::cout << "\nInterrupt signal received. Turning off all relays...\n";
         for(pid_t pid : instance->childPids)
         {
             std::cout << "Killing Child PID: " << pid << "\n";
@@ -65,14 +86,46 @@ void MultiprocessTraffic::handleSignal(int signal)
 
     if(signal == SIGCHLD)
     {
+        static std::mutex standbyMutex;
+
+        pid_t pid;
+        while((pid = waitpid(-1, nullptr, WNOHANG)) > 0)
+        {
+            std::cout << "Reaped Child PID: " << pid << "\n";
+            // Remove the terminated child PID from the child list
+            instance->childPids.erase(std::remove(instance->childPids.begin(),
+                                                  instance->childPids.end(),
+                                                  pid),
+                                      instance->childPids.end());
+        }
+
+        // Ensure that the standby mode logic is not entered concurrently
+        std::lock_guard<std::mutex> lock(standbyMutex);
+
+        TelnetRelayController& telnetRelay =
+            TelnetRelayController::getInstance();
+
+        // Enter standby mode, flashing yellow relay for standbyDuration before proceeding
+        telnetRelay.standbyMode(standbyDuration);
+
+        // Sleep for a short time to ensure relay off
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        telnetRelay.turnOffAllRelay();
+
         std::cout << "\nOne of the children unexpectedly crashed.\n";
+        // Kill remaining child processes
         for(pid_t pid : instance->childPids)
         {
             std::cout << "Killing Child PID: " << pid << "\n";
-            kill(pid, SIGTERM);
+            if(kill(pid, SIGTERM) == -1)
+            {
+                std::cerr << "Failed to kill child PID: " << pid
+                          << ", error: " << strerror(errno) << "\n";
+            }
         }
+
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
-        exit(EXIT_SUCCESS);
+        exit(EXIT_SUCCESS); // Exit the parent process
     }
 }
 
@@ -111,11 +164,11 @@ void MultiprocessTraffic::forkChildren()
         }
         else if(pid == 0)
         {
-            ChildProcess childProcess(pipeIndex,
-                                      pipesParentToChild[pipeIndex],
-                                      pipesChildToParent[pipeIndex],
-                                      verbose);
-            childProcess.runVehicle(
+            ChildProcess vehicleProcess(pipeIndex,
+                                        pipesParentToChild[pipeIndex],
+                                        pipesChildToParent[pipeIndex],
+                                        verbose);
+            vehicleProcess.runVehicle(
                 debug, streamConfigs[pipeIndex], streamLinks[pipeIndex]);
             exit(EXIT_SUCCESS);
         }
@@ -124,7 +177,8 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
             if(verbose)
             {
-                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+                std::cout << "Vehicle Child " << pipeIndex << " PID: " << pid
+                          << "\n";
             }
         }
         ++pipeIndex;
@@ -140,11 +194,11 @@ void MultiprocessTraffic::forkChildren()
         }
         else if(pid == 0)
         {
-            ChildProcess childProcess(pipeIndex,
-                                      pipesParentToChild[pipeIndex],
-                                      pipesChildToParent[pipeIndex],
-                                      verbose);
-            childProcess.runPedestrian(
+            ChildProcess pedestrianProcess(pipeIndex,
+                                           pipesParentToChild[pipeIndex],
+                                           pipesChildToParent[pipeIndex],
+                                           verbose);
+            pedestrianProcess.runPedestrian(
                 debug, streamConfigs[pipeIndex], streamLinks[pipeIndex]);
             exit(EXIT_SUCCESS);
         }
@@ -153,7 +207,8 @@ void MultiprocessTraffic::forkChildren()
             childPids.push_back(pid);
             if(verbose)
             {
-                std::cout << "Child " << pipeIndex << " PID: " << pid << "\n";
+                std::cout << "Pedestrian Child " << pipeIndex << " PID: " << pid
+                          << "\n";
             }
         }
         ++pipeIndex;
@@ -180,13 +235,56 @@ void MultiprocessTraffic::loadJunctionConfig()
 {
     YAML::Node config = YAML::LoadFile(configFile);
 
+    loadJunctionInfo(config);
     loadPhases(config);
     loadPhaseDurations(config);
     loadDensitySettings(config);
     loadStreamInfo(config);
     loadRelayInfo(config);
+    loadHttpInfo(config);
 
     setVehicleAndPedestrianCount();
+}
+
+void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
+{
+
+    if(!config["subLocationId"] || !config["junctionId"] ||
+       !config["junctionName"])
+    {
+        std::cerr << "Missing junction information in configuration file!"
+                  << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    subLocationId = config["subLocationId"].as<int>();
+    junctionId = config["junctionId"].as<int>();
+    junctionName = config["junctionName"].as<std::string>();
+}
+
+void MultiprocessTraffic::loadHttpInfo(const YAML::Node& config)
+{
+    if(config["httpUrl"])
+    {
+        httpUrl = config["httpUrl"].as<std::string>();
+    }
+    else
+    {
+        httpUrl = "https://55qdnlqk-5234.asse.devtunnels.ms"; // Default value
+        std::cerr << "httpUrl not provided, using default: " << httpUrl
+                  << std::endl;
+    }
+
+    if(config["tSecretKey"])
+    {
+        tSecretKey = config["tSecretKey"].as<std::string>();
+    }
+    else
+    {
+        tSecretKey = "TrafficEz-001-002-003-004"; // Default value
+        std::cerr << "tSecretKey not provided, using default: " << tSecretKey
+                  << std::endl;
+    }
 }
 
 void MultiprocessTraffic::loadPhases(const YAML::Node& config)
@@ -230,6 +328,17 @@ void MultiprocessTraffic::loadPhaseDurations(const YAML::Node& config)
         std::cerr << "Size of phase info and duration do not match!\n";
         exit(EXIT_FAILURE);
     }
+
+    if(config["standbyDuration"])
+    {
+        standbyDuration = config["standbyDuration"].as<int>();
+    }
+    else
+    {
+        standbyDuration = 60000; // Default value in milliseconds
+        std::cerr << "standbyDuration not provided, using default: "
+                  << standbyDuration << std::endl;
+    }
 }
 
 void MultiprocessTraffic::loadDensitySettings(const YAML::Node& config)
@@ -272,13 +381,16 @@ void MultiprocessTraffic::loadStreamInfo(const YAML::Node& config)
 
 void MultiprocessTraffic::loadRelayInfo(const YAML::Node& config)
 {
-    if(!config["relayUrl"])
+    if(!config["relayUrl"] || !config["relayUsername"] ||
+       !config["relayPassword"])
     {
-        std::cerr << "Missing relay URL in configuration file!\n";
+        std::cerr << "Missing relay info in configuration file!\n";
         exit(EXIT_FAILURE);
     }
 
     relayUrl = config["relayUrl"].as<std::string>();
+    relayUsername = config["relayUsername"].as<std::string>();
+    relayPassword = config["relayPassword"].as<std::string>();
 }
 
 void MultiprocessTraffic::setVehicleAndPedestrianCount()

@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <limits>
+#include <json.hpp>
 #include <numeric>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -21,7 +21,10 @@ ParentProcess::ParentProcess(int numVehicle,
                              float densityMax,
                              int minPhaseDurationMs,
                              int minPedestrianDurationMs,
-                             std::string relayUrl)
+                             std::string relayUrl,
+                             int subLocationId,
+                             int junctionId,
+                             std::string junctionName)
     : numVehicle(numVehicle)
     , numPedestrian(numPedestrian)
     , pipesParentToChild(pipesParentToChild)
@@ -36,6 +39,9 @@ ParentProcess::ParentProcess(int numVehicle,
     , minPhaseDurationMs(minPhaseDurationMs)
     , minPedestrianDurationMs(minPedestrianDurationMs)
     , relayUrl(relayUrl)
+    , subLocationId(subLocationId)
+    , junctionId(junctionId)
+    , junctionName(junctionName)
 {
     numChildren = numVehicle + numPedestrian;
 
@@ -56,33 +62,43 @@ ParentProcess::ParentProcess(int numVehicle,
 
 void ParentProcess::run()
 {
-    relay.initialize(phases, relayUrl, verbose);
-
     int phaseIndex = 0;
+    cycle = 0;
 
     std::vector<std::vector<float>> phaseDensities(
         phases.size(), std::vector<float>(numChildren, 0.0));
 
+    std::vector<std::vector<std::unordered_map<std::string, int>>>
+        phaseVehicles(
+            phases.size(),
+            std::vector<std::unordered_map<std::string, int>>(numChildren));
+
+    // report.sendJunctionStatus();
+
     while(true)
     {
+        // increment cycle by 1 when phaseIndex is 0
+        phaseIndex == 0 ? cycle++ : cycle;
         if(verbose)
         {
-            std::cout << "==================== Phase Cycle " << phaseIndex
+            std::cout << "\n==================== Cycle: " << cycle
+                      << " Phase: " << phaseIndex
                       << " ======================================\n";
         }
 
-        relay.setPhaseCycle(phaseIndex);
-        relay.executePhase();
+        telnetRelay.setPhaseCycle(phaseIndex);
+        telnetRelay.executePhase();
 
         sendPhaseMessagesToChildren(phaseIndex);
 
-        if(!receivePrevDensitiesFromChildren(phaseIndex, phaseDensities))
+        if(!receivePrevDataFromChildren(
+               phaseIndex, phaseDensities, phaseVehicles))
         {
             setDefaultPhaseDensities(phaseDensities);
         }
 
         handlePhaseTimer(phaseIndex);
-        transitionToNextPhase(phaseIndex, phaseDensities);
+        transitionToNextPhase(phaseIndex, phaseDensities, phaseVehicles);
     }
 
     for(int i = 0; i < numChildren; ++i)
@@ -95,11 +111,6 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
 {
     for(int i = 0; i < numChildren; ++i)
     {
-        if(verbose)
-        {
-            std::cout << "Parent: Sending phase message to child " << i << ": "
-                      << phases[phaseIndex][i] << "\n";
-        }
 
         std::string phaseString;
         switch(phases[phaseIndex][i])
@@ -129,11 +140,20 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
                       << "\n";
             break;
         }
+
+        if(verbose)
+        {
+            std::cout << "Parent: Sending phase message to child " << i << ": "
+                      << phaseString << "\n";
+        }
     }
 }
 
-bool ParentProcess::receivePrevDensitiesFromChildren(
-    int phaseIndex, std::vector<std::vector<float>>& phaseDensities)
+bool ParentProcess::receivePrevDataFromChildren(
+    int phaseIndex,
+    std::vector<std::vector<float>>& phaseDensities,
+    std::vector<std::vector<std::unordered_map<std::string, int>>>&
+        phaseVehicles)
 {
     char buffer[BUFFER_SIZE];
 
@@ -143,7 +163,8 @@ bool ParentProcess::receivePrevDensitiesFromChildren(
     for(int i = 0; i < numChildren; ++i)
     {
         float density;
-        if(!readDensityFromChild(i, density))
+        std::unordered_map<std::string, int> vehicles;
+        if(!readDataFromChild(i, density, vehicles))
         {
             return false;
         }
@@ -158,12 +179,16 @@ bool ParentProcess::receivePrevDensitiesFromChildren(
         }
 
         phaseDensities[previousPhaseIndex][i] = density;
+        phaseVehicles[previousPhaseIndex][i] = vehicles;
     }
 
     return true;
 }
 
-bool ParentProcess::readDensityFromChild(int childIndex, float& density)
+bool ParentProcess::readDataFromChild(
+    int childIndex,
+    float& density,
+    std::unordered_map<std::string, int>& vehicles)
 {
     char buffer[BUFFER_SIZE];
     int bytesRead =
@@ -176,9 +201,19 @@ bool ParentProcess::readDensityFromChild(int childIndex, float& density)
     }
     buffer[bytesRead] = '\0'; // Ensure null termination
 
+    std::string data(buffer);
+    auto delimiterPos = data.find(';');
+    if(delimiterPos == std::string::npos)
+    {
+        std::cerr << "Parent: Invalid format received from child " << childIndex
+                  << "\n";
+        return false;
+    }
+
+    // Parse density
     try
     {
-        density = std::stof(buffer);
+        density = std::stof(data.substr(0, delimiterPos));
     }
     catch(const std::invalid_argument&)
     {
@@ -193,6 +228,32 @@ bool ParentProcess::readDensityFromChild(int childIndex, float& density)
                      "from child "
                   << childIndex << "\n";
         return false;
+    }
+
+    // Parse vehicle data
+    std::string vehicleData = data.substr(delimiterPos + 1);
+
+    if(!vehicleData.empty())
+    {
+        if(verbose)
+        {
+            std::cout << "Parent: Vehicle data received from child "
+                      << childIndex << "\n";
+        }
+    }
+
+    vehicles.clear();
+    std::istringstream vehicleStream(vehicleData);
+    std::string vehicleEntry;
+    while(std::getline(vehicleStream, vehicleEntry, ','))
+    {
+        auto pos = vehicleEntry.find(':');
+        if(pos != std::string::npos)
+        {
+            std::string vehicleType = vehicleEntry.substr(0, pos);
+            int count = std::stoi(vehicleEntry.substr(pos + 1));
+            vehicles[vehicleType] = count;
+        }
     }
 
     return true;
@@ -222,7 +283,13 @@ void ParentProcess::processDensityByPhaseType(PhaseMessageType phaseType,
 
 void ParentProcess::handlePhaseTimer(int phaseIndex)
 {
-    int remainingTime = phaseDurations[phaseIndex] / 1000;
+    float phaseTime = phaseDurations[phaseIndex] / 1000;
+    int remainingTime = phaseTime;
+
+    if(verbose)
+    {
+        std::cout << "Phase " << phaseIndex << " Duration: " << phaseTime;
+    }
 
     while(remainingTime > 0)
     {
@@ -233,7 +300,7 @@ void ParentProcess::handlePhaseTimer(int phaseIndex)
 
         if(remainingTime == 5)
         {
-            relay.executeTransitionPhase();
+            telnetRelay.executeTransitionPhase();
         }
 
         --remainingTime;
@@ -243,13 +310,16 @@ void ParentProcess::handlePhaseTimer(int phaseIndex)
 }
 
 void ParentProcess::transitionToNextPhase(
-    int& phaseIndex, std::vector<std::vector<float>>& phaseDensities)
+    int& phaseIndex,
+    std::vector<std::vector<float>>& phaseDensities,
+    std::vector<std::vector<std::unordered_map<std::string, int>>>&
+        phaseVehicles)
 {
     phaseIndex = (phaseIndex + 1) % phases.size();
 
     if(phaseIndex == 0)
     {
-        updatePhaseDurations(phaseDensities);
+        updatePhaseDurations(phaseDensities, phaseVehicles);
     }
 }
 
@@ -271,34 +341,84 @@ void ParentProcess::setDefaultPhaseDensities(
 }
 
 void ParentProcess::updatePhaseDurations(
-    const std::vector<std::vector<float>>& phaseDensities)
+    const std::vector<std::vector<float>>& phaseDensities,
+    std::vector<std::vector<std::unordered_map<std::string, int>>>&
+        phaseVehicles)
 {
     float totalDensity = 0.0;
+    float totalPedestrianCount = 0.0;
     std::vector<float> phaseTotals(phases.size(), 0.0);
     std::vector<float> pedestrianTotals(phases.size(), 0.0);
 
     if(verbose)
     {
-        std::cout << "----- Density Distribution ------------\n";
+        std::cout << "----- Cycle " << cycle
+                  << " Density Distribution ------------\n";
     }
+
+    nlohmann::json junctionReport;
+    junctionReport["subLocationId"] = subLocationId;
+    junctionReport["name"] = junctionName;
+    junctionReport["description"] = "Junction " + std::to_string(junctionId) +
+                                    " Report: Cycle " + std::to_string(cycle);
+
+    nlohmann::json nextCyclePhaseDurations = nlohmann::json::array();
+    nlohmann::json cycleData = nlohmann::json::array();
+    nlohmann::json phaseData;
 
     for(int phase = 0; phase < phases.size(); ++phase)
     {
+        float phaseDuration = phaseDurations[phase] / 1000.0;
+        phaseData["junctionId"] = junctionId;
+        phaseData["phase"] = phase;
+        phaseData["phaseDuration"] = phaseDuration;
+
+        nlohmann::json vehicleLaneDensities = nlohmann::json::array();
+        nlohmann::json pedestrianLaneCounts = nlohmann::json::array();
+        nlohmann::json vehicleLaneDensity;
+
+        // vehicles density
         for(int child = 0; child < numVehicle; ++child)
         {
+            nlohmann::json vehicles = nlohmann::json::array();
+            vehicleLaneDensity["laneId"] = "Lane_" + std::to_string(child);
+            vehicleLaneDensity["laneName"] =
+                "Vehicle Lane " + std::to_string(child);
             phaseTotals[phase] += phaseDensities[phase][child];
-
             if(verbose)
             {
                 std::cout << "Phase " << phase << " - child " << child
                           << " density: " << phaseDensities[phase][child]
                           << "\n";
             }
+            vehicleLaneDensity["density"] = phaseDensities[phase][child];
+
+            for(const auto& entry : phaseVehicles[phase][child])
+            {
+                if(verbose)
+                {
+                    std::cout << "  " << entry.first << ": " << entry.second
+                              << std::endl;
+                }
+
+                nlohmann::json vehicle;
+                vehicle["type"] = entry.first;
+                vehicle["count"] = entry.second;
+                vehicles.push_back(vehicle);
+            }
+            vehicleLaneDensity["vehicles"] = vehicles;
+            vehicleLaneDensities.push_back(vehicleLaneDensity);
         }
         totalDensity += phaseTotals[phase];
+        phaseData["vehicleLaneDensities"] = vehicleLaneDensities;
 
+        // pedestrian counts
         for(int child = numVehicle; child < numChildren; ++child)
         {
+            nlohmann::json pedestrianLaneCount;
+            pedestrianLaneCount["laneId"] = "Lane_" + std::to_string(child);
+            pedestrianLaneCount["laneName"] =
+                "Pedestrian Lane " + std::to_string(child);
             pedestrianTotals[phase] += phaseDensities[phase][child];
 
             if(verbose)
@@ -307,13 +427,20 @@ void ParentProcess::updatePhaseDurations(
                           << " pedestrian: " << phaseDensities[phase][child]
                           << "\n";
             }
+
+            pedestrianLaneCount["count"] = phaseDensities[phase][child];
+            pedestrianLaneCounts.push_back(pedestrianLaneCount);
         }
+        totalPedestrianCount += pedestrianTotals[phase];
+        phaseData["pedestrianLaneCounts"] = pedestrianLaneCounts;
+        cycleData.push_back(phaseData);
     }
 
     std::cout << "----------------------------------------------------------\n";
 
     // Update phase durations based on the density ratios
     bool validDurations = true;
+
     for(int phase = 0; phase < phases.size(); ++phase)
     {
         phaseDurations[phase] = static_cast<int>(
@@ -338,9 +465,8 @@ void ParentProcess::updatePhaseDurations(
         {
             phaseDurations[phase] = minPedestrianDurationMs;
         }
-
-        std::cout << "Phase " << phase
-                  << " allocated time: " << phaseDurations[phase] / 1000.0
+        std::cout << "Phase " << phase << " allocated time: "
+                  << phaseDurations[phase] / 1000.0 // Convert to seconds
                   << " seconds.\n";
     }
 
@@ -352,6 +478,25 @@ void ParentProcess::updatePhaseDurations(
         std::cerr << "Parent: Phase durations set to original values due to "
                      "invalid duration.\n";
     }
+
+    // final udpated phase duration after all validations
+    for(int phase = 0; phase < phases.size(); ++phase)
+    {
+        float allocatedTime = (phaseDurations[phase] / 1000.0);
+        nextCyclePhaseDurations.push_back(allocatedTime);
+    }
+    junctionReport["nextCyclePhaseDurations"] = nextCyclePhaseDurations;
+    junctionReport["cycleData"] = cycleData;
+
+    if(verbose)
+    {
+        std::cout << "\n------------- Junction " << junctionId
+                  << " Report: Cycle " + std::to_string(cycle) +
+                         " to Send -------------\n";
+        std::cout << junctionReport.dump(2) << "\n";
+    }
+    std::string reportData = junctionReport.dump();
+    report.sendJunctionReport(reportData);
 }
 
 void ParentProcess::closeUnusedPipes()

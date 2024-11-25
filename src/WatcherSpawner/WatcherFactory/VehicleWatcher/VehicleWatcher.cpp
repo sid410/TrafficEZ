@@ -71,3 +71,18 @@ int VehicleWatcher::getInstanceCount()
 
     return -1;
 }
+
+std::unordered_map<std::string, int> VehicleWatcher::getVehicleTypeAndCount()
+{
+    //RED_PHASE ONLY
+    if(currentMode == RenderMode::GUI)
+    {
+        return gui->getVehicleTypeAndCount();
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        return headless->getVehicleTypeAndCount();
+    }
+
+    return {};
+}

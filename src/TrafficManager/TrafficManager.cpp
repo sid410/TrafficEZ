@@ -24,6 +24,7 @@ void TrafficManager::start()
     }
 
     std::cout << "TrafficManager starting...\n";
+
     std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
     std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
     std::cout << "Verbose Mode: " << (verbose ? "true" : "false") << "\n";
@@ -88,6 +89,7 @@ void TrafficManager::testVehicleWatcherGui(int greenFramesToCheck,
     greenCountGui = vehicleWatcher->getInstanceCount();
     greenDensityGui = vehicleWatcher->getTrafficDensity();
 
+    // std::string greenVehicleCount = "Green Vehicle count: " << greenCountGui << "\n";
     std::cout << "Green Vehicle count: " << greenCountGui << "\n";
     std::cout << "Green Vehicle density: " << greenDensityGui << "\n";
 
