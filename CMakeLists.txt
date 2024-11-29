@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(
   TrafficEZ
-  VERSION 1.0.2
+  VERSION 1.0.3
   LANGUAGES CXX)
 
 include(${CMAKE_SOURCE_DIR}/CMakeSettings.cmake)
