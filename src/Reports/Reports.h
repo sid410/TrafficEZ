@@ -33,8 +33,6 @@ private:
             bool verboseMode);
     ~Reports();
 
-    void handleResponse(const std::string& response);
-
     bool verbose;
     int junctionId;
     std::string junctionName;
