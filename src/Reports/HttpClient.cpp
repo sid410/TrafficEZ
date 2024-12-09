@@ -29,7 +29,8 @@ HttpClient::sendRequestAsync(const std::string& endpoint,
 
     return client.request(request)
         .then([](http_response response) {
-            if(response.status_code() == status_codes::OK)
+            if(response.status_code() == status_codes::OK ||
+               response.status_code() == status_codes::Accepted)
             {
                 return response.extract_string();
             }
