@@ -7,13 +7,6 @@
 
 #define PORT 23
 
-const std::unordered_map<PhaseMessageType, std::vector<int>> channelMap = {
-    {PhaseMessageType::RED_PHASE, {0, 3, 6, 9}},
-    {PhaseMessageType::GREEN_PHASE, {1, 4, 7, 10}},
-    {PhaseMessageType::YELLOW_PHASE, {2, 5, 8, 11}},
-    {PhaseMessageType::RED_PED, {12, 14}},
-    {PhaseMessageType::GREEN_PED, {13, 15}}};
-
 bool waitForData(int sock, int timeoutSeconds)
 {
     fd_set readfds;
