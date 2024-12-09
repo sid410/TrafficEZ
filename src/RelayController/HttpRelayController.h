@@ -5,6 +5,9 @@
 #include <curl/curl.h>
 #include <vector>
 
+/* This is an implementation for the initial relay controller used, the 
+NC100 16-Channel Ethernet Controller Relay Board.
+*/
 class HttpRelayController
 {
 public:
