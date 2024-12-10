@@ -127,7 +127,8 @@ void ChildProcess::processMessageBuffer(int bytesRead,
         if(verbose)
         {
             std::cout << "Child " << childIndex
-                      << ": Received phase message: " << buffer << "\n";
+                      << ": Received phase message: " << buffer << "\n"
+                      << std::flush;
         }
 
         PhaseMessageType phaseType = getPhaseMessageType(buffer);
