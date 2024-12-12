@@ -228,11 +228,26 @@ void ChildProcess::sendDensityAndVehiclesToParent(
     strncpy(buffer, combinedData.c_str(), BUFFER_SIZE - 1);
     buffer[BUFFER_SIZE - 1] = '\0'; // Null-terminate buffer
 
-    if(write(pipeChildToParent.fds[1], buffer, strlen(buffer) + 1) == -1)
+    fcntl(pipeChildToParent.fds[1], F_SETFL, O_NONBLOCK);
+
+    ssize_t bytesWritten =
+        write(pipeChildToParent.fds[1], buffer, strlen(buffer) + 1);
+
+    if(bytesWritten == -1)
     {
-        std::cerr << "Child " << childIndex
-                  << ": Failed to write data to pipe: " << strerror(errno)
-                  << "\n";
+        if(errno == EAGAIN)
+        {
+            // The pipe is full, retry after a short delay
+            std::cerr << "Child " << childIndex
+                      << ": Pipe is full, retrying...\n";
+            usleep(1000); // Sleep for 1 millisecond before retrying
+        }
+        else
+        {
+            std::cerr << "Child " << childIndex
+                      << ": Failed to write data to pipe: " << strerror(errno)
+                      << "\n";
+        }
     }
 }
 
