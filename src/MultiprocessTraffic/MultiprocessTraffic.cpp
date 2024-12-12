@@ -105,12 +105,8 @@ void MultiprocessTraffic::handleSignal(int signal)
         TelnetRelayController& telnetRelay =
             TelnetRelayController::getInstance();
 
-        // Enter standby mode, flashing yellow relay for standbyDuration before proceeding
+        // Enter standby mode, flashing yellow relay for standbyDuration before exiting
         telnetRelay.standbyMode(standbyDuration);
-
-        // Sleep for a short time to ensure relay off
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        telnetRelay.turnOffAllRelay();
 
         std::cout << "\nOne of the children unexpectedly crashed.\n";
         // Kill remaining child processes
@@ -125,7 +121,7 @@ void MultiprocessTraffic::handleSignal(int signal)
         }
 
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
-        exit(EXIT_SUCCESS); // Exit the parent process
+        exit(EXIT_SUCCESS);
     }
 }
 

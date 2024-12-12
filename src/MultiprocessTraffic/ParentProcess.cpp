@@ -479,7 +479,7 @@ void ParentProcess::updatePhaseDurations(
                      "invalid duration.\n";
     }
 
-    // final udpated phase duration after all validations
+    // final updated phase duration after all validations
     for(int phase = 0; phase < phases.size(); ++phase)
     {
         float allocatedTime = (phaseDurations[phase] / 1000.0);

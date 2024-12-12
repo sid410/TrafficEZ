@@ -368,22 +368,28 @@ std::vector<PhaseMessageType> TelnetRelayController::deriveTransitionPhase(
     return transitionPhase;
 }
 
-bool TelnetRelayController::standbyMode(int durationMs)
+bool TelnetRelayController::standbyMode(int durationMs, int flashIntervalMs)
 {
     if(verbose)
     {
         std::cout << "Switching to standby mode...\n";
     }
-    std::string hex = getHexCommand({2, 5, 8, 11});
+    if(durationMs < -1 || flashIntervalMs <= 0)
+    {
+        std::cerr << "Invalid parameters: durationMs=" << durationMs
+                  << ", flashIntervalMs=" << flashIntervalMs << '\n';
+        return false;
+    }
+    const std::vector<int> yellowChannels = {2, 5, 8, 11};
     auto startTime = std::chrono::steady_clock::now();
 
     while(true)
     {
-        sendCommand("relay writeall " + hex);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        sendCommand("reset");
+        turnOnAllRelay(yellowChannels);
+        std::this_thread::sleep_for(std::chrono::milliseconds(flashIntervalMs));
+        turnOffAllRelay();
+        std::this_thread::sleep_for(std::chrono::milliseconds(flashIntervalMs));
 
-        // If a duration is provided, exit after the specified time
         if(durationMs != -1)
         {
             auto elapsedTime = std::chrono::steady_clock::now() - startTime;
@@ -391,6 +397,7 @@ bool TelnetRelayController::standbyMode(int durationMs)
                    elapsedTime)
                    .count() >= durationMs)
             {
+                turnOffAllRelay(); // Ensure lights are off
                 break;
             }
         }

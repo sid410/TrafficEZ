@@ -52,7 +52,7 @@ public:
     deriveTransitionPhase(const std::vector<PhaseMessageType>& currentPhase,
                           const std::vector<PhaseMessageType>& nextPhase);
 
-    bool standbyMode(int durationMs = -1);
+    bool standbyMode(int durationMs = -1, int flashIntervalMs = 500);
 
 protected:
     bool connectToRelay();
