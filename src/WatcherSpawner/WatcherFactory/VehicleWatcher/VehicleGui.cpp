@@ -88,8 +88,8 @@ float VehicleGui::getTrafficDensity()
 
     else if(currentTrafficState == TrafficState::RED_PHASE)
     {
-        float count = segmentation.getWhiteArea(warpedMask);
-        density = count / (laneLength * laneWidth);
+        float totalArea = segmentation.getWhiteArea(warpedMask);
+        density = totalArea / (laneLength * laneWidth);
     }
 
     isTracking = false;
