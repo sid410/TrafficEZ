@@ -71,11 +71,13 @@ private:
     bool receivePrevDataFromChildren(
         int phaseIndex,
         std::vector<std::vector<float>>& phaseDensities,
+        std::vector<std::vector<float>>& phaseSpeeds,
         std::vector<std::vector<std::unordered_map<std::string, int>>>&
             phaseVehicles);
 
     bool readDataFromChild(int childIndex,
                            float& density,
+                           float& speed,
                            std::unordered_map<std::string, int>& vehicles);
 
     void processDensityByPhaseType(PhaseMessageType phaseType, float& density);
@@ -85,6 +87,7 @@ private:
     void transitionToNextPhase(
         int& phaseIndex,
         std::vector<std::vector<float>>& phaseDensities,
+        std::vector<std::vector<float>>& phaseSpeeds,
         std::vector<std::vector<std::unordered_map<std::string, int>>>&
             phaseVehicles);
 
@@ -93,6 +96,7 @@ private:
 
     void updatePhaseDurations(
         const std::vector<std::vector<float>>& phaseDensities,
+        const std::vector<std::vector<float>>& phaseSpeeds,
         std::vector<std::vector<std::unordered_map<std::string, int>>>&
             phaseVehicles);
 

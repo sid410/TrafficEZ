@@ -50,6 +50,12 @@ public:
         std::cerr << "This method has no implementation. \nEXITING...\n\n";
         exit(EXIT_FAILURE);
     }
+
+    virtual float getAverageSpeed()
+    {
+        std::cerr << "This method has no implementation. \nEXITING...\n\n";
+        exit(EXIT_FAILURE);
+    }
 };
 
 #endif

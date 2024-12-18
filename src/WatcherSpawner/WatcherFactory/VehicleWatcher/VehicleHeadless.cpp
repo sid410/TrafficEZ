@@ -56,10 +56,9 @@ float VehicleHeadless::getTrafficDensity()
     {
         float totalTime = fpsHelper.endSample() / 1000;
         float flow = hullTracker.getTotalHullArea() / totalTime;
+        float average = hullTracker.getAveragedSpeed();
 
-        density = (flow == 0)
-                      ? 0
-                      : flow / (hullTracker.getAveragedSpeed() * laneWidth);
+        density = (flow == 0) ? 0 : flow / (average * laneWidth);
 
         hullTracker.resetTrackerVariables();
     }
@@ -128,4 +127,17 @@ std::unordered_map<std::string, int> VehicleHeadless::getVehicleTypeAndCount()
     }
 
     return {};
+}
+
+float VehicleHeadless::getAverageSpeed()
+{
+    float avgSpeed = 0.0f;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        avgSpeed = hullTracker.getAveragedSpeed();
+    }
+
+    // Default speed when not in GREEN_PHASE
+    return avgSpeed;
 }

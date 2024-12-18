@@ -18,6 +18,7 @@ public:
     float getTrafficDensity() override;
     int getInstanceCount() override;
     std::unordered_map<std::string, int> getVehicleTypeAndCount() override;
+    float getAverageSpeed() override;
 
 private:
     Gui* gui;

@@ -86,3 +86,17 @@ std::unordered_map<std::string, int> VehicleWatcher::getVehicleTypeAndCount()
 
     return {};
 }
+
+float VehicleWatcher::getAverageSpeed()
+{
+    if(currentMode == RenderMode::GUI)
+    {
+        return gui->getAverageSpeed();
+    }
+    else if(currentMode == RenderMode::HEADLESS)
+    {
+        return headless->getAverageSpeed();
+    }
+
+    return -1;
+}

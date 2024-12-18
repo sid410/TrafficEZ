@@ -147,10 +147,12 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
         std::unordered_map<std::string, int> vehicles =
             watcher->getVehicleTypeAndCount();
 
+        float speed = watcher->getAverageSpeed();
+
         // send the previous green vehicle density
         float density = watcher->getTrafficDensity();
 
-        sendDensityAndVehiclesToParent(density, vehicles);
+        sendPhaseMessageToParent(density, speed, vehicles);
 
         isStateGreen = false;
         watcher->setCurrentTrafficState(TrafficState::RED_PHASE);
@@ -161,11 +163,13 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
         std::unordered_map<std::string, int> vehicles =
             watcher->getVehicleTypeAndCount();
 
+        float speed = watcher->getAverageSpeed();
+
         // send the previous red vehicle density
         watcher->processFrame();
         float density = watcher->getTrafficDensity();
 
-        sendDensityAndVehiclesToParent(density, vehicles);
+        sendPhaseMessageToParent(density, speed, vehicles);
 
         isStateGreen = true;
         watcher->setCurrentTrafficState(TrafficState::GREEN_PHASE);
@@ -176,14 +180,14 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
         // send the waiting pedestrian count
         watcher->processFrame();
         float density = watcher->getInstanceCount();
-        sendDensityAndVehiclesToParent(density);
+        sendPhaseMessageToParent(density, 0.0f);
 
         break;
     }
 
     case GREEN_PED: {
         // ignore the already walking pedestrian
-        sendDensityAndVehiclesToParent(0.0f);
+        sendPhaseMessageToParent(0.0f, 0.0f);
 
         break;
     }
@@ -196,11 +200,32 @@ void ChildProcess::handlePhaseMessage(PhaseMessageType phaseType,
     }
 }
 
-void ChildProcess::sendDensityAndVehiclesToParent(
-    float density, std::unordered_map<std::string, int> vehicles)
+void ChildProcess::sendPhaseMessageToParent(
+    float density, float speed, std::unordered_map<std::string, int> vehicles)
 {
-    char buffer[BUFFER_SIZE];
-    snprintf(buffer, sizeof(buffer), "%.2f;", density); // Format density
+    char buffer[BUFFER_SIZE] = {0};
+    int offset = 0;
+
+    // Safely format and append density
+    int written =
+        snprintf(buffer + offset, BUFFER_SIZE - offset, "%.2f;", density);
+    if(written < 0 || written >= BUFFER_SIZE - offset)
+    {
+        std::cerr << "Child " << childIndex
+                  << ": Buffer overflow while writing density.\n";
+        return;
+    }
+    offset += written;
+
+    // Safely format and append speed
+    written = snprintf(buffer + offset, BUFFER_SIZE - offset, "%.2f;", speed);
+    if(written < 0 || written >= BUFFER_SIZE - offset)
+    {
+        std::cerr << "Child " << childIndex
+                  << ": Buffer overflow while writing speed.\n";
+        return;
+    }
+    offset += written;
 
     // Convert vehicle counts to string
     std::ostringstream oss;
@@ -209,45 +234,63 @@ void ChildProcess::sendDensityAndVehiclesToParent(
         oss << entry.first << ":" << entry.second << ",";
     }
 
-    // Remove trailing comma if necessary
     std::string vehicleData = oss.str();
     if(!vehicleData.empty() && vehicleData.back() == ',')
     {
-        vehicleData.pop_back();
+        vehicleData.pop_back(); // Remove trailing comma
     }
 
-    std::string combinedData = std::string(buffer) + vehicleData;
-
-    if(combinedData.size() >= BUFFER_SIZE)
+    // Safely append vehicle data
+    written = snprintf(
+        buffer + offset, BUFFER_SIZE - offset, "%s", vehicleData.c_str());
+    if(written < 0 || written >= BUFFER_SIZE - offset)
     {
-        std::cerr
-            << "Data exceeds buffer size, consider increasing BUFFER_SIZE.\n";
+        std::cerr << "Child " << childIndex
+                  << ": Buffer overflow while writing vehicle data.\n";
         return;
     }
 
-    strncpy(buffer, combinedData.c_str(), BUFFER_SIZE - 1);
-    buffer[BUFFER_SIZE - 1] = '\0'; // Null-terminate buffer
+    // Ensure buffer is null-terminated
+    buffer[BUFFER_SIZE - 1] = '\0';
 
+    // Set pipe to non-blocking mode
     fcntl(pipeChildToParent.fds[1], F_SETFL, O_NONBLOCK);
 
-    ssize_t bytesWritten =
-        write(pipeChildToParent.fds[1], buffer, strlen(buffer) + 1);
-
-    if(bytesWritten == -1)
+    // Retry writing to the pipe with a maximum retry count
+    int retryCount = 5;
+    ssize_t bytesWritten = 0;
+    while(retryCount-- > 0)
     {
-        if(errno == EAGAIN)
+        bytesWritten =
+            write(pipeChildToParent.fds[1], buffer, strlen(buffer) + 1);
+
+        if(bytesWritten == -1)
         {
-            // The pipe is full, retry after a short delay
-            std::cerr << "Child " << childIndex
-                      << ": Pipe is full, retrying...\n";
-            usleep(1000); // Sleep for 1 millisecond before retrying
+            if(errno == EAGAIN)
+            {
+                std::cerr << "Child " << childIndex
+                          << ": Pipe is full, retrying...\n";
+                usleep(1000); // Sleep for 1 millisecond before retrying
+            }
+            else
+            {
+                std::cerr << "Child " << childIndex
+                          << ": Failed to write data to pipe: "
+                          << strerror(errno) << "\n";
+                return;
+            }
         }
         else
         {
-            std::cerr << "Child " << childIndex
-                      << ": Failed to write data to pipe: " << strerror(errno)
-                      << "\n";
+            // Successfully written
+            break;
         }
+    }
+
+    if(bytesWritten == -1)
+    {
+        std::cerr << "Child " << childIndex
+                  << ": Failed to write after retries.\n";
     }
 }
 

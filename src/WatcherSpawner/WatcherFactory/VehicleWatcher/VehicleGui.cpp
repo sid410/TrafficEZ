@@ -162,3 +162,16 @@ std::unordered_map<std::string, int> VehicleGui::getVehicleTypeAndCount()
 
     return {};
 }
+
+float VehicleGui::getAverageSpeed()
+{
+    float avgSpeed = 0.0f;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        avgSpeed = hullTracker.getAveragedSpeed();
+    }
+
+    // Default speed when not in GREEN_PHASE
+    return avgSpeed;
+}
