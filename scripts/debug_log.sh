@@ -1,9 +1,11 @@
 #!/bin/bash
 
+# Define directories and log file paths
 root_dir="$(pwd)/.."
 resources_dir="$root_dir/resources/"
-logs_dir="$root_dir/logs/"
-log_file="$logs_dir/debug_$(date +"%Y%m%d_%H%M%S").log"
+logs_root_dir="$root_dir/logs/"
+logs_dir="$logs_root_dir/$(date +"%Y%m%d")/"
+log_file="$logs_dir/debug_$(date +"%H%M%S").log"
 
 # Ensure the logs directory exists
 mkdir -p "$logs_dir"
