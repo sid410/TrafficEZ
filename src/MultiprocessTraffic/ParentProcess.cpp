@@ -431,7 +431,7 @@ void ParentProcess::updatePhaseDurations(
 
             if(verbose)
             {
-                std::cout << "  " << "avgspeed: " << phaseSpeeds[phase][child]
+                std::cout << "  avgspeed: " << phaseSpeeds[phase][child]
                           << "\n";
             }
 
