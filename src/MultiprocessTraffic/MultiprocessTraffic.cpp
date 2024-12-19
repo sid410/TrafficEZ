@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
-int MultiprocessTraffic::standbyDuration = 60000; //milliseconds
 
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
@@ -106,7 +105,8 @@ void MultiprocessTraffic::handleSignal(int signal)
             TelnetRelayController::getInstance();
 
         // Enter standby mode, flashing yellow relay for standbyDuration before exiting
-        telnetRelay.standbyMode(standbyDuration);
+        telnetRelay.setStandbyMode(instance->yellowChannels,
+                                   instance->standbyDuration);
 
         std::cout << "\nOne of the children unexpectedly crashed.\n";
         // Kill remaining child processes
@@ -240,6 +240,7 @@ void MultiprocessTraffic::loadJunctionConfig()
     loadHttpInfo(config);
 
     setVehicleAndPedestrianCount();
+    setYellowChannels(config);
 }
 
 void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
@@ -428,4 +429,86 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
                   << ") or streamLinks(" << streamLinks.size() << ")\n";
         exit(EXIT_FAILURE);
     }
+}
+
+int MultiprocessTraffic::calculateTotalChannels(
+    const std::vector<std::string>& childrenPhases)
+{
+    int totalChannels = 0;
+
+    for(const auto& phase : childrenPhases)
+    {
+        if(phase == "GREEN_PHASE" || phase == "RED_PHASE")
+        {
+            totalChannels += 3;
+        }
+        else if(phase == "GREEN_PED" || phase == "RED_PED")
+        {
+            totalChannels += 2;
+        }
+    }
+
+    return totalChannels;
+}
+
+void MultiprocessTraffic::assignChannels(
+    const std::vector<std::string>& childrenPhases,
+    std::vector<int>& yellowChannels)
+{
+    int currentIndex = 0;
+
+    // Loop through each phase and assign channels
+    for(const auto& phase : childrenPhases)
+    {
+        if(phase == "GREEN_PHASE" || phase == "RED_PHASE")
+        {
+            currentIndex += 3;
+            yellowChannels.push_back(
+                currentIndex - 3 +
+                2); // Yellow is the third channel in each group
+        }
+        else if(phase == "GREEN_PED" || phase == "RED_PED")
+        {
+            // Add 2 channels for each GREEN_PED or RED_PED (green, red)
+            currentIndex += 2;
+        }
+    }
+}
+
+void MultiprocessTraffic::setYellowChannels(const YAML::Node& config)
+{
+    if(!config["phases"])
+    {
+        std::cerr << "No phases config found!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    std::vector<int> computedYellowChannels;
+
+    for(const auto& phaseSet : config["phases"])
+    {
+        std::vector<std::string> childrenPhases;
+        for(const auto& phase : phaseSet)
+        {
+            childrenPhases.push_back(phase.as<std::string>());
+        }
+
+        std::vector<int> tempYellowChannels;
+        assignChannels(childrenPhases, tempYellowChannels);
+
+        if(!computedYellowChannels.empty() &&
+           computedYellowChannels != tempYellowChannels)
+        {
+            std::cerr << "Inconsistent yellow channel assignments detected "
+                         "across phase sets!\n";
+            exit(EXIT_FAILURE);
+        }
+
+        if(computedYellowChannels.empty())
+        {
+            computedYellowChannels = tempYellowChannels;
+        }
+    }
+
+    yellowChannels = computedYellowChannels;
 }

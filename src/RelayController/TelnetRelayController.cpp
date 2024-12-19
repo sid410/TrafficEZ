@@ -368,25 +368,34 @@ std::vector<PhaseMessageType> TelnetRelayController::deriveTransitionPhase(
     return transitionPhase;
 }
 
-bool TelnetRelayController::standbyMode(int durationMs, int flashIntervalMs)
+bool TelnetRelayController::setStandbyMode(
+    const std::vector<int>& yellowChannels, int durationMs, int flashIntervalMs)
 {
     if(verbose)
     {
         std::cout << "Switching to standby mode...\n";
     }
+
     if(durationMs < -1 || flashIntervalMs <= 0)
     {
         std::cerr << "Invalid parameters: durationMs=" << durationMs
                   << ", flashIntervalMs=" << flashIntervalMs << '\n';
         return false;
     }
-    const std::vector<int> yellowChannels = {2, 5, 8, 11};
+
+    if(yellowChannels.empty())
+    {
+        std::cerr << "Yellow channels list is empty. Unable to proceed.\n";
+        return false;
+    }
+
     auto startTime = std::chrono::steady_clock::now();
 
     while(true)
     {
         turnOnAllRelay(yellowChannels);
         std::this_thread::sleep_for(std::chrono::milliseconds(flashIntervalMs));
+
         turnOffAllRelay();
         std::this_thread::sleep_for(std::chrono::milliseconds(flashIntervalMs));
 

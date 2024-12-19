@@ -21,7 +21,6 @@ public:
 
     void start();
     void calibrate();
-    static int standbyDuration;
 
 private:
     std::string configFile;
@@ -39,6 +38,7 @@ private:
     float densityMax;
     int minPhaseDurationMs;
     int minPedestrianDurationMs;
+    int standbyDuration;
 
     std::vector<pid_t> childPids;
     std::vector<Pipe> pipesParentToChild;
@@ -46,6 +46,7 @@ private:
 
     std::vector<std::vector<PhaseMessageType>> phases;
     std::vector<int> phaseDurations;
+    std::vector<int> yellowChannels;
 
     std::vector<std::string> streamConfigs;
     std::vector<std::string> streamLinks;
@@ -74,6 +75,10 @@ private:
     void loadHttpInfo(const YAML::Node& config);
 
     void setVehicleAndPedestrianCount();
+    int calculateTotalChannels(const std::vector<std::string>& childrenPhases);
+    void assignChannels(const std::vector<std::string>& childrenPhases,
+                        std::vector<int>& yellowChannels);
+    void setYellowChannels(const YAML::Node& config);
 };
 
 #endif
