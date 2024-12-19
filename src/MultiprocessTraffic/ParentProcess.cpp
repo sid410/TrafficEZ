@@ -474,7 +474,8 @@ void ParentProcess::updatePhaseDurations(
             pedestrianLaneCounts.push_back(pedestrianLaneCount);
         }
         totalPedestrianCount += pedestrianTotals[phase];
-        phaseData["pedestrianLaneCounts"] = pedestrianLaneCounts;
+        phaseData["pedestrianLaneDensities"] = pedestrianLaneCounts;
+        phaseData["id"] = 0;
         cycleData.push_back(phaseData);
     }
 
@@ -530,6 +531,8 @@ void ParentProcess::updatePhaseDurations(
     junctionReport["nextCyclePhaseDurations"] = nextCyclePhaseDurations;
     junctionReport["cycleData"] = cycleData;
 
+    // can be uncommented for reviewing junction report format
+    /*
     if(verbose)
     {
         std::cout << "\n------------- Junction " << junctionId
@@ -537,6 +540,7 @@ void ParentProcess::updatePhaseDurations(
                          " to Send -------------\n";
         std::cout << junctionReport.dump(2) << "\n";
     }
+    */
     std::string reportData = junctionReport.dump();
     report.sendJunctionReport(reportData);
 }
