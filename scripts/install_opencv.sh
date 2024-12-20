@@ -7,7 +7,7 @@ echo "##### Downloading OpenCV Source Code #####"
 echo -e "------------------------------------------"
 
 version='4.9.0'
-git config --global http.postBuffer 524288000
+git config --global http.postBuffer 1048576000
 git clone https://github.com/opencv/opencv.git --branch ${version} --depth 1
 
 cmakeCmd="cmake -S opencv -B opencv/build \
