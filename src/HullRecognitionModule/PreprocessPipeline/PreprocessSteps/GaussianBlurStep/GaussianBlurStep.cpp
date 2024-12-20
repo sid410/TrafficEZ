@@ -36,7 +36,7 @@ void GaussianBlurStep::updateParameterById(int paramId, const std::any& value)
         break;
 
     default:
-        std::cerr << "Invalid parameter ID for GaussianBlurStep.\n";
+        std::cerr << "Error: Invalid parameter ID for GaussianBlurStep.\n";
         break;
     }
 }
@@ -46,8 +46,9 @@ void GaussianBlurStep::setStepParameters(const StepParameters& newParams)
     auto params = std::get_if<GaussianBlurParams>(&newParams.params);
     if(params == nullptr)
     {
-        std::cerr << "Please provide a valid GaussianBlurParams, or check if "
-                     "you are using the correct builder index.\n";
+        std::cerr
+            << "Error: Please provide a valid GaussianBlurParams, or check if "
+               "you are using the correct builder index.\n";
         return;
     }
 

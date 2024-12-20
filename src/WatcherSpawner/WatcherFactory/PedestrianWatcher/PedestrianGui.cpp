@@ -6,7 +6,8 @@ void PedestrianGui::initialize(const std::string& streamName,
     if(!videoStreamer.openVideoStream(streamName) ||
        !videoStreamer.readCalibrationData(calibName))
     {
-        std::cerr << "Failed to initialize video stream or calibration data.\n";
+        std::cerr << "Error: Failed to initialize video stream or calibration "
+                     "data.\n";
         return;
     }
 

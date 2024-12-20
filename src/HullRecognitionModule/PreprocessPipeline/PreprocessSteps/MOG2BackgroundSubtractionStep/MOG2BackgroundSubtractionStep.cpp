@@ -98,8 +98,8 @@ void MOG2BackgroundSubtractionStep::updateParameterById(int paramId,
         break;
 
     default:
-        std::cerr
-            << "Invalid parameter ID for MOG2BackgroundSubtractionStep.\n";
+        std::cerr << "Error: Invalid parameter ID for "
+                     "MOG2BackgroundSubtractionStep.\n";
         break;
     }
 }
@@ -111,8 +111,9 @@ void MOG2BackgroundSubtractionStep::setStepParameters(
         std::get_if<MOG2BackgroundSubtractionParams>(&newParams.params);
     if(params == nullptr)
     {
-        std::cerr << "Please provide a valid MOG2BackgroundSubtractionParams, "
-                     "or check if you are using the correct builder index.\n";
+        std::cerr
+            << "Error: Please provide a valid MOG2BackgroundSubtractionParams, "
+               "or check if you are using the correct builder index.\n";
         return;
     }
 

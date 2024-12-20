@@ -71,7 +71,7 @@ StepFactory::createStep(StepType stepType, const StepParameters& params)
     }
 
     default:
-        std::cerr << "Unsupported step type provided.\n";
+        std::cerr << "Error: Unsupported step type provided.\n";
         return nullptr;
     }
     return nullptr;

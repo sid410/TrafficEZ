@@ -86,7 +86,8 @@ void PipelineDirector::loadPipelineConfig(PipelineBuilder& builder,
 
     if(!root["pipeline_config"])
     {
-        std::cerr << "No pipeline_config found in " << yamlFilename << ".\n";
+        std::cerr << "Error: No pipeline_config found in " << yamlFilename
+                  << ".\n";
         return;
     }
 
@@ -98,8 +99,8 @@ void PipelineDirector::loadPipelineConfig(PipelineBuilder& builder,
     {
         if(!stepNode["type"])
         {
-            std::cerr
-                << "A step in the pipeline_config does not have a type.\n";
+            std::cerr << "Error: A step in the pipeline_config does not have a "
+                         "type.\n";
             continue;
         }
 

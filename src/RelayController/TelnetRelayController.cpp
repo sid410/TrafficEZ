@@ -42,13 +42,14 @@ TelnetRelayController::TelnetRelayController(
 
     if(!connectToRelay())
     {
-        std::cerr << "Failed to connect to relay module!" << std::endl;
+        std::cerr << "Error: Failed to connect to relay module!" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     if(!authenticate())
     {
-        std::cerr << "Failed to authenticate with relay module!" << std::endl;
+        std::cerr << "Error: Failed to authenticate with relay module!"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
 }

@@ -249,8 +249,9 @@ void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
     if(!config["subLocationId"] || !config["junctionId"] ||
        !config["junctionName"])
     {
-        std::cerr << "Missing junction information in configuration file!"
-                  << std::endl;
+        std::cerr
+            << "Error: Missing junction information in configuration file!"
+            << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -261,25 +262,25 @@ void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
 
 void MultiprocessTraffic::loadHttpInfo(const YAML::Node& config)
 {
-    if(config["httpUrl"])
+    if(config["httpUrl"] && config["httpUrl"].IsScalar())
     {
         httpUrl = config["httpUrl"].as<std::string>();
     }
     else
     {
         httpUrl = "https://55qdnlqk-5234.asse.devtunnels.ms"; // Default value
-        std::cerr << "httpUrl not provided, using default: " << httpUrl
+        std::cerr << "Warning: httpUrl not provided, using default."
                   << std::endl;
     }
 
-    if(config["tSecretKey"])
+    if(config["tSecretKey"] && config["httpUrl"].IsScalar())
     {
         tSecretKey = config["tSecretKey"].as<std::string>();
     }
     else
     {
         tSecretKey = "TrafficEz-001-002-003-004"; // Default value
-        std::cerr << "tSecretKey not provided, using default: " << tSecretKey
+        std::cerr << "Warning: tSecretKey not provided, using default."
                   << std::endl;
     }
 }
@@ -288,7 +289,7 @@ void MultiprocessTraffic::loadPhases(const YAML::Node& config)
 {
     if(!config["phases"])
     {
-        std::cerr << "No phases config found!\n";
+        std::cerr << "Error: No phases config found!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -310,7 +311,7 @@ void MultiprocessTraffic::loadPhaseDurations(const YAML::Node& config)
 {
     if(!config["phaseDurations"])
     {
-        std::cerr << "No phaseDurations config found!\n";
+        std::cerr << "Error: No phaseDurations config found!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -333,7 +334,7 @@ void MultiprocessTraffic::loadPhaseDurations(const YAML::Node& config)
     else
     {
         standbyDuration = 60000; // Default value in milliseconds
-        std::cerr << "standbyDuration not provided, using default: "
+        std::cerr << "Warning: standbyDuration not provided, using default: "
                   << standbyDuration << std::endl;
     }
 }
@@ -345,7 +346,7 @@ void MultiprocessTraffic::loadDensitySettings(const YAML::Node& config)
        !config["densityMax"] || !config["minPhaseDurationMs"] ||
        !config["minPedestrianDurationMs"])
     {
-        std::cerr << "Missing density settings in configuration file!\n";
+        std::cerr << "Error: Missing density settings in configuration file!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -367,7 +368,7 @@ void MultiprocessTraffic::loadStreamInfo(const YAML::Node& config)
     {
         if(stream.size() != 2)
         {
-            std::cerr << "Invalid streamInfo entry!\n";
+            std::cerr << "Error: Invalid streamInfo entry!\n";
             exit(EXIT_FAILURE);
         }
 
@@ -381,7 +382,7 @@ void MultiprocessTraffic::loadRelayInfo(const YAML::Node& config)
     if(!config["relayUrl"] || !config["relayUsername"] ||
        !config["relayPassword"])
     {
-        std::cerr << "Missing relay info in configuration file!\n";
+        std::cerr << "Error: Missing relay info in configuration file!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -416,7 +417,7 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
 
     if(numChildren != numVehicle + numPedestrian)
     {
-        std::cerr << "Count of children(" << numChildren
+        std::cerr << "Error: Count of children(" << numChildren
                   << ") do not match Vehicle(" << numVehicle
                   << ") + Pedestrian(" << numPedestrian << ")\n";
         exit(EXIT_FAILURE);
@@ -424,7 +425,7 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
 
     if(numChildren != streamConfigs.size() || numChildren != streamLinks.size())
     {
-        std::cerr << "Count of children(" << numChildren
+        std::cerr << "Error: Count of children(" << numChildren
                   << ") do not match streamConfigs(" << streamConfigs.size()
                   << ") or streamLinks(" << streamLinks.size() << ")\n";
         exit(EXIT_FAILURE);
@@ -479,7 +480,7 @@ void MultiprocessTraffic::setYellowChannels(const YAML::Node& config)
 {
     if(!config["phases"])
     {
-        std::cerr << "No phases config found!\n";
+        std::cerr << "Error: No phases config found!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -499,8 +500,9 @@ void MultiprocessTraffic::setYellowChannels(const YAML::Node& config)
         if(!computedYellowChannels.empty() &&
            computedYellowChannels != tempYellowChannels)
         {
-            std::cerr << "Inconsistent yellow channel assignments detected "
-                         "across phase sets!\n";
+            std::cerr
+                << "Error: Inconsistent yellow channel assignments detected "
+                   "across phase sets!\n";
             exit(EXIT_FAILURE);
         }
 
