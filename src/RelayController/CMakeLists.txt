@@ -1,4 +1,4 @@
-add_library(RelayController HttpRelayController.cpp TelnetRelayController.cpp)
+add_library(RelayController TelnetRelayController.cpp)
 
 target_include_directories(
   RelayController PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

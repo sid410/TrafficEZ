@@ -56,7 +56,6 @@ public:
 
 protected:
     bool connectToRelay();
-
     bool authenticate();
     bool reconnect();
 
