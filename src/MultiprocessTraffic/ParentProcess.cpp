@@ -68,6 +68,9 @@ void ParentProcess::run()
     std::vector<std::vector<float>> phaseDensities(
         phases.size(), std::vector<float>(numChildren, 0.0));
 
+    std::vector<std::vector<float>> phaseSpeeds(
+        phases.size(), std::vector<float>(numChildren, 0.0));
+
     std::vector<std::vector<std::unordered_map<std::string, int>>>
         phaseVehicles(
             phases.size(),
@@ -92,13 +95,14 @@ void ParentProcess::run()
         sendPhaseMessagesToChildren(phaseIndex);
 
         if(!receivePrevDataFromChildren(
-               phaseIndex, phaseDensities, phaseVehicles))
+               phaseIndex, phaseDensities, phaseSpeeds, phaseVehicles))
         {
             setDefaultPhaseDensities(phaseDensities);
         }
 
         handlePhaseTimer(phaseIndex);
-        transitionToNextPhase(phaseIndex, phaseDensities, phaseVehicles);
+        transitionToNextPhase(
+            phaseIndex, phaseDensities, phaseSpeeds, phaseVehicles);
     }
 
     for(int i = 0; i < numChildren; ++i)
@@ -152,6 +156,7 @@ void ParentProcess::sendPhaseMessagesToChildren(int phaseIndex)
 bool ParentProcess::receivePrevDataFromChildren(
     int phaseIndex,
     std::vector<std::vector<float>>& phaseDensities,
+    std::vector<std::vector<float>>& phaseSpeeds,
     std::vector<std::vector<std::unordered_map<std::string, int>>>&
         phaseVehicles)
 {
@@ -163,8 +168,9 @@ bool ParentProcess::receivePrevDataFromChildren(
     for(int i = 0; i < numChildren; ++i)
     {
         float density;
+        float speed;
         std::unordered_map<std::string, int> vehicles;
-        if(!readDataFromChild(i, density, vehicles))
+        if(!readDataFromChild(i, density, speed, vehicles))
         {
             return false;
         }
@@ -179,6 +185,7 @@ bool ParentProcess::receivePrevDataFromChildren(
         }
 
         phaseDensities[previousPhaseIndex][i] = density;
+        phaseSpeeds[previousPhaseIndex][i] = speed;
         phaseVehicles[previousPhaseIndex][i] = vehicles;
     }
 
@@ -188,6 +195,7 @@ bool ParentProcess::receivePrevDataFromChildren(
 bool ParentProcess::readDataFromChild(
     int childIndex,
     float& density,
+    float& speed,
     std::unordered_map<std::string, int>& vehicles)
 {
     char buffer[BUFFER_SIZE];
@@ -202,8 +210,13 @@ bool ParentProcess::readDataFromChild(
     buffer[bytesRead] = '\0'; // Ensure null termination
 
     std::string data(buffer);
-    auto delimiterPos = data.find(';');
-    if(delimiterPos == std::string::npos)
+
+    // Locate the first and second semicolons
+    auto firstDelimiterPos = data.find(';');
+    auto secondDelimiterPos = data.find(';', firstDelimiterPos + 1);
+
+    if(firstDelimiterPos == std::string::npos ||
+       secondDelimiterPos == std::string::npos)
     {
         std::cerr << "Parent: Invalid format received from child " << childIndex
                   << "\n";
@@ -213,7 +226,7 @@ bool ParentProcess::readDataFromChild(
     // Parse density
     try
     {
-        density = std::stof(data.substr(0, delimiterPos));
+        density = std::stof(data.substr(0, firstDelimiterPos));
     }
     catch(const std::invalid_argument&)
     {
@@ -230,8 +243,28 @@ bool ParentProcess::readDataFromChild(
         return false;
     }
 
+    // Parse speed
+    try
+    {
+        speed = std::stof(data.substr(
+            firstDelimiterPos + 1, secondDelimiterPos - firstDelimiterPos - 1));
+    }
+    catch(const std::invalid_argument&)
+    {
+        std::cerr << "Parent: Invalid speed value received from child "
+                  << childIndex << "\n";
+        return false;
+    }
+
+    if(std::isnan(speed) || (std::isnan(speed) && std::signbit(speed)))
+    {
+        std::cerr << "Parent: Detected NaN or negative NaN in speed "
+                     "from child "
+                  << childIndex << "\n";
+    }
+
     // Parse vehicle data
-    std::string vehicleData = data.substr(delimiterPos + 1);
+    std::string vehicleData = data.substr(secondDelimiterPos + 1);
 
     if(!vehicleData.empty())
     {
@@ -312,6 +345,7 @@ void ParentProcess::handlePhaseTimer(int phaseIndex)
 void ParentProcess::transitionToNextPhase(
     int& phaseIndex,
     std::vector<std::vector<float>>& phaseDensities,
+    std::vector<std::vector<float>>& phaseSpeeds,
     std::vector<std::vector<std::unordered_map<std::string, int>>>&
         phaseVehicles)
 {
@@ -319,7 +353,7 @@ void ParentProcess::transitionToNextPhase(
 
     if(phaseIndex == 0)
     {
-        updatePhaseDurations(phaseDensities, phaseVehicles);
+        updatePhaseDurations(phaseDensities, phaseSpeeds, phaseVehicles);
     }
 }
 
@@ -342,6 +376,7 @@ void ParentProcess::setDefaultPhaseDensities(
 
 void ParentProcess::updatePhaseDurations(
     const std::vector<std::vector<float>>& phaseDensities,
+    const std::vector<std::vector<float>>& phaseSpeeds,
     std::vector<std::vector<std::unordered_map<std::string, int>>>&
         phaseVehicles)
 {
@@ -384,14 +419,21 @@ void ParentProcess::updatePhaseDurations(
             vehicleLaneDensity["laneId"] = "Lane_" + std::to_string(child);
             vehicleLaneDensity["laneName"] =
                 "Vehicle Lane " + std::to_string(child);
+
             phaseTotals[phase] += phaseDensities[phase][child];
             if(verbose)
             {
                 std::cout << "Phase " << phase << " - child " << child
-                          << " density: " << phaseDensities[phase][child]
+                          << "\n  density: " << phaseDensities[phase][child]
                           << "\n";
             }
             vehicleLaneDensity["density"] = phaseDensities[phase][child];
+
+            if(verbose)
+            {
+                std::cout << "  avgspeed: " << phaseSpeeds[phase][child]
+                          << "\n";
+            }
 
             for(const auto& entry : phaseVehicles[phase][child])
             {
@@ -432,7 +474,8 @@ void ParentProcess::updatePhaseDurations(
             pedestrianLaneCounts.push_back(pedestrianLaneCount);
         }
         totalPedestrianCount += pedestrianTotals[phase];
-        phaseData["pedestrianLaneCounts"] = pedestrianLaneCounts;
+        phaseData["pedestrianLaneDensities"] = pedestrianLaneCounts;
+        phaseData["id"] = 0;
         cycleData.push_back(phaseData);
     }
 
@@ -479,7 +522,7 @@ void ParentProcess::updatePhaseDurations(
                      "invalid duration.\n";
     }
 
-    // final udpated phase duration after all validations
+    // final updated phase duration after all validations
     for(int phase = 0; phase < phases.size(); ++phase)
     {
         float allocatedTime = (phaseDurations[phase] / 1000.0);
@@ -488,6 +531,8 @@ void ParentProcess::updatePhaseDurations(
     junctionReport["nextCyclePhaseDurations"] = nextCyclePhaseDurations;
     junctionReport["cycleData"] = cycleData;
 
+    // can be uncommented for reviewing junction report format
+    /*
     if(verbose)
     {
         std::cout << "\n------------- Junction " << junctionId
@@ -495,6 +540,7 @@ void ParentProcess::updatePhaseDurations(
                          " to Send -------------\n";
         std::cout << junctionReport.dump(2) << "\n";
     }
+    */
     std::string reportData = junctionReport.dump();
     report.sendJunctionReport(reportData);
 }

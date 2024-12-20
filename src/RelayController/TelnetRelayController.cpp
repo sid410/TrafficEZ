@@ -7,13 +7,6 @@
 
 #define PORT 23
 
-const std::unordered_map<PhaseMessageType, std::vector<int>> channelMap = {
-    {PhaseMessageType::RED_PHASE, {0, 3, 6, 9}},
-    {PhaseMessageType::GREEN_PHASE, {1, 4, 7, 10}},
-    {PhaseMessageType::YELLOW_PHASE, {2, 5, 8, 11}},
-    {PhaseMessageType::RED_PED, {12, 14}},
-    {PhaseMessageType::GREEN_PED, {13, 15}}};
-
 bool waitForData(int sock, int timeoutSeconds)
 {
     fd_set readfds;
@@ -49,13 +42,14 @@ TelnetRelayController::TelnetRelayController(
 
     if(!connectToRelay())
     {
-        std::cerr << "Failed to connect to relay module!" << std::endl;
+        std::cerr << "Error: Failed to connect to relay module!" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     if(!authenticate())
     {
-        std::cerr << "Failed to authenticate with relay module!" << std::endl;
+        std::cerr << "Error: Failed to authenticate with relay module!"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -74,12 +68,12 @@ bool TelnetRelayController::connectToRelay()
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock < 0)
     {
-        perror("Socket creation failed");
+        std::cerr << "Socket creation failed" << std::endl;
         return false;
     }
 
     struct timeval timeout;
-    timeout.tv_sec = 10;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
@@ -89,7 +83,6 @@ bool TelnetRelayController::connectToRelay()
 
     if(connect(sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0)
     {
-        perror("Connection to relay failed");
         close(sock);
         return false;
     }
@@ -111,7 +104,15 @@ bool TelnetRelayController::authenticate()
 bool TelnetRelayController::reconnect()
 {
     close(sock);
-    return connectToRelay();
+    if(!connectToRelay())
+    {
+        return false;
+    };
+    if(!authenticate())
+    {
+        return false;
+    };
+    return true;
 }
 
 void TelnetRelayController::sendCommand(const std::string& command)
@@ -122,7 +123,8 @@ void TelnetRelayController::sendCommand(const std::string& command)
         send(sock, fullCommand.c_str(), fullCommand.length(), 0);
     if(bytesSent < 0)
     {
-        perror("Failed to send command, attempting to reconnect...");
+        std::cerr << "Failed to send command, attempting to reconnect..."
+                  << std::endl;
         if(reconnect())
         {
             sendCommand(command);
@@ -130,6 +132,7 @@ void TelnetRelayController::sendCommand(const std::string& command)
         else
         {
             std::cerr << "Reconnection failed." << std::endl;
+            exit(EXIT_FAILURE);
         }
     }
 }
@@ -162,28 +165,6 @@ std::string TelnetRelayController::receiveResponse(int retries,
         std::cout << "Full response received: " << fullResponse << std::endl;
     }
     return fullResponse;
-}
-
-void TelnetRelayController::turnOnRelay(int relayNumber)
-{
-    if(relayNumber < 0 || relayNumber > 15)
-    {
-        std::cerr << "Invalid relay number: " << relayNumber << std::endl;
-        return;
-    }
-
-    sendCommand("relay on " + std::to_string(relayNumber));
-}
-
-void TelnetRelayController::turnOffRelay(int relayNumber)
-{
-    if(relayNumber < 0 || relayNumber > 15)
-    {
-        std::cerr << "Invalid relay number: " << relayNumber << std::endl;
-        return;
-    }
-
-    sendCommand("relay off " + std::to_string(relayNumber));
 }
 
 void TelnetRelayController::turnOnAllRelay(std::vector<int> relayNumbers)
@@ -375,22 +356,37 @@ std::vector<PhaseMessageType> TelnetRelayController::deriveTransitionPhase(
     return transitionPhase;
 }
 
-bool TelnetRelayController::standbyMode(int durationMs)
+bool TelnetRelayController::setStandbyMode(
+    const std::vector<int>& yellowChannels, int durationMs, int flashIntervalMs)
 {
     if(verbose)
     {
         std::cout << "Switching to standby mode...\n";
     }
-    std::string hex = getHexCommand({2, 5, 8, 11});
+
+    if(durationMs < -1 || flashIntervalMs <= 0)
+    {
+        std::cerr << "Invalid parameters: durationMs=" << durationMs
+                  << ", flashIntervalMs=" << flashIntervalMs << '\n';
+        return false;
+    }
+
+    if(yellowChannels.empty())
+    {
+        std::cerr << "Yellow channels list is empty. Unable to proceed.\n";
+        return false;
+    }
+
     auto startTime = std::chrono::steady_clock::now();
 
     while(true)
     {
-        sendCommand("relay writeall " + hex);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        sendCommand("reset");
+        turnOnAllRelay(yellowChannels);
+        std::this_thread::sleep_for(std::chrono::milliseconds(flashIntervalMs));
 
-        // If a duration is provided, exit after the specified time
+        turnOffAllRelay();
+        std::this_thread::sleep_for(std::chrono::milliseconds(flashIntervalMs));
+
         if(durationMs != -1)
         {
             auto elapsedTime = std::chrono::steady_clock::now() - startTime;
@@ -398,6 +394,7 @@ bool TelnetRelayController::standbyMode(int durationMs)
                    elapsedTime)
                    .count() >= durationMs)
             {
+                turnOffAllRelay(); // Ensure lights are off
                 break;
             }
         }

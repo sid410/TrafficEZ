@@ -6,7 +6,8 @@ void VehicleGui::initialize(const std::string& streamName,
     if(!videoStreamer.openVideoStream(streamName) ||
        !videoStreamer.readCalibrationData(calibName))
     {
-        std::cerr << "Failed to initialize video stream or calibration data.\n";
+        std::cerr << "Error: Failed to initialize video stream or calibration "
+                     "data.\n";
         return;
     }
 
@@ -88,8 +89,8 @@ float VehicleGui::getTrafficDensity()
 
     else if(currentTrafficState == TrafficState::RED_PHASE)
     {
-        float count = segmentation.getWhiteArea(warpedMask);
-        density = count / (laneLength * laneWidth);
+        float totalArea = segmentation.getWhiteArea(warpedMask);
+        density = totalArea / (laneLength * laneWidth);
     }
 
     isTracking = false;
@@ -161,4 +162,17 @@ std::unordered_map<std::string, int> VehicleGui::getVehicleTypeAndCount()
     }
 
     return {};
+}
+
+float VehicleGui::getAverageSpeed()
+{
+    float avgSpeed = 0.0f;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        avgSpeed = hullTracker.getAveragedSpeed();
+    }
+
+    // Default speed when not in GREEN_PHASE
+    return avgSpeed;
 }

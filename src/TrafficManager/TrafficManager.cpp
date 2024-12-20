@@ -95,7 +95,7 @@ void TrafficManager::testVehicleWatcherGui(int greenFramesToCheck,
 
     if(greenCountGui <= 0 || greenDensityGui <= 0)
     {
-        std::cerr << "Vehicle Detection failed on green phase\n";
+        std::cerr << "Error: Vehicle Detection failed on green phase\n";
         exit(EXIT_FAILURE);
     }
 
@@ -113,7 +113,7 @@ void TrafficManager::testVehicleWatcherGui(int greenFramesToCheck,
 
     if(redCountGui <= 0 || redDensityGui <= 0)
     {
-        std::cerr << "Vehicle Detection failed on red phase\n";
+        std::cerr << "Error: Vehicle Detection failed on red phase\n";
         exit(EXIT_FAILURE);
     }
 

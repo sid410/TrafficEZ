@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 MultiprocessTraffic* MultiprocessTraffic::instance = nullptr;
-int MultiprocessTraffic::standbyDuration = 60000; //milliseconds
 
 MultiprocessTraffic::MultiprocessTraffic(const std::string& configFile,
                                          bool debug,
@@ -105,12 +104,9 @@ void MultiprocessTraffic::handleSignal(int signal)
         TelnetRelayController& telnetRelay =
             TelnetRelayController::getInstance();
 
-        // Enter standby mode, flashing yellow relay for standbyDuration before proceeding
-        telnetRelay.standbyMode(standbyDuration);
-
-        // Sleep for a short time to ensure relay off
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        telnetRelay.turnOffAllRelay();
+        // Enter standby mode, flashing yellow relay for standbyDuration before exiting
+        telnetRelay.setStandbyMode(instance->yellowChannels,
+                                   instance->standbyDuration);
 
         std::cout << "\nOne of the children unexpectedly crashed.\n";
         // Kill remaining child processes
@@ -125,7 +121,7 @@ void MultiprocessTraffic::handleSignal(int signal)
         }
 
         std::cout << "Exiting Parent PID: " << getpid() << "\n";
-        exit(EXIT_SUCCESS); // Exit the parent process
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -244,6 +240,7 @@ void MultiprocessTraffic::loadJunctionConfig()
     loadHttpInfo(config);
 
     setVehicleAndPedestrianCount();
+    setYellowChannels(config);
 }
 
 void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
@@ -252,8 +249,9 @@ void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
     if(!config["subLocationId"] || !config["junctionId"] ||
        !config["junctionName"])
     {
-        std::cerr << "Missing junction information in configuration file!"
-                  << std::endl;
+        std::cerr
+            << "Error: Missing junction information in configuration file!"
+            << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -264,25 +262,25 @@ void MultiprocessTraffic::loadJunctionInfo(const YAML::Node& config)
 
 void MultiprocessTraffic::loadHttpInfo(const YAML::Node& config)
 {
-    if(config["httpUrl"])
+    if(config["httpUrl"] && config["httpUrl"].IsScalar())
     {
         httpUrl = config["httpUrl"].as<std::string>();
     }
     else
     {
         httpUrl = "https://55qdnlqk-5234.asse.devtunnels.ms"; // Default value
-        std::cerr << "httpUrl not provided, using default: " << httpUrl
+        std::cerr << "Warning: httpUrl not provided, using default."
                   << std::endl;
     }
 
-    if(config["tSecretKey"])
+    if(config["tSecretKey"] && config["httpUrl"].IsScalar())
     {
         tSecretKey = config["tSecretKey"].as<std::string>();
     }
     else
     {
         tSecretKey = "TrafficEz-001-002-003-004"; // Default value
-        std::cerr << "tSecretKey not provided, using default: " << tSecretKey
+        std::cerr << "Warning: tSecretKey not provided, using default."
                   << std::endl;
     }
 }
@@ -291,7 +289,7 @@ void MultiprocessTraffic::loadPhases(const YAML::Node& config)
 {
     if(!config["phases"])
     {
-        std::cerr << "No phases config found!\n";
+        std::cerr << "Error: No phases config found!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -313,7 +311,7 @@ void MultiprocessTraffic::loadPhaseDurations(const YAML::Node& config)
 {
     if(!config["phaseDurations"])
     {
-        std::cerr << "No phaseDurations config found!\n";
+        std::cerr << "Error: No phaseDurations config found!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -336,7 +334,7 @@ void MultiprocessTraffic::loadPhaseDurations(const YAML::Node& config)
     else
     {
         standbyDuration = 60000; // Default value in milliseconds
-        std::cerr << "standbyDuration not provided, using default: "
+        std::cerr << "Warning: standbyDuration not provided, using default: "
                   << standbyDuration << std::endl;
     }
 }
@@ -348,7 +346,7 @@ void MultiprocessTraffic::loadDensitySettings(const YAML::Node& config)
        !config["densityMax"] || !config["minPhaseDurationMs"] ||
        !config["minPedestrianDurationMs"])
     {
-        std::cerr << "Missing density settings in configuration file!\n";
+        std::cerr << "Error: Missing density settings in configuration file!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -370,7 +368,7 @@ void MultiprocessTraffic::loadStreamInfo(const YAML::Node& config)
     {
         if(stream.size() != 2)
         {
-            std::cerr << "Invalid streamInfo entry!\n";
+            std::cerr << "Error: Invalid streamInfo entry!\n";
             exit(EXIT_FAILURE);
         }
 
@@ -384,7 +382,7 @@ void MultiprocessTraffic::loadRelayInfo(const YAML::Node& config)
     if(!config["relayUrl"] || !config["relayUsername"] ||
        !config["relayPassword"])
     {
-        std::cerr << "Missing relay info in configuration file!\n";
+        std::cerr << "Error: Missing relay info in configuration file!\n";
         exit(EXIT_FAILURE);
     }
 
@@ -419,7 +417,7 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
 
     if(numChildren != numVehicle + numPedestrian)
     {
-        std::cerr << "Count of children(" << numChildren
+        std::cerr << "Error: Count of children(" << numChildren
                   << ") do not match Vehicle(" << numVehicle
                   << ") + Pedestrian(" << numPedestrian << ")\n";
         exit(EXIT_FAILURE);
@@ -427,9 +425,92 @@ void MultiprocessTraffic::setVehicleAndPedestrianCount()
 
     if(numChildren != streamConfigs.size() || numChildren != streamLinks.size())
     {
-        std::cerr << "Count of children(" << numChildren
+        std::cerr << "Error: Count of children(" << numChildren
                   << ") do not match streamConfigs(" << streamConfigs.size()
                   << ") or streamLinks(" << streamLinks.size() << ")\n";
         exit(EXIT_FAILURE);
     }
+}
+
+int MultiprocessTraffic::calculateTotalChannels(
+    const std::vector<std::string>& childrenPhases)
+{
+    int totalChannels = 0;
+
+    for(const auto& phase : childrenPhases)
+    {
+        if(phase == "GREEN_PHASE" || phase == "RED_PHASE")
+        {
+            totalChannels += 3;
+        }
+        else if(phase == "GREEN_PED" || phase == "RED_PED")
+        {
+            totalChannels += 2;
+        }
+    }
+
+    return totalChannels;
+}
+
+void MultiprocessTraffic::assignChannels(
+    const std::vector<std::string>& childrenPhases,
+    std::vector<int>& yellowChannels)
+{
+    int currentIndex = 0;
+
+    // Loop through each phase and assign channels
+    for(const auto& phase : childrenPhases)
+    {
+        if(phase == "GREEN_PHASE" || phase == "RED_PHASE")
+        {
+            currentIndex += 3;
+            yellowChannels.push_back(
+                currentIndex - 3 +
+                2); // Yellow is the third channel in each group
+        }
+        else if(phase == "GREEN_PED" || phase == "RED_PED")
+        {
+            // Add 2 channels for each GREEN_PED or RED_PED (green, red)
+            currentIndex += 2;
+        }
+    }
+}
+
+void MultiprocessTraffic::setYellowChannels(const YAML::Node& config)
+{
+    if(!config["phases"])
+    {
+        std::cerr << "Error: No phases config found!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    std::vector<int> computedYellowChannels;
+
+    for(const auto& phaseSet : config["phases"])
+    {
+        std::vector<std::string> childrenPhases;
+        for(const auto& phase : phaseSet)
+        {
+            childrenPhases.push_back(phase.as<std::string>());
+        }
+
+        std::vector<int> tempYellowChannels;
+        assignChannels(childrenPhases, tempYellowChannels);
+
+        if(!computedYellowChannels.empty() &&
+           computedYellowChannels != tempYellowChannels)
+        {
+            std::cerr
+                << "Error: Inconsistent yellow channel assignments detected "
+                   "across phase sets!\n";
+            exit(EXIT_FAILURE);
+        }
+
+        if(computedYellowChannels.empty())
+        {
+            computedYellowChannels = tempYellowChannels;
+        }
+    }
+
+    yellowChannels = computedYellowChannels;
 }

@@ -8,7 +8,8 @@ void VehicleHeadless::initialize(const std::string& streamName,
     if(!videoStreamer.openVideoStream(streamName) ||
        !videoStreamer.readCalibrationData(calibName))
     {
-        std::cerr << "Failed to initialize video stream or calibration data.\n";
+        std::cerr << "Error: Failed to initialize video stream or calibration "
+                     "data.\n";
         return;
     }
 
@@ -56,18 +57,17 @@ float VehicleHeadless::getTrafficDensity()
     {
         float totalTime = fpsHelper.endSample() / 1000;
         float flow = hullTracker.getTotalHullArea() / totalTime;
+        float average = hullTracker.getAveragedSpeed();
 
-        density = (flow == 0)
-                      ? 0
-                      : flow / (hullTracker.getAveragedSpeed() * laneWidth);
+        density = (flow == 0) ? 0 : flow / (average * laneWidth);
 
         hullTracker.resetTrackerVariables();
     }
 
     else if(currentTrafficState == TrafficState::RED_PHASE)
     {
-        float count = segmentation.getWhiteArea(warpedMask);
-        density = count / (laneLength * laneWidth);
+        float totalArea = segmentation.getWhiteArea(warpedMask);
+        density = totalArea / (laneLength * laneWidth);
     }
 
     isTracking = false;
@@ -128,4 +128,17 @@ std::unordered_map<std::string, int> VehicleHeadless::getVehicleTypeAndCount()
     }
 
     return {};
+}
+
+float VehicleHeadless::getAverageSpeed()
+{
+    float avgSpeed = 0.0f;
+
+    if(currentTrafficState == TrafficState::GREEN_PHASE)
+    {
+        avgSpeed = hullTracker.getAveragedSpeed();
+    }
+
+    // Default speed when not in GREEN_PHASE
+    return avgSpeed;
 }

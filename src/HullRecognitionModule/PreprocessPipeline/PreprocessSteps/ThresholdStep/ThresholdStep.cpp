@@ -39,7 +39,7 @@ void ThresholdStep::updateParameterById(int paramId, const std::any& value)
         break;
 
     default:
-        std::cerr << "Invalid parameter ID for ThresholdStep.\n";
+        std::cerr << "Error: Invalid parameter ID for ThresholdStep.\n";
         break;
     }
 }
@@ -49,8 +49,9 @@ void ThresholdStep::setStepParameters(const StepParameters& newParams)
     auto params = std::get_if<ThresholdParams>(&newParams.params);
     if(params == nullptr)
     {
-        std::cerr << "Please provide a valid ThresholdParams, or check if "
-                     "you are using the correct builder index.\n";
+        std::cerr
+            << "Error: Please provide a valid ThresholdParams, or check if "
+               "you are using the correct builder index.\n";
         return;
     }
 

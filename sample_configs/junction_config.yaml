@@ -3,9 +3,9 @@ junctionId: 1
 junctionName: "ezbox1"
 
 phases:
-  - ["GREEN_PHASE", "RED_PHASE", "GREEN_PHASE", "RED_PHASE", "GREEN_PED", "RED_PED"]
+  - ["GREEN_PHASE", "RED_PHASE", "GREEN_PHASE", "RED_PHASE", "RED_PED", "GREEN_PED"]
   - ["GREEN_PHASE", "GREEN_PHASE", "RED_PHASE", "RED_PHASE", "RED_PED", "RED_PED"]
-  - ["RED_PHASE", "RED_PHASE", "RED_PHASE", "GREEN_PHASE", "RED_PED", "GREEN_PED"]
+  - ["RED_PHASE", "RED_PHASE", "RED_PHASE", "GREEN_PHASE", "GREEN_PED", "RED_PED"]
 
 phaseDurations:
   - 65000

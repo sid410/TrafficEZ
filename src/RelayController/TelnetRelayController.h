@@ -34,8 +34,6 @@ public:
 
     void sendCommand(const std::string& command);
     std::string receiveResponse(int retries = 5, int timeoutSeconds = 5);
-    void turnOnRelay(int relayNumber);
-    void turnOffRelay(int relayNumber);
     void turnOnAllRelay(std::vector<int> channels);
     void turnOffAllRelay();
     std::string getRelayStatus();
@@ -52,11 +50,12 @@ public:
     deriveTransitionPhase(const std::vector<PhaseMessageType>& currentPhase,
                           const std::vector<PhaseMessageType>& nextPhase);
 
-    bool standbyMode(int durationMs = -1);
+    bool setStandbyMode(const std::vector<int>& yellowChannels,
+                        int durationMs = -1,
+                        int flashIntervalMs = 500);
 
 protected:
     bool connectToRelay();
-
     bool authenticate();
     bool reconnect();
 
