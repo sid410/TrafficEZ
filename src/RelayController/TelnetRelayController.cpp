@@ -67,12 +67,12 @@ bool TelnetRelayController::connectToRelay()
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock < 0)
     {
-        perror("Socket creation failed");
+        std::cerr << "Socket creation failed" << std::endl;
         return false;
     }
 
     struct timeval timeout;
-    timeout.tv_sec = 10;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
@@ -82,7 +82,6 @@ bool TelnetRelayController::connectToRelay()
 
     if(connect(sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0)
     {
-        perror("Connection to relay failed");
         close(sock);
         return false;
     }
@@ -104,7 +103,15 @@ bool TelnetRelayController::authenticate()
 bool TelnetRelayController::reconnect()
 {
     close(sock);
-    return connectToRelay();
+    if(!connectToRelay())
+    {
+        return false;
+    };
+    if(!authenticate())
+    {
+        return false;
+    };
+    return true;
 }
 
 void TelnetRelayController::sendCommand(const std::string& command)
@@ -115,7 +122,8 @@ void TelnetRelayController::sendCommand(const std::string& command)
         send(sock, fullCommand.c_str(), fullCommand.length(), 0);
     if(bytesSent < 0)
     {
-        perror("Failed to send command, attempting to reconnect...");
+        std::cerr << "Failed to send command, attempting to reconnect..."
+                  << std::endl;
         if(reconnect())
         {
             sendCommand(command);
@@ -123,6 +131,7 @@ void TelnetRelayController::sendCommand(const std::string& command)
         else
         {
             std::cerr << "Reconnection failed." << std::endl;
+            exit(EXIT_FAILURE);
         }
     }
 }
@@ -155,28 +164,6 @@ std::string TelnetRelayController::receiveResponse(int retries,
         std::cout << "Full response received: " << fullResponse << std::endl;
     }
     return fullResponse;
-}
-
-void TelnetRelayController::turnOnRelay(int relayNumber)
-{
-    if(relayNumber < 0 || relayNumber > 15)
-    {
-        std::cerr << "Invalid relay number: " << relayNumber << std::endl;
-        return;
-    }
-
-    sendCommand("relay on " + std::to_string(relayNumber));
-}
-
-void TelnetRelayController::turnOffRelay(int relayNumber)
-{
-    if(relayNumber < 0 || relayNumber > 15)
-    {
-        std::cerr << "Invalid relay number: " << relayNumber << std::endl;
-        return;
-    }
-
-    sendCommand("relay off " + std::to_string(relayNumber));
 }
 
 void TelnetRelayController::turnOnAllRelay(std::vector<int> relayNumbers)

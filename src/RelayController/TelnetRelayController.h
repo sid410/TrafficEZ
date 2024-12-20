@@ -34,8 +34,6 @@ public:
 
     void sendCommand(const std::string& command);
     std::string receiveResponse(int retries = 5, int timeoutSeconds = 5);
-    void turnOnRelay(int relayNumber);
-    void turnOffRelay(int relayNumber);
     void turnOnAllRelay(std::vector<int> channels);
     void turnOffAllRelay();
     std::string getRelayStatus();
