@@ -12,7 +12,7 @@ on:
 jobs:
   check-clang-formatting:
     name: Lint check clang formatting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
 
@@ -24,7 +24,7 @@ jobs:
 
   check-header-methods:
     name: Lint check header methods
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
 
@@ -40,7 +40,7 @@ jobs:
   # I still separate these checks so that it's easier to see where it failed in actions.
   check-cmake-formatting:
     name: Lint check CMakeLists formatting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
 
