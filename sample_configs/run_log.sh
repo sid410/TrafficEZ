@@ -4,7 +4,7 @@
 root_dir="$(pwd)/.."
 resources_dir="$root_dir/resources/"
 logs_root_dir="$root_dir/logs/"
-logs_dir="$logs_root_dir/$(date + “%Y%m%d")/”
+logs_dir="$logs_root_dir/$(date + "%Y%m%d")/"
 log_file="$logs_dir/monitor_$(date +"%Y%m%d_%H%M%S").log"
 
 # Ensure the logs directory exists
