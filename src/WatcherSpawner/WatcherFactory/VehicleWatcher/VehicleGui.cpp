@@ -20,10 +20,10 @@ void VehicleGui::initialize(const std::string& streamName,
     videoStreamer.constructStreamWindow(streamWindow);
     videoStreamer.initializePerspectiveTransform(inputFrame, warpPerspective);
 
-    pipeDirector.setupDefaultPipeline(pipeBuilder);
+    // pipeDirector.setupDefaultPipeline(pipeBuilder);
     // // If you want to use the yaml config file, use the methods below:
     // pipeDirector.savePipelineConfig(pipeBuilder, calibName);
-    // pipeDirector.loadPipelineConfig(pipeBuilder, calibName);
+    pipeDirector.loadPipelineConfig(pipeBuilder, calibName);
 
     // // Commented out because Trackbar gets confusing with forked processes.
     // // To show Trackbar, be sure to only spawn one process then do the following:
