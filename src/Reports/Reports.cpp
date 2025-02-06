@@ -16,13 +16,13 @@ Reports::Reports(std::string httpUrl,
                {"TSecretKey", tSecretKey}};
 }
 
-void Reports::sendJunctionReport(std::string& data)
+void Reports::sendPhaseReport(std::string& data)
 {
     endpoint = "/Junction/Report";
 
     if(verbose)
     {
-        std::cout << "Sending density and phase time data to server...\n";
+        std::cout << "Sending phase data to server...\n";
     }
 
     HttpClient client(url);

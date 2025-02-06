@@ -22,7 +22,7 @@ public:
     Reports(const Reports&) = delete;
     Reports& operator=(const Reports&) = delete;
 
-    void sendJunctionReport(std::string& data);
+    void sendPhaseReport(std::string& data);
     void sendJunctionStatus();
 
 private:
