@@ -76,17 +76,12 @@ void ParentProcess::run()
             phases.size(),
             std::vector<std::unordered_map<std::string, int>>(numChildren));
 
-    // report.sendJunctionStatus();
-
     while(true)
     {
-        // increment cycle by 1 when phaseIndex is 0
-        phaseIndex == 0 ? cycle++ : cycle;
-        if(verbose)
+        if(phaseIndex == 0)
         {
-            std::cout << "\n==================== Cycle: " << cycle
-                      << " Phase: " << phaseIndex
-                      << " ======================================\n";
+            cycle++;
+            // BOOST_LOG_TRIVIAL(info) << "Cycle: " << cycle;
         }
 
         telnetRelay.setPhaseCycle(phaseIndex);
