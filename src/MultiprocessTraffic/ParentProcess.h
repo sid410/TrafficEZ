@@ -84,17 +84,17 @@ private:
 
     void handlePhaseTimer(int phaseIndex);
 
-    void transitionToNextPhase(
-        int& phaseIndex,
-        std::vector<std::vector<float>>& phaseDensities,
-        std::vector<std::vector<float>>& phaseSpeeds,
-        std::vector<std::vector<std::unordered_map<std::string, int>>>&
-            phaseVehicles);
+    void transitionToNextPhase(int& phaseIndex,
+                               std::vector<std::vector<float>>& phaseDensities);
 
     void
     setDefaultPhaseDensities(std::vector<std::vector<float>>& phaseDensities);
 
-    void updatePhaseDurations(
+    void
+    updatePhaseDurations(const std::vector<std::vector<float>>& phaseDensities);
+
+    void sendPhaseData(
+        size_t currentPhase,
         const std::vector<std::vector<float>>& phaseDensities,
         const std::vector<std::vector<float>>& phaseSpeeds,
         std::vector<std::vector<std::unordered_map<std::string, int>>>&
