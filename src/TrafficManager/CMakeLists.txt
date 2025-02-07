@@ -1,4 +1,5 @@
 add_library(TrafficManager TrafficManager.cpp)
+setup_boost_log(TrafficManager)
 
 target_include_directories(
   TrafficManager

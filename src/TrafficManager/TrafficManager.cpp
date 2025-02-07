@@ -1,6 +1,7 @@
 #include "TrafficManager.h"
 #include "MultiprocessTraffic.h"
 #include "WatcherSpawner.h"
+#include <utils/logging.hpp>
 
 TrafficManager::TrafficManager(const std::string& configFile,
                                bool debug,
@@ -23,11 +24,10 @@ void TrafficManager::start()
         exit(EXIT_SUCCESS);
     }
 
-    std::cout << "TrafficManager starting...\n";
-
-    std::cout << "Debug Mode: " << (debugMode ? "true" : "false") << "\n";
-    std::cout << "Calib Mode: " << (calibMode ? "true" : "false") << "\n";
-    std::cout << "Verbose Mode: " << (verbose ? "true" : "false") << "\n";
+    BOOST_LOG_TRIVIAL(info) << "TrafficManager starting...";
+    BOOST_LOG_TRIVIAL(info) << "Debug: " << (debugMode ? "true" : "false")
+                            << " | Calib: " << (calibMode ? "true" : "false")
+                            << " | Verbose: " << (verbose ? "true" : "false");
 
     MultiprocessTraffic multiprocessTraffic(configFile, debugMode, verbose);
 
