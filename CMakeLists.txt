@@ -10,6 +10,7 @@ include(${CMAKE_SOURCE_DIR}/CMakeSettings.cmake)
 # Need to have CURL installed locally
 find_package(CURL REQUIRED)
 find_package(cpprestsdk REQUIRED)
+find_package(Boost REQUIRED COMPONENTS log log_setup system thread chrono filesystem)
 
 # Need to have OpenCV installed locally If OpenCV is not in your environment
 # variables, do: set(OpenCV_DIR /path/to/opencv/build)

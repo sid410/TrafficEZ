@@ -3,6 +3,7 @@
 #include "version_config.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <utils/logging.hpp>
 
 /**
  * @brief Entry point of how the program should run.
@@ -43,11 +44,12 @@ int main(int argc, char* argv[])
     bool test = result["test"].as<bool>();
     std::string configFile = result["jconf"].as<std::string>();
 
+    Logging::setupLogging();
     if(verbose)
     {
-        std::cout << "Project version: " << PROJECT_NAME_VER << "\n";
-        std::cout << "OpenCV version: " << CV_VERSION << "\n";
-        std::cout << "Number of CPU cores: " << cv::getNumberOfCPUs() << "\n";
+        BOOST_LOG_TRIVIAL(info)
+            << PROJECT_NAME_VER << " | OpenCV " << CV_VERSION
+            << " | CPU Cores: " << cv::getNumberOfCPUs() << "\n";
     }
 
     TrafficManager trafficManager(configFile, debug, calib, verbose, test);

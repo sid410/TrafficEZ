@@ -7,7 +7,8 @@
 #include <numeric>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <utils.hpp>
+#include <utils/logging.hpp>
+#include <utils/time.hpp>
 
 ParentProcess::ParentProcess(int numVehicle,
                              int numPedestrian,

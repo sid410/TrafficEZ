@@ -87,3 +87,15 @@ function(setup_hullrecognition TARGET)
   target_link_libraries(${TARGET} PRIVATE HullDetector HullTracker
                                           PreprocessPipeline)
 endfunction()
+
+function(setup_boost_log TARGET)
+  setup_common_compile_options(${TARGET})
+  target_include_directories(TrafficManager PRIVATE ${Boost_INCLUDE_DIRS})
+  target_link_libraries(${TARGET} PRIVATE 
+                                         Boost::log
+                                         Boost::log_setup
+                                         Boost::system
+                                         Boost::thread
+                                         Boost::chrono
+                                         Boost::filesystem)
+endfunction()
