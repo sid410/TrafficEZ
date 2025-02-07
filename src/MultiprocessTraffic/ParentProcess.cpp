@@ -375,8 +375,6 @@ void ParentProcess::updatePhaseDurations(
 
     for(int phase = 0; phase < phases.size(); ++phase)
     {
-        float phaseDuration = phaseDurations[phase] / 1000.0;
-
         // vehicles density
         for(int child = 0; child < numVehicle; ++child)
         {
@@ -418,6 +416,21 @@ void ParentProcess::updatePhaseDurations(
         {
             phaseDurations[phase] = minPedestrianDurationMs;
         }
+
+        nlohmann::json phaseData = {
+            {"phaseId", phase},
+            {
+                "nextPhaseDuration",
+                phaseDurations[phase] / 1000.0,
+            },
+            {"timestamp", Time::getCurrentTimestamp()},
+        };
+        std::string jsonString = phaseData.dump(2);
+
+        if(verbose)
+        {
+            std::cout << "Phase duration:\n" << jsonString << std::endl;
+        };
     }
 
     std::cout << "----------------------------------------------------------\n";
@@ -488,8 +501,8 @@ void ParentProcess::sendPhaseData(
     }
 
     phaseReport["laneDensities"] = laneDensities;
+    phaseReport["timestamp"] = Time::getCurrentTimestamp();
 
-    // Convert to JSON string and send
     std::string jsonString = phaseReport.dump(2);
     report.sendPhaseReport(jsonString);
 
