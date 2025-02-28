@@ -394,9 +394,9 @@ void ParentProcess::updatePhaseDurations(
 
     for(int phase = 0; phase < phases.size(); ++phase)
     {
-        phaseDurations[phase] = static_cast<int>(
+        phaseDurations[phase] = static_cast<int>(std::round(
             (totalDensity == 0.0 ? 1.0 : phaseTotals[phase] / totalDensity) *
-            fullCycleDurationMs);
+            fullCycleDurationMs));
 
         // so we always have enough time for yellow
         if(phaseDurations[phase] < minPhaseDurationMs)
